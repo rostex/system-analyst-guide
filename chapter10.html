@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<title>Глава 10. Интеграции — Техническое мышление аналитика</title>
+<style>
+/* === Base === */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #1a1a2e;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  background: #fff;
+}
+
+/* === Headings === */
+h1 { font-size: 2.2em; border-bottom: 3px solid #2d3436; padding-bottom: 12px; margin-top: 48px; color: #2d3436; }
+h2 { font-size: 1.6em; margin-top: 40px; padding-bottom: 8px; border-bottom: 1px solid #dfe6e9; color: #2d3436; }
+h3 { font-size: 1.3em; margin-top: 32px; color: #636e72; }
+h4 { font-size: 1.1em; margin-top: 24px; color: #636e72; }
+
+/* === Paragraphs & Lists === */
+p { margin: 16px 0; }
+ul, ol { margin: 12px 0; padding-left: 24px; }
+li { margin: 6px 0; }
+
+/* === Tables === */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 15px;
+}
+th {
+  background: #2d3436;
+  color: #fff;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+}
+td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #dfe6e9;
+}
+tr:nth-child(even) td {
+  background: #f8f9fa;
+}
+tr:hover td {
+  background: #e8f4f8;
+}
+
+/* === Code === */
+code {
+  background: #f1f2f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.9em;
+  color: #2d3436;
+}
+pre {
+  background: #2d3436;
+  color: #dfe6e9;
+  padding: 16px 20px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 16px 0;
+}
+pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+/* === Blockquotes / Callouts === */
+blockquote {
+  margin: 20px 0;
+  padding: 16px 20px;
+  border-left: 5px solid;
+  border-radius: 6px;
+  font-size: 15px;
+}
+blockquote p { margin: 4px 0; }
+
+/* Specific callout colors */
+blockquote.idea { border-color: #6c5ce7; background: #f0edff; }
+blockquote.idea strong { color: #6c5ce7; }
+
+blockquote.bank { border-color: #0984e3; background: #e8f4fd; }
+blockquote.bank strong { color: #0984e3; }
+
+blockquote.error { border-color: #d63031; background: #ffeef0; }
+blockquote.error strong { color: #d63031; }
+
+blockquote.antipattern { border-color: #e17055; background: #fdf0ed; }
+blockquote.antipattern strong { color: #e17055; }
+
+blockquote.best { border-color: #00b894; background: #e6faf4; }
+blockquote.best strong { color: #00b894; }
+
+blockquote.senior { border-color: #fdcb6e; background: #fef9e7; }
+blockquote.senior strong { color: #d68910; }
+
+blockquote.remember { border-color: #2d3436; background: #f1f2f6; }
+blockquote.remember strong { color: #2d3436; }
+
+blockquote.tip { border-color: #00b894; background: #e6faf4; }
+blockquote.tip strong { color: #00b894; }
+
+blockquote.fact { border-color: #a29bfe; background: #f5f3ff; }
+blockquote.fact strong { color: #a29bfe; }
+
+blockquote.warning { border-color: #e17055; background: #fdf0ed; }
+blockquote.warning strong { color: #e17055; }
+
+/* === Checkboxes === */
+input[type="checkbox"] { margin-right: 8px; }
+
+/* === Horizontal Rule === */
+hr {
+  border: none;
+  border-top: 2px solid #dfe6e9;
+  margin: 40px 0;
+}
+
+/* === Links === */
+a { color: #0984e3; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* === Chapter Navigation === */
+.chapter-nav {
+  background: #f8f9fa;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 24px 0;
+  display: flex;
+  justify-content: space-between;
+}
+.chapter-nav a { font-weight: 600; }
+
+/* === TOC === */
+.toc { margin: 24px 0; }
+.toc-item {
+  padding: 10px 16px;
+  border-bottom: 1px solid #dfe6e9;
+  display: flex;
+  align-items: center;
+}
+.toc-item .num {
+  font-weight: 700;
+  color: #0984e3;
+  min-width: 40px;
+  font-size: 1.1em;
+}
+.toc-item .title { font-weight: 600; color: #2d3436; }
+.toc-item:hover { background: #f8f9fa; }
+
+/* === Diagrams === */
+.diagram {
+  background: #f8f9fa;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 16px 0;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* === Checklists === */
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding: 6px 0; }
+.checklist li::before { content: "☐ "; font-size: 1.2em; }
+
+/* === Subtitle === */
+.subtitle {
+  font-size: 1.2em;
+  color: #636e72;
+  margin-top: -12px;
+  margin-bottom: 32px;
+}
+
+/* === Meta === */
+.meta {
+  color: #636e72;
+  font-size: 14px;
+  margin: 16px 0;
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  body { padding: 20px 12px; font-size: 15px; }
+  h1 { font-size: 1.8em; }
+  h2 { font-size: 1.4em; }
+  .chapter-nav { flex-direction: column; gap: 12px; }
+}
+</style>
+</head>
+<body>
+<div id="content">
+
+<h1>Глава 10. Интеграции</h1>
+
+<p class="subtitle">Как системы общаются друг с другом и почему стыки — самое хрупкое место в архитектуре</p>
+
+<blockquote class="idea">
+<p><strong>Метафора.</strong> Интеграция — это мост между двумя островами. По мосту ходят грузовики (данные). Если мост рухнет — острова не могут общаться. Проектирование моста — задача архитектора. Но аналитик должен знать, какой груз поедет, сколько машин в час, что будет, если мост закроют.</p>
+</blockquote>
+
+<p>Современный софт — это не монолит. Это десятки, сотни сервисов, каждый из которых что-то делает и кому-то отвечает. Сервис заказов говорит с сервисом платежей. Платёжный сервис — с внешним банком. CRM — с маркетинговой рассылкой. Все эти разговоры называются <strong>интеграциями</strong>.</p>
+
+<p>Интеграция — самая дорогая и хрупкая часть любой системы. Почему? Потому что на стыке двух систем сходятся:</p>
+<ul>
+  <li>разные команды и разные графики релизов;</li>
+  <li>разные стеки технологий;</li>
+  <li>разные модели данных;</li>
+  <li>разные представления о том, кто за что отвечает;</li>
+  <li>сеть, которая может отвалиться в любой момент.</li>
+</ul>
+
+<p>Аналитик, который понимает типы интеграций, их ограничения и риски, стоит армии разработчиков. Эта глава — карта местности.</p>
+
+<div class="toc">
+  <div class="toc-item"><span class="num">9.1</span><span class="title">Синхронные интеграции (HTTP/gRPC)</span></div>
+  <div class="toc-item"><span class="num">9.2</span><span class="title">Асинхронные интеграции (Kafka, RabbitMQ, SQS)</span></div>
+  <div class="toc-item"><span class="num">9.3</span><span class="title">REST vs gRPC vs GraphQL</span></div>
+  <div class="toc-item"><span class="num">9.4</span><span class="title">OpenAPI (Swagger) — контракт интеграции</span></div>
+  <div class="toc-item"><span class="num">9.5</span><span class="title">Версионирование API</span></div>
+  <div class="toc-item"><span class="num">9.6</span><span class="title">Обработка ошибок в интеграциях</span></div>
+  <div class="toc-item"><span class="num">9.7</span><span class="title">Таймауты и Retry</span></div>
+  <div class="toc-item"><span class="num">9.8</span><span class="title">Eventual Consistency — данные не сразу</span></div>
+  <div class="toc-item"><span class="num">9.9</span><span class="title">Идемпотентность в интеграциях</span></div>
+</div>
+
+<!-- ====================================================================== -->
+<h2 id="sync">9.1. Синхронные интеграции (HTTP/gRPC)</h2>
+
+<p>Синхронная интеграция — это когда сервис А вызывает сервис Б и ждёт ответа. Ничего не происходит, пока Б не ответит.</p>
+
+<div class="diagram">Сервис А  ----(запрос)--->  Сервис Б
+          <---(ответ)----</div>
+
+<h3>Как это работает</h3>
+<p>А отправляет HTTP-запрос (или gRPC-вызов) к Б. Б обрабатывает запрос и возвращает результат. Всё это время А висит в ожидании. Поток исполнения заблокирован.</p>
+
+<h3>Плюсы</h3>
+<ul>
+  <li><strong>Простота.</strong> Вызвал — получил ответ. Одна операция — один результат.</li>
+  <li><strong>Понятность.</strong> Легко отлаживать: видно, кто кому что сказал.</li>
+  <li><strong>Immediate feedback.</strong> Клиент сразу знает, прошла операция или нет.</li>
+</ul>
+
+<h3>Минусы</h3>
+<ul>
+  <li><strong>Зависимость.</strong> А зависит от доступности Б. Б упал — А не работает.</li>
+  <li><strong>Latency.</strong> Время ответа = сумма времени всех вызовов по цепочке.</li>
+  <li><strong>Cascading failures.</strong> Если Б тормозит, А тоже тормозит, и так далее.</li>
+</ul>
+
+<div class="diagram">А ---> Б ---> В ---> Г
+         |       |
+         |       +-- если В завис, Б ждёт
+         |
+         +-- если Б завис, А ждёт
+             
+       В итоге: latency = sum(Latency(Б) + Latency(В) + Latency(Г))</div>
+
+<blockquote class="bank">
+<p><strong>Пример: платёжный шлюз.</strong> Фронтенд вызывает сервис заказов, тот — платёжный сервис, тот — API банка. Пока банк не ответит, пользователь сидит с крутилкой. Если банк отвечает 10 секунд — пользователь видит 10 секунд загрузки. Если банк упал — пользователь видит ошибку.</p>
+</blockquote>
+
+<h3>Timeout</h3>
+<p>Что делать, если Б не отвечает? Ждать вечно? Нет. Нужен <strong>таймаут</strong> — максимальное время ожидания ответа. Если Б не уложился — А снимает блокировку и обрабатывает ошибку.</p>
+
+<p>Без таймаута приложение "зависает" навсегда. Слишком короткий таймаут — ложные срабатывания, Б просто чуть медленнее, а мы уже отвалились.</p>
+
+<h3>Retry</h3>
+<p>При ошибке можно повторить запрос. Звучит разумно, но:</p>
+
+<blockquote class="antipattern">
+<p><strong>Антипаттерн: наивный retry.</strong> Сервис Б упал. А пытается снова. И снова. И снова. Каждый повтор — нагрузка на Б. Б пытается встать, но А не даёт. Оба сервиса умирают.</p>
+</blockquote>
+
+<blockquote class="error">
+<p><strong>Ошибка.</strong> Бесконечный retry при отказе внешнего сервиса — убивает оба сервиса. Клиент делает 1000 запросов в секунду, каждый из которых валится с ошибкой, но он всё равно долбит. Сервис захлёбывается.</p>
+</blockquote>
+
+<p>Правильный retry — с <strong>backoff</strong> (паузой между попытками) и <strong>jitter</strong> (случайным разбросом).</p>
+
+<h3>Circuit Breaker</h3>
+<p>Если Б постоянно отвечает ошибкой, может, стоит на время перестать его дёргать? Circuit Breaker (предохранитель) имеет три состояния:</p>
+
+<ul>
+  <li><strong>Closed</strong> — всё нормально, запросы проходят.</li>
+  <li><strong>Open</strong> — Б падает слишком часто, запросы блокируются сразу с ошибкой.</li>
+  <li><strong>Half-Open</strong> — через время пробуем один запрос, если успех — закрываем, если нет — снова открываем.</li>
+</ul>
+
+<blockquote class="fact">
+<p><strong>Факт.</strong> Circuit Breaker — это не про спасение вызываемого сервиса. Это про спасение вызывающего. Если external API упал, ваш сервис не должен падать вместе с ним.</p>
+</blockquote>
+
+<!-- ====================================================================== -->
+<h2 id="async">9.2. Асинхронные интеграции (Kafka, RabbitMQ, SQS)</h2>
+
+<p>Асинхронная интеграция — это когда сервис А отправляет сообщение в очередь или топик и <strong>не ждёт</strong> ответа. Сервис Б читает сообщение, когда готов.</p>
+
+<div class="diagram">Сервис А ----(сообщение)---> [Очередь/Топик] ---(чтение)---> Сервис Б</div>
+
+<h3>Как это работает</h3>
+<p>А публикует событие (например, "Заказ создан"). Б подписан на этот тип событий. Б забрал сообщение, обработал, сделал своё дело. А ничего не знает о Б и не ждёт его.</p>
+
+<h3>Плюсы</h3>
+<ul>
+  <li><strong>Независимость.</strong> А не знает о существовании Б. Можно добавлять новых подписчиков без изменения А.</li>
+  <li><strong>Отказоустойчивость.</strong> Б упал — сообщения копятся в очереди. Б встал — забрал всё, что накопилось.</li>
+  <li><strong>Buffer.</strong> Очередь сглаживает пиковые нагрузки. Б обрабатывает в своём темпе.</li>
+</ul>
+
+<h3>Минусы</h3>
+<ul>
+  <li><strong>Сложность.</strong> Появляется брокер (Kafka, RabbitMQ), который нужно администрировать.</li>
+  <li><strong>Eventual consistency.</strong> Данные не синхронны. Между публикацией и обработкой проходит время.</li>
+  <li><strong>Debugging.</strong> Трудно отследить цепочку: сообщение ушло, но где оно сейчас?</li>
+</ul>
+
+<h3>Гарантии доставки</h3>
+<p>Брокеры дают разные гарантии:</p>
+
+<table>
+  <tr><th>Гарантия</th><th>Что значит</th><th>Когда использовать</th></tr>
+  <tr><td><strong>At-most-once</strong></td><td>Сообщение доставлено не более одного раза. Может быть потеряно.</td><td>Логи, метрики — потеря не критична.</td></tr>
+  <tr><td><strong>At-least-once</strong></td><td>Сообщение доставлено минимум один раз. Может быть дубликат.</td><td>Платежи — нужна идемпотентность.</td></tr>
+  <tr><td><strong>Exactly-once</strong></td><td>Строго один раз. Самая дорогая гарантия.</td><td>Финансовые транзакции.</td></tr>
+</table>
+
+<blockquote class="remember">
+<p><strong>Запомните.</strong> Exactly-once в распределённых системах — это не свойство брокера, а свойство <em>системы в целом</em>. Нужна идемпотентность обработчика + согласование брокера и базы данных.</p>
+</blockquote>
+
+<h3>Dead Letter Queue (DLQ)</h3>
+<p>Что делать с сообщениями, которые не удалось обработать? Отправить в <strong>DLQ</strong> — специальную очередь для "умерших" сообщений. Разработчики анализируют DLQ, исправляют ошибку и повторно отправляют сообщение.</p>
+
+<blockquote class="senior">
+<p><strong>Мнение Senior.</strong> Async по умолчанию, sync по необходимости. Синхронные вызовы создают жёсткую связность. Асинхронность — это резина, которая амортизирует удары. Начинайте с асинхронной архитектуры и переходите на синхронную только там, где это действительно нужно (например, платёжный шлюз, где ответ нужен "здесь и сейчас").</p>
+</blockquote>
+
+<!-- ====================================================================== -->
+<h2 id="rest-vs-grpc">9.3. REST vs gRPC vs GraphQL</h2>
+
+<p>Три популярных протокола для интеграции. Каждый со своими сильными и слабыми сторонами.</p>
+
+<h3>REST</h3>
+<ul>
+  <li>Стандарт де-факто для внешних API.</li>
+  <li>Человекочитаемый JSON.</li>
+  <li>HTTP/1.1 — каждый запрос создаёт новое соединение (или keep-alive).</li>
+  <li>Простота: GET, POST, PUT, DELETE.</li>
+</ul>
+
+<h3>gRPC</h3>
+<ul>
+  <li>Бинарный протокол на Protobuf.</li>
+  <li>HTTP/2 — мультиплексирование, одно соединение на много запросов.</li>
+  <li>Высокая производительность.</li>
+  <li>Строгая типизация: контракт в .proto-файлах.</li>
+  <li>Стриминг: server-streaming, client-streaming, bidirectional.</li>
+</ul>
+
+<h3>GraphQL</h3>
+<ul>
+  <li>Один endpoint. Клиент сам выбирает, какие поля получить.</li>
+  <li>Нет over-fetching (лишних данных) и under-fetching (нужно несколько запросов).</li>
+  <li>Сложное кэширование.</li>
+  <li>Запрос может быть дорогим: клиент запрашивает "вложенные" данные без ограничений.</li>
+</ul>
+
+<h3>Сравнение</h3>
+
+<table>
+  <tr><th>Критерий</th><th>REST</th><th>gRPC</th><th>GraphQL</th></tr>
+  <tr><td>Формат данных</td><td>JSON (текст)</td><td>Protobuf (бинарный)</td><td>JSON (текст)</td></tr>
+  <tr><td>Протокол</td><td>HTTP/1.1</td><td>HTTP/2</td><td>HTTP/1.1 или HTTP/2</td></tr>
+  <tr><td>Производительность</td><td>Средняя</td><td>Высокая</td><td>Зависит от запроса</td></tr>
+  <tr><td>Человекочитаемость</td><td>Высокая</td><td>Низкая</td><td>Средняя</td></tr>
+  <tr><td>Строгая типизация</td><td>Через OpenAPI</td><td>Встроена (Protobuf)</td><td>Через схемы</td></tr>
+  <tr><td>Стриминг</td><td>Нет (SSE/WebSocket отдельно)</td><td>Встроен</td><td>Через subscriptions</td></tr>
+  <tr><td>Кэширование</td><td>HTTP-кэш (ETag, Cache-Control)</td><td>Сложное</td><td>Сложное</td></tr>
+  <tr><td>Экосистема/инструменты</td><td>Огромная</td><td>Хорошая</td><td>Растущая</td></tr>
+</table>
+
+<blockquote class="bank">
+<p><strong>Пример.</strong> Внутренние микросервисы — gRPC (высокая скорость, строгий контракт). Внешние API для партнёров — REST (простота, совместимость). Если клиенты сами выбирают, какие данные им нужны — GraphQL.</p>
+</blockquote>
+
+<blockquote class="fact">
+<p><strong>Факт.</strong> gRPC использует HTTP/2, что даёт мультиплексирование: множество запросов на одном TCP-соединении. Это снижает latency и нагрузку на сеть. Для high-load внутренних систем gRPC часто выигрывает у REST в 5–10 раз по скорости.</p>
+</blockquote>
+
+<!-- ====================================================================== -->
+<h2 id="openapi">9.4. OpenAPI (Swagger) — контракт интеграции</h2>
+
+<p>OpenAPI (ранее Swagger) — это спецификация, описывающая REST API в формате JSON или YAML. Это <strong>единственный источник правды</strong> о том, как устроен API.</p>
+
+<h3>Что такое OpenAPI спецификация</h3>
+<p>Это файл, который содержит:</p>
+<ul>
+  <li>список всех endpoint'ов (paths);</li>
+  <li>схемы запросов и ответов (schemas);</li>
+  <li>параметры (path, query, header);</li>
+  <li>статус-коды и примеры ответов.</li>
+</ul>
+
+<h3>Как читать OpenAPI</h3>
+<p>Пример описания endpoint'а:</p>
+
+<pre><code>openapi: 3.0.0
+info:
+  title: Payment API
+  version: 1.0.0
+paths:
+  /payments:
+    post:
+      summary: Создать платёж
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePayment'
+      responses:
+        '201':
+          description: Платёж создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          description: Неверные данные
+        '402':
+          description: Недостаточно средств
+components:
+  schemas:
+    CreatePayment:
+      type: object
+      required: [amount, currency, from, to]
+      properties:
+        amount:
+          type: number
+          format: decimal
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+        from:
+          type: string
+        to:
+          type: string
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, confirmed, failed]
+        createdAt:
+          type: string
+          format: date-time</code></pre>
+
+<h3>Code generation</h3>
+<p>Из OpenAPI-спецификации можно <strong>сгенерировать код</strong>:</p>
+<ul>
+  <li>клиентские библиотеки (JavaScript, Python, Java, Go);</li>
+  <li>серверные заглушки (stubs);</li>
+  <li>документацию (Swagger UI, ReDoc);</li>
+  <li>тесты (контрактные тесты).</li>
+</ul>
+
+<blockquote class="antipattern">
+<p><strong>Антипаттерн: документация ≠ реализация.</strong> Однажды спецификацию написали, а код пошли писать "как удобно". Через месяц документация врёт, разработчики читают код, а аналитики — в документацию. Все ненавидят друг друга.</p>
+</blockquote>
+
+<blockquote class="error">
+<p><strong>Ошибка.</strong> Документация не совпадает с реализацией — это худшее, что может быть в интеграции. Партнёр читает OpenAPI и пишет интеграцию. В проде всё ломается, потому что реальное API возвращает другие поля. Решение: контрактные тесты, которые проверяют, что реализация соответствует спецификации.</p>
+</blockquote>
+
+<blockquote class="best">
+<p><strong>Лучшая практика.</strong> OpenAPI-спецификация — единственный источник правды. Изменения сначала в спецификацию, потом в код. Pull Request на изменение API без изменения спецификации не принимается.</p>
+</blockquote>
+
+<!-- ====================================================================== -->
+<h2 id="versioning">9.5. Версионирование API</h2>
+
+<p>API живут и меняются. Когда вносить изменения нельзя без последствий — нужна <strong>новая версия</strong>.</p>
+
+<h3>Когда менять версию</h3>
+<p>Breaking changes — то, что ломает существующих клиентов:</p>
+<ul>
+  <li>переименование или удаление поля;</li>
+  <li>изменение типа поля (было string, стало number);</li>
+  <li>добавление обязательного параметра;</li>
+  <li>изменение статус-кодов;</li>
+  <li>изменение поведения endpoint'а.</li>
+</ul>
+
+<h3>Стратегии версионирования</h3>
+
+<table>
+  <tr><th>Стратегия</th><th>Пример</th><th>Плюсы</th><th>Минусы</th></tr>
+  <tr>
+    <td><strong>URL (path)</strong></td>
+    <td><code>/v1/users</code>, <code>/v2/users</code></td>
+    <td>Простота, заметность</td>
+    <td>Загрязняет URL, нельзя гибко переключать</td>
+  </tr>
+  <tr>
+    <td><strong>Header</strong></td>
+    <td><code>Accept: application/vnd.api+json;version=2</code></td>
+    <td>Чистый URL</td>
+    <td>Невидимо для клиента, сложнее тестировать</td>
+  </tr>
+  <tr>
+    <td><strong>Query parameter</strong></td>
+    <td><code>/users?version=2</code></td>
+    <td>Легко тестировать</td>
+    <td>Загрязняет query string, кэширование</td>
+  </tr>
+</table>
+
+<blockquote class="bank">
+<p><strong>Пример: банк.</strong> Крупный банк поддерживает API для интернет-магазинов. Клиенты — сотни магазинов, каждый написал интеграцию под свою версию. Внезапно банк обновляет API, удаляет старое поле. 30 магазинов перестают работать. Банк теряет партнёров и деньги. Решение: <strong>deprecation policy</strong> — минимум 6 месяцев поддержки старой версии.</p>
+</blockquote>
+
+<h3>Deprecation policy</h3>
+<ul>
+  <li>Объявить версию deprecated (через header <code>Sunset</code> или документацию).</li>
+  <li>Дать клиентам время на миграцию (типично: 6–12 месяцев).</li>
+  <li>Логировать, кто ещё использует старую версию.</li>
+  <li>Отключать только тогда, когда трафик на старую версию упал до нуля.</li>
+</ul>
+
+<h3>Sunset header</h3>
+<p>HTTP-заголовок <code>Sunset</code> указывает, когда версия будет отключена:</p>
+
+<pre><code>Sunset: Sat, 31 Dec 2025 23:59:59 GMT
+Deprecation: true</code></pre>
+
+<blockquote class="senior">
+<p><strong>Мнение Senior.</strong> Never break your clients. Если вы можете сделать изменение обратно совместимым (добавить поле вместо удаления, сделать поле опциональным вместо обязательного) — сделайте это без смены версии. Версия — это политическое решение, а не техническое. Каждая новая версия — это миграция сотен клиентов.</p>
+</blockquote>
+
+<!-- ====================================================================== -->
+<h2 id="errors">9.6. Обработка ошибок в интеграциях</h2>
+
+<p>Ошибки неизбежны. Вопрос не в том, чтобы их не было, а в том, <strong>как о них сообщать</strong>.</p>
+
+<h3>HTTP status + тело с описанием</h3>
+<p>Минимальный стандарт: используйте правильный HTTP-статус и тело ошибки.</p>
+
+<table>
+  <tr><th>Код</th><th>Значение</th><th>Действие клиента</th></tr>
+  <tr><td>400 Bad Request</td><td>Клиент отправил некорректные данные</td><td>Исправить запрос</td></tr>
+  <tr><td>401 Unauthorized</td><td>Нет или неверный токен</td><td>Получить новый токен</td></tr>
+  <tr><td>403 Forbidden</td><td>Нет прав на операцию</td><td>Не повторять</td></tr>
+  <tr><td>404 Not Found</td><td>Ресурс не существует</td><td>Проверить URL</td></tr>
+  <tr><td>409 Conflict</td><td>Конфликт (уже существует, версия устарела)</td><td>Прочитать тело, разрешить конфликт</td></tr>
+  <tr><td>429 Too Many Requests</td><td>Rate limit превышен</td><td>Подождать Retry-After</td></tr>
+  <tr><td>500 Internal Server Error</td><td>Внутренняя ошибка сервера</td><td>Retry</td></tr>
+  <tr><td>503 Service Unavailable</td><td>Сервис временно недоступен</td><td>Retry with backoff</td></tr>
+</table>
+
+<h3>Problem Details (RFC 7807)</h3>
+<p>Стандарт описания ошибок в HTTP API:</p>
+
+<pre><code>{
+  "type": "https://api.bank.com/errors/insufficient-funds",
+  "title": "Недостаточно средств",
+  "status": 402,
+  "detail": "На счёте 100.50 руб., требуется 500.00 руб.",
+  "instance": "/payments/abc-123",
+  "balance": 100.50,
+  "currency": "RUB",
+  "required": 500.00
+}</code></pre>
+
+<table>
+  <tr><th>Поле</th><th>Описание</th></tr>
+  <tr><td><code>type</code></td><td>URI с документацией ошибки (machine-readable)</td></tr>
+  <tr><td><code>title</code></td><td>Короткое описание (human-readable)</td></tr>
+  <tr><td><code>status</code></td><td>HTTP-статус</td></tr>
+  <tr><td><code>detail</code></td><td>Детальное описание для разработчика</td></tr>
+  <tr><td><code>instance</code></td><td>URI конкретного экземпляра ошибки</td></tr>
+</table>
+
+<blockquote class="bank">
+<p><strong>Пример.</strong> В банковской системе ошибка "Недостаточно средств" — не 500, а 402 Payment Required. Клиент получает понятный ответ: статус, код ошибки, детали. Не нужно парсить HTML-страницу с ошибкой.</p>
+</blockquote>
+
+<h3>Error codes: machine-readable + human-readable</h3>
+<ul>
+  <li><strong>Machine-readable</strong>: <code>INSUFFICIENT_FUNDS</code> — код для логики клиента.</li>
+  <li><strong>Human-readable</strong>: "На счёте недостаточно средств для списания" — для показа пользователю.</li>
+</ul>
+
+<h3>Retry-After</h3>
+<p>Когда сервер хочет, чтобы клиент подождал:</p>
+
+<pre><code>HTTP/1.1 429 Too Many Requests
+Retry-After: 120</code></pre>
+
+<p>Клиент должен подождать 120 секунд перед повторным запросом.</p>
+
+<h3>Idempotency</h3>
+<p>Если клиент повторил запрос, потому что не получил ответа (таймаут), сервер должен обработать повтор безопасно. Об этом — в разделе 9.9.</p>
+
+<blockquote class="best">
+<p><strong>Лучшая практика.</strong> Все 500-е ошибки должны содержать уникальный ID (trace id), чтобы оператор мог найти проблему в логах. Добавляйте заголовок <code>X-Request-Id</code> в каждый запрос.</p>
+</blockquote>
+
+<!-- ====================================================================== -->
+<h2 id="timeouts">9.7. Таймауты и Retry</h2>
+
+<p>Таймаут — это не техническая деталь. Это <strong>бизнес-требование</strong>.</p>
+
+<blockquote class="senior">
+<p><strong>Мнение Senior.</strong> Таймаут — это бизнес-требование, не техническая деталь. Аналитик должен задать вопрос: "Сколько пользователь готов ждать?" Если ответ "не больше 3 секунд" — ставьте таймаут 2.5 секунды, остальное — запас на сеть. Нельзя ставить таймаут "на глаз".</p>
+</blockquote>
+
+<h3>Почему без таймаута приложение "зависает"</h3>
+<p>Нет таймаута — поток висит вечно. Если это HTTP-сервер, то через 10 000 зависших соединений он упадёт. Если это UI — пользователь увидит бесконечную крутилку. Без таймаута ваш сервис — убийца собственной надёжности.</p>
+
+<h3>Какой таймаут ставить</h3>
+
+<table>
+  <tr><th>Сценарий</th><th>Рекомендуемый таймаут</th><th>Почему</th></tr>
+  <tr><td>Внутренний микросервис (той же DC)</td><td>1–2 секунды</td><td>Низкая задержка, можно ставить агрессивно</td></tr>
+  <tr><td>Внешний API (партнёрский)</td><td>3–10 секунд</td><td>Сеть непредсказуема, нужен запас</td></tr>
+  <tr><td>Платежный шлюз</td><td>10–30 секунд</td><td>Банки обрабатывают медленно</td></tr>
+  <tr><td>Файловый аплоад</td><td>30–120 секунд</td><td>Большие файлы, скорость сети</td></tr>
+</table>
+
+<h3>Retry with backoff</h3>
+
+<p><strong>Exponential backoff:</strong> каждая следующая попытка через всё больший интервал.</p>
+
+<pre><code>Попытка 1:  через  1 секунду
+Попытка 2:  через  2 секунды
+Попытка 3:  через  4 секунды
+Попытка 4:  через  8 секунд
+Попытка 5:  через 16 секунд
+...         ...
+Попытка N:  через 2^(N-1) секунд</code></pre>
+
+<p><strong>Jitter:</strong> добавляем случайный разброс, чтобы все клиенты не долбили одновременно.</p>
+
+<pre><code>delay = min(cap, 2^attempt * base) + random(0, jitter)</code></pre>
+
+<h3>Circuit Breaker (детально)</h3>
+
+<p>Три состояния:</p>
+
+<div class="diagram">        +----------+          success        +-----------+
+        |  CLOSED  | -------------------------> | HALF-OPEN |
+        |          | <------------------------- |           |
+        +----------+   failure > threshold      +-----------+
+              |                                       |
+              |  success                          failure
+              v                                       |
+        +----------+                                   |
+        |   OPEN   | <---------------------------------+
+        +----------+
+              |
+        timeout expires
+              v
+        +----------+
+        | HALF-OPEN|
+        +----------+</div>
+
+<ul>
+  <li><strong>Closed:</strong> запросы проходят. Считаем ошибки.</li>
+  <li><strong>Open:</strong> порог превышен — запросы блокируются с ошибкой. Ждём таймаут.</li>
+  <li><strong>Half-Open:</strong> пробный запрос. Успех → Closed. Неудача → Open.</li>
+</ul>
+
+<blockquote class="fact">
+<p><strong>Факт.</strong> Circuit Breaker — обязательный паттерн для любого сервиса, который вызывает external API. Без него одна задержка на стороне партнёра может убить ваш сервис (и все сервисы, которые зависят от вас).</p>
+</blockquote>
+
+<!-- ====================================================================== -->
+<h2 id="eventual-consistency">9.8. Eventual Consistency — данные не сразу</h2>
+
+<p>В распределённых системах данные не синхронизируются мгновенно. Между тем, как событие произошло, и тем, как все об этом узнали, проходит время. Это называется <strong>eventual consistency</strong> (согласованность в конечном счёте).</p>
+
+<h3>Что это такое</h3>
+<p>Сервис А создал заказ. Сервис Б (платёжный) узнает об этом через 200 мс. Сервис В (доставка) — через 500 мс. В течение этих 500 мс система находится в <strong>несогласованном</strong> состоянии: заказ есть, но доставка о нём не знает.</p>
+
+<blockquote class="fact">
+<p><strong>Факт.</strong> Eventual consistency — это не баг, а фича. Это плата за скорость и отказоустойчивость. Чем быстрее вы хотите получать ответ, тем менее согласованными могут быть данные. Чем более согласованными — тем медленнее система.</p>
+</blockquote>
+
+<h3>Почему это нормально</h3>
+<p>Большинство сценариев не требуют мгновенной согласованности:</p>
+<ul>
+  <li>Лайк на посте: можно подождать секунду, пока счётчик обновится.</li>
+  <li>Обновление профиля: не страшно, если старые данные видны ещё 100 мс.</li>
+  <li>Статус заказа: пользователь видит "processing", а через секунду — "paid".</li>
+</ul>
+
+<h3>Когда eventual consistency недопустима</h3>
+<ul>
+  <li><strong>Деньги.</strong> Двойное списание — недопустимо.</li>
+  <li><strong>Блокировки ресурсов.</strong> Два сервиса не должны забронировать один и тот же столик.</li>
+  <li><strong>Медицинские данные.</strong> Врач должен видеть актуальные анализы.</li>
+</ul>
+
+<blockquote class="senior">
+<p><strong>Мнение Senior.</strong> Аналитик должен указать, как долго данные могут быть несогласованными. Это называется <strong>SLA на консистентность</strong>. Например: "Платёж должен быть отражён во всех системах не позднее чем через 5 секунд". Если этого требования нет — разработчики поставят "как получится", и пользователи увидят странные статусы.</p>
+</blockquote>
+
+<h3>Пример: заказ в интернет-магазине</h3>
+
+<div class="diagram">1. Пользователь оформил заказ
+2. Сервис заказов создал запись (status = processing)
+3. Сервис заказов отправил событие "OrderCreated"
+4. Платёжный сервис получил событие через 150 мс
+5. Платёжный сервис списал деньги
+6. Платёжный сервис отправил событие "PaymentCompleted"
+7. Сервис заказов обновил статус на "paid"
+
+Окно несогласованности: ~150-500 мс.
+Пользователь видит status=processing, затем status=paid.</div>
+
+<p>Если окно больше 5 секунд — это проблема. Значит, брокер перегружен или обработчик тормозит.</p>
+
+<!-- ====================================================================== -->
+<h2 id="idempotency">9.9. Идемпотентность в интеграциях</h2>
+
+<p>Повторная отправка — норма в распределённых системах. Таймаут, сетевой сбой, retry — всё это приводит к тому, что один и тот же запрос может прийти дважды.</p>
+
+<p><strong>Идемпотентность</strong> — свойство операции: сколько раз ни вызывай — результат тот же, как если бы вызвал один раз.</p>
+
+<h3>Почему повторная отправка — норма</h3>
+<ul>
+  <li>Клиент не получил ответ (таймаут) и повторил запрос.</li>
+  <li>Брокер доставил сообщение дважды (at-least-once).</li>
+  <li>Пользователь нажал "Оплатить" дважды (UI не заблокировался).</li>
+</ul>
+
+<h3>Idempotency Key</h3>
+<p>Клиент генерирует уникальный ключ запроса и передаёт его в заголовке <code>Idempotency-Key</code> (или в теле запроса). Сервер проверяет: если такой ключ уже обработан — возвращает сохранённый результат, не выполняя операцию повторно.</p>
+
+<pre><code>POST /payments
+Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
+
+{
+  "amount": 500.00,
+  "currency": "RUB",
+  "from": "acc-123",
+  "to": "acc-456"
+}</code></pre>
+
+<blockquote class="bank">
+<p><strong>Пример: банк.</strong> Клиент отправил запрос на списание 500 руб. Сервер начал обработку, но соединение оборвалось. Клиент не получил ответа и отправил тот же запрос с тем же <code>Idempotency-Key</code>. Сервер видит: ключ уже обрабатывается/обработан. Повторного списания не происходит. Клиент получает статус "Уже обработано".</p>
+</blockquote>
+
+<h3>Какие операции идемпотентны</h3>
+
+<table>
+  <tr><th>Операция</th><th>Идемпотентна?</th><th>Почему</th></tr>
+  <tr><td>GET /users/123</td><td>✅ Да</td><td>Чтение данных, побочных эффектов нет</td></tr>
+  <tr><td>PUT /users/123</td><td>✅ Да</td><td>Установить конкретное значение — повтор даст то же</td></tr>
+  <tr><td>DELETE /users/123</td><td>✅ Да</td><td>Удалить второй раз — пользователь уже удалён</td></tr>
+  <tr><td>POST /payments</td><td>❌ Нет (по умолчанию)</td><td>Создание — каждый POST создаёт новый ресурс</td></tr>
+  <tr><td>POST /payments (с Idempotency-Key)</td><td>✅ Да</td><td>Ключ делает POST идемпотентным</td></tr>
+  <tr><td>PATCH /users/123</td><td>⚠️ Не гарантировано</td><td>Зависит от реализации: если добавляет элемент в массив — не идемпотентен</td></tr>
+  <tr><td>POST /events (Kafka)</td><td>❌ Нет</td><td>В кролика отправили — в кролике лежит</td></tr>
+</table>
+
+<blockquote class="warning">
+<p><strong>Важно.</strong> Идемпотентность нужно проектировать сознательно. Нельзя просто сказать "у нас идемпотентный API". Нужно определить: какие ключи, как долго хранить, что возвращать при повторе, как обрабатывать параллельные запросы с одинаковым ключом.</p>
+</blockquote>
+
+<blockquote class="best">
+<p><strong>Лучшая практика.</strong> Требуйте <code>Idempotency-Key</code> для всех мутирующих операций (POST, PATCH). Храните ключи 24–48 часов. При повторе возвращайте тот же ответ, что и при первом запросе (включая HTTP-статус).</p>
+</blockquote>
+
+<!-- ====================================================================== -->
+<h2>Итоги главы</h2>
+
+<h3>Чек-лист: вопросы об интеграциях в требованиях</h3>
+
+<p>Прежде чем утверждать требования к интеграции, ответьте на эти вопросы:</p>
+
+<ul class="checklist">
+  <li>Какой тип интеграции: синхронный или асинхронный?</li>
+  <li>Какой протокол: REST, gRPC, GraphQL, очереди?</li>
+  <li>Какой контракт: OpenAPI, Protobuf, AsyncAPI?</li>
+  <li>Какой таймаут? Сколько пользователь готов ждать?</li>
+  <li>Что происходит при ошибке? Retry? Backoff? Circuit Breaker?</li>
+  <li>Какие гарантии доставки: at-most-once, at-least-once, exactly-once?</li>
+  <li>Где dead letter queue? Кто мониторит?</li>
+  <li>Как версионируется API? Сколько версий поддерживается?</li>
+  <li>Какая deprecation policy? Как клиенты узнают о закрытии версии?</li>
+  <li>Как сообщаются ошибки? RFC 7807? Есть ли machine-readable error codes?</li>
+  <li>Как обеспечивается идемпотентность? Что такое Idempotency-Key?</li>
+  <li>Какое допустимое время несогласованности данных (eventual consistency)?</li>
+  <li>Кто отвечает за интеграцию с каждой стороны?</li>
+  <li>Как тестировать интеграцию? Есть ли контрактные тесты?</li>
+  <li>Как мониторить: latency, ошибки, DLQ, rate limits?</li>
+</ul>
+
+<h3>Что должен понять аналитик</h3>
+<ul>
+  <li>Интеграция — самое дорогое и хрупкое место в архитектуре.</li>
+  <li>Синхрон — это просто, но хрупко. Асинхрон — сложно, но надёжно.</li>
+  <li>Таймаут — не техническая деталь, а бизнес-требование.</li>
+  <li>Идемпотентность — не роскошь, а необходимость.</li>
+  <li>Контракт (OpenAPI) — единственный источник правды.</li>
+  <li>Версионирование — политическое решение. Never break your clients.</li>
+  <li>Eventual consistency — это нормально, но нужно указать, на сколько.</li>
+  <li>Dead letter queue — must have для асинхронных интеграций.</li>
+</ul>
+
+<h3>Вопросы для самопроверки</h3>
+
+<ol>
+  <li>Почему синхронная интеграция хуже асинхронной с точки зрения отказоустойчивости?</li>
+  <li>Что такое cascading failure? Приведите пример.</li>
+  <li>В чём разница между at-most-once и at-least-once?</li>
+  <li>Когда стоит выбирать gRPC вместо REST?</li>
+  <li>Что такое OpenAPI и зачем он нужен?</li>
+  <li>Назовите три стратегии версионирования API. Какая лучше для публичного API?</li>
+  <li>Что такое Problem Details (RFC 7807)? Какие поля входят в ответ?</li>
+  <li>Как работает exponential backoff с jitter?</li>
+  <li>Что такое eventual consistency? Когда она недопустима?</li>
+  <li>Как идемпотентность защищает от двойного списания денег?</li>
+</ol>
+
+<blockquote class="remember">
+<p><strong>Золотое правило.</strong> Если аналитик не задал вопросы про интеграции — требования не готовы. Интеграция — это мост. Если мост рухнет — упадут оба берега.</p>
+</blockquote>
+
+<hr />
+
+<div class="chapter-nav">
+  <a href="chapter09.html">← Глава 9: Микросервисы</a>
+  <a href="index.html">Содержание</a>
+  <a href="chapter11.html">Глава 11: Как писать хорошие требования →</a>
+</div>
+
+</div>
+</body>
+</html>

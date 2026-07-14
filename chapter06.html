@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<title>Глава 6 — Проектирование базы данных</title>
+<style>
+/* === Base === */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #1a1a2e;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  background: #fff;
+}
+
+/* === Headings === */
+h1 { font-size: 2.2em; border-bottom: 3px solid #2d3436; padding-bottom: 12px; margin-top: 48px; color: #2d3436; }
+h2 { font-size: 1.6em; margin-top: 40px; padding-bottom: 8px; border-bottom: 1px solid #dfe6e9; color: #2d3436; }
+h3 { font-size: 1.3em; margin-top: 32px; color: #636e72; }
+h4 { font-size: 1.1em; margin-top: 24px; color: #636e72; }
+
+/* === Paragraphs & Lists === */
+p { margin: 16px 0; }
+ul, ol { margin: 12px 0; padding-left: 24px; }
+li { margin: 6px 0; }
+
+/* === Tables === */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 15px;
+}
+th {
+  background: #2d3436;
+  color: #fff;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+}
+td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #dfe6e9;
+}
+tr:nth-child(even) td {
+  background: #f8f9fa;
+}
+tr:hover td {
+  background: #e8f4f8;
+}
+
+/* === Code === */
+code {
+  background: #f1f2f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.9em;
+  color: #2d3436;
+}
+pre {
+  background: #2d3436;
+  color: #dfe6e9;
+  padding: 16px 20px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 16px 0;
+}
+pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+/* === Blockquotes / Callouts === */
+blockquote {
+  margin: 20px 0;
+  padding: 16px 20px;
+  border-left: 5px solid;
+  border-radius: 6px;
+  font-size: 15px;
+}
+blockquote p { margin: 4px 0; }
+
+/* Specific callout colors */
+blockquote.idea { border-color: #6c5ce7; background: #f0edff; }
+blockquote.idea strong { color: #6c5ce7; }
+
+blockquote.bank { border-color: #0984e3; background: #e8f4fd; }
+blockquote.bank strong { color: #0984e3; }
+
+blockquote.error { border-color: #d63031; background: #ffeef0; }
+blockquote.error strong { color: #d63031; }
+
+blockquote.antipattern { border-color: #e17055; background: #fdf0ed; }
+blockquote.antipattern strong { color: #e17055; }
+
+blockquote.best { border-color: #00b894; background: #e6faf4; }
+blockquote.best strong { color: #00b894; }
+
+blockquote.senior { border-color: #fdcb6e; background: #fef9e7; }
+blockquote.senior strong { color: #d68910; }
+
+blockquote.remember { border-color: #2d3436; background: #f1f2f6; }
+blockquote.remember strong { color: #2d3436; }
+
+blockquote.tip { border-color: #00b894; background: #e6faf4; }
+blockquote.tip strong { color: #00b894; }
+
+blockquote.fact { border-color: #a29bfe; background: #f5f3ff; }
+blockquote.fact strong { color: #a29bfe; }
+
+blockquote.warning { border-color: #e17055; background: #fdf0ed; }
+blockquote.warning strong { color: #e17055; }
+
+/* === Checkboxes === */
+input[type="checkbox"] { margin-right: 8px; }
+
+/* === Horizontal Rule === */
+hr {
+  border: none;
+  border-top: 2px solid #dfe6e9;
+  margin: 40px 0;
+}
+
+/* === Links === */
+a { color: #0984e3; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* === Chapter Navigation === */
+.chapter-nav {
+  background: #f8f9fa;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 24px 0;
+  display: flex;
+  justify-content: space-between;
+}
+.chapter-nav a { font-weight: 600; }
+
+/* === TOC === */
+.toc { margin: 24px 0; }
+.toc-item {
+  padding: 10px 16px;
+  border-bottom: 1px solid #dfe6e9;
+  display: flex;
+  align-items: center;
+}
+.toc-item .num {
+  font-weight: 700;
+  color: #0984e3;
+  min-width: 40px;
+  font-size: 1.1em;
+}
+.toc-item .title { font-weight: 600; color: #2d3436; }
+.toc-item:hover { background: #f8f9fa; }
+
+/* === Diagrams === */
+.diagram {
+  background: #f8f9fa;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 16px 0;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* === Checklists === */
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding: 6px 0; }
+.checklist li::before { content: "\2610 "; font-size: 1.2em; }
+
+/* === Subtitle === */
+.subtitle {
+  font-size: 1.2em;
+  color: #636e72;
+  margin-top: -12px;
+  margin-bottom: 32px;
+}
+
+/* === Meta === */
+.meta {
+  color: #636e72;
+  font-size: 14px;
+  margin: 16px 0;
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  body { padding: 20px 12px; font-size: 15px; }
+  h1 { font-size: 1.8em; }
+  h2 { font-size: 1.4em; }
+  .chapter-nav { flex-direction: column; gap: 12px; }
+}
+</style>
+</head>
+<body>
+<div id="content">
+
+<h1>Глава 6. Проектирование базы данных</h1>
+<p class="subtitle">Почему структура таблиц определяет судьбу приложения</p>
+
+<div class="toc">
+  <div class="toc-item"><span class="num">5.1</span><span class="title">Таблицы — это не просто "таблички в Excel"</span></div>
+  <div class="toc-item"><span class="num">5.2</span><span class="title">Первичный ключ (Primary Key)</span></div>
+  <div class="toc-item"><span class="num">5.3</span><span class="title">Внешние ключи (Foreign Key)</span></div>
+  <div class="toc-item"><span class="num">5.4</span><span class="title">Типы данных — на что обратить внимание</span></div>
+  <div class="toc-item"><span class="num">5.5</span><span class="title">NOT NULL vs NULL</span></div>
+  <div class="toc-item"><span class="num">5.6</span><span class="title">UNIQUE — почему это важно</span></div>
+  <div class="toc-item"><span class="num">5.7</span><span class="title">Индексы — ускоряем поиск</span></div>
+  <div class="toc-item"><span class="num">5.8</span><span class="title">Constraints — защита данных на уровне БД</span></div>
+  <div class="toc-item"><span class="num">5.9</span><span class="title">Soft Delete — почему записи не удаляют</span></div>
+  <div class="toc-item"><span class="num">5.10</span><span class="title">Аудит: кто, когда и что изменил</span></div>
+  <div class="toc-item"><span class="num">5.11</span><span class="title">JSON в БД — удобно, но опасно</span></div>
+</div>
+
+<!-- ============================================= -->
+<!-- Введение -->
+<!-- ============================================= -->
+<h2>Введение</h2>
+
+<p>Представьте, что вы строите дом. Вы тщательно продумываете планировку, выбираете материалы, нанимаете архитектора. Но если фундамент залит с нарушением технологии — дом пойдёт трещинами. Никакой ремонт не исправит кривой фундамент, кроме полного сноса и перестройки.</p>
+
+<p>База данных — это фундамент вашего приложения. Все фичи, весь бизнес-логика, вся аналитика — всё опирается на данные. И если схема базы данных спроектирована плохо, любая новая функциональность будет даваться с болью. Интерфейс можно переписать за месяц. Бэкенд — за квартал. Миграция данных с переездом на новую схему — это полгода ада и потерянные деньги.</p>
+
+<p><strong>Цель этой главы</strong> — не сделать из вас администратора баз данных. Вы не будете настраивать кластер PostgreSQL или оптимизировать буферный кэш. Но вы начнёте понимать последствия решений, которые принимает разработчик (или вы сами) на уровне схемы. Вы научитесь замечать ошибки, которые аукнутся через год, и будете говорить с командой на одном языке.</p>
+
+<blockquote class="remember">
+  <p><strong>Запомните:</strong> Аналитик, который понимает БД, — это аналитик, которому доверяют разработчики. Потому что он перестаёт предлагать "просто добавить поле" и начинает мыслить схемами, индексами и целостностью данных.</p>
+</blockquote>
+
+<!-- ============================================= -->
+<!-- 5.1 -->
+<!-- ============================================= -->
+<h2>5.1. Таблицы — это не просто "таблички в Excel"</h2>
+
+<p>На первый взгляд таблица базы данных похожа на лист Excel: строки, колонки, ячейки. Но сходство обманчиво. Между Excel и таблицей в реляционной БД — пропасть.</p>
+
+<h3>Строка = запись, колонка = атрибут</h3>
+
+<p>В Excel вы можете записать в ячейку что угодно: текст, число, дату, формулу, картинку. В БД каждая колонка имеет строгий тип. Нельзя положить строку в колонку <code>price DECIMAL</code>. База данных вас просто не пустит, вернув ошибку.</p>
+
+<p>Каждая строка — это <strong>запись (entity)</strong>. Каждая колонка — <strong>атрибут (attribute)</strong> этой сущности. Строка не может быть "разношёрстной": если в колонке <code>email</code> первой строки текст, а второй — число, это ошибка проектирования в Excel и невозможно в БД.</p>
+
+<h3>Схема — структура, а не данные</h3>
+
+<p>Разница в подходе:</p>
+
+<ul>
+  <li><strong>Excel</strong>: вы открываете файл и видите данные. Структура (заголовки) — это просто первая строка. Вы можете вставить колонку посередине и ничего не сломается.</li>
+  <li><strong>БД</strong>: сначала вы описываете структуру (схему) — таблицу, колонки, типы, ограничения. Потом наполняете данными. Изменить схему — это операция <code>ALTER TABLE</code>, которая может заблокировать таблицу на часы.</li>
+</ul>
+
+<div class="diagram">Сравнение:
+
+  Excel:
+  ┌──────────┬───────────┬──────────┐
+  │ Имя      │ Возраст   │ Город    │ ← это строка, а не схема
+  ├──────────┼───────────┼──────────┤
+  │ Иван     │ 30        │ Москва   │
+  │ Петя     │ двадцать   │ 12345    │ ← разнотипные данные
+  └──────────┴───────────┴──────────┘
+
+  SQL (схема):
+  CREATE TABLE users (
+    name     VARCHAR(100) NOT NULL,
+    age      INTEGER      NOT NULL,
+    city     VARCHAR(100) NOT NULL
+  );
+  ──── тип каждой колонки задан ЖЁСТКО ────
+</div>
+
+<h3>Почему тип колонки — это критично?</h3>
+
+<p>Тип данных — это контракт. Когда вы объявляете <code>price DECIMAL(10,2)</code>, база данных гарантирует:</p>
+<ul>
+  <li>В колонке только числа с двумя знаками после запятой</li>
+  <li>Над колонкой работают математические операции</li>
+  <li>Индексы сортируют числовые значения корректно</li>
+  <li>Любой клиент (Python, Java, Go) знает, как интерпретировать значение</li>
+</ul>
+
+<blockquote class="idea">
+  <p><strong>Метафора:</strong> Таблица БД — это анкета со строгими правилами заполнения. Поле "Возраст" принимает только числа от 0 до 150. Поле "Email" проверяет формат. Вы не можете написать "двадцать пять" в поле "Возраст" — анкета не примется. В Excel вы можете написать что угодно. В этом сила БД.</p>
+</blockquote>
+
+<!-- ============================================= -->
+<!-- 5.2 -->
+<!-- ============================================= -->
+<h2>5.2. Первичный ключ (Primary Key)</h2>
+
+<p>Первичный ключ (PK) — это колонка (или набор колонок), которая <strong>уникально идентифицирует каждую строку</strong> в таблице. Если у таблицы нет PK — вы не можете гарантировать, что две строки не окажутся одинаковыми.</p>
+
+<h3>Surrogate vs Natural ключи</h3>
+
+<p>Есть два принципиально разных подхода к выбору первичного ключа:</p>
+
+<table>
+  <tr><th>Характеристика</th><th>Surrogate (суррогатный)</th><th>Natural (естественный)</th></tr>
+  <tr><td>Значение</td><td>Искусственное, не имеет бизнес-смысла</td><td>Берётся из предметной области</td></tr>
+  <tr><td>Примеры</td><td><code>id INTEGER AUTO_INCREMENT</code>, <code>UUID</code></td><td>Номер паспорта, Email, SNILS, VIN автомобиля</td></tr>
+  <tr><td>Меняется ли?</td><td>Никогда (это просто число)</td><td>Может — человек сменил паспорт, email, машину продали</td></tr>
+  <tr><td>Рекомендация</td><td>Почти всегда</td><td>Почти никогда</td></tr>
+</table>
+
+<blockquote class="error">
+  <p><strong>Ошибка:</strong> Использовать номер паспорта как Primary Key. Человек сменил паспорт — вы должны обновить ключ. Но на него ссылаются внешние таблицы! Придётся каскадно обновлять тысячи записей. Никогда не используйте Natural ключи как Primary Key, если есть хоть малейший шанс, что значение изменится.</p>
+</blockquote>
+
+<h3>UUID vs Auto Increment</h3>
+
+<table>
+  <tr><th>Критерий</th><th>AUTO_INCREMENT</th><th>UUID</th></tr>
+  <tr><td>Размер</td><td>4 байта (INT) или 8 байт (BIGINT)</td><td>16 байт (или 36 символов как строка)</td></tr>
+  <tr><td>Скорость вставки</td><td>Быстро (sequential)</td><td>Медленнее (random — фрагментация индекса)</td></tr>
+  <tr><td>Безопасность</td><td>Можно угадать ID (инкремент)</td><td>Нельзя угадать</td></tr>
+  <tr><td>Распределённые системы</td><td>Конфликты</td><td>Уникален глобально</td></tr>
+  <tr><td>Человекочитаемость</td><td>Да (легко отслеживать)</td><td>Нет (сплошная каша)</td></tr>
+</table>
+
+<blockquote class="best">
+  <p><strong>Лучшая практика:</strong> В монолитном приложении с одним сервером БД — используйте <code>BIGINT AUTO_INCREMENT</code>. В микросервисах, распределённых системах или когда ID создаются на клиенте — <code>UUIDv7</code> (time-ordered UUID, не фрагментирует индекс). <code>UUIDv4</code> избегайте — он убивает производительность индексов.</p>
+</blockquote>
+
+<h3>Составные ключи</h3>
+
+<p>Иногда одной колонки недостаточно. Например, таблица связи "товар — корзина":</p>
+
+<pre><code>-- Каждый товар может быть в корзине только один раз
+CREATE TABLE cart_items (
+    cart_id    INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    quantity   INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (cart_id, product_id)
+);</code></pre>
+
+<p>Здесь первичный ключ состоит из двух колонок. Это гарантирует, что один и тот же товар не появится в корзине дважды. И заодно ссылается на внешние ключи <code>cart_id</code> и <code>product_id</code>.</p>
+
+<blockquote class="error">
+  <p><strong>Ошибка:</strong> Нет Primary Key. Можно вставить дубликат, и никто ничего не заметит. Когда система вырастет, почистить дубликаты будет мучительно больно.</p>
+</blockquote>
+
+<pre><code>-- Таблица без PK — беспорядок гарантирован
+CREATE TABLE log (
+    message TEXT,
+    level   VARCHAR(10),
+    ts      TIMESTAMP
+);
+-- Две одинаковые записи? Пожалуйста:
+INSERT INTO log VALUES ('hello', 'INFO', NOW());
+INSERT INTO log VALUES ('hello', 'INFO', NOW());
+-- Никакой ошибки. А теперь найдите, какая запись "лишняя".</code></pre>
+
+<!-- ============================================= -->
+<!-- 5.3 -->
+<!-- ============================================= -->
+<h2>5.3. Внешние ключи (Foreign Key)</h2>
+
+<p>Внешний ключ (FK) — это ссылка одной таблицы на другую. Если у вас есть таблица <code>orders</code> и таблица <code>customers</code>, то заказ должен принадлежать реальному клиенту. FK обеспечивает <strong>ссылочную целостность</strong>.</p>
+
+<pre><code>CREATE TABLE customers (
+    id   BIGINT PRIMARY KEY,
+    name VARCHAR(200) NOT NULL
+);
+
+CREATE TABLE orders (
+    id          BIGINT PRIMARY KEY,
+    customer_id BIGINT NOT NULL,
+    total       DECIMAL(18,2) NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES customers(id)
+);</code></pre>
+
+<p>Теперь нельзя создать заказ с <code>customer_id = 42</code>, если клиента с таким ID не существует. База данных проверит и вернёт ошибку.</p>
+
+<h3>Что будет, если FK нет?</h3>
+
+<p>Появятся "сиротские" записи — заказы, которые ссылаются на несуществующих клиентов. Это происходит, если разработчик удалил клиента, но забыл удалить его заказы. Или если данные загружались из разных источников без проверки связей.</p>
+
+<blockquote class="bank">
+  <p><strong>Банковский пример:</strong> В таблице <code>transactions</code> есть <code>account_id</code>, который ссылается на <code>accounts.id</code>. Если FK нет, может возникнуть ситуация: транзакция есть, а счёт удалён. Куда ушли деньги? Никто не знает. Аудит не сойдётся. Регулятор наложит штраф.</p>
+</blockquote>
+
+<h3>CASCADE, SET NULL, RESTRICT — что выбрать?</h3>
+
+<p>При удалении записи из родительской таблицы нужно решить, что делать с дочерними:</p>
+
+<table>
+  <tr><th>Правило</th><th>Что происходит</th><th>Когда использовать</th></tr>
+  <tr><td><code>RESTRICT</code> / <code>NO ACTION</code></td><td>Запретить удаление, если есть дочерние записи</td><td>Безопасный режим по умолчанию</td></tr>
+  <tr><td><code>CASCADE</code></td><td>Удалить все дочерние записи</td><td>Зависимые сущности — например, удаление пользователя удаляет его сессии</td></tr>
+  <tr><td><code>SET NULL</code></td><td>Обнулить внешний ключ в дочерних записях</td><td>Необязательная связь — удаление отдела оставляет сотрудников без отдела</td></tr>
+</table>
+
+<blockquote class="warning">
+  <p><strong>Предупреждение:</strong> <code>CASCADE</code> опасен каскадным удалением. DELETE FROM customers WHERE id = 1 может неожиданно удалить тысячи заказов, позиций заказов и логов. Всегда проверяйте, что будет затронуто. В некоторых системах CASCADE вообще запрещён на уровне code review.</p>
+</blockquote>
+
+<blockquote class="error">
+  <p><strong>Ошибка:</strong> Удаление клиента с заказами. Если FK нет — заказы становятся сиротами. Если FK есть с CASCADE — заказы удаляются без предупреждения. Если FK есть с RESTRICT — DELETE вернёт ошибку, и разработчик будет вынужден решить: архивировать заказы или запретить удаление. Это правильное поведение.</p>
+</blockquote>
+
+<h3>Почему разработчики иногда убирают FK?</h3>
+
+<p>В高性能 системах (high-load) проверка внешних ключей создаёт нагрузку на БД при каждой вставке и обновлении. Некоторые команды сознательно убирают FK, перенося контроль целостности в код приложения. Это компромисс: скорость против надёжности.</p>
+
+<blockquote class="senior">
+  <p><strong>Senior:</strong> Если вы убираете FK ради производительности, вы берёте на себя ответственность за целостность данных. В коде приложения не должно быть ни одного бага, который создаст сиротскую запись. Ошибка — и данные сломаны. Только опытные команды с высоким покрытием тестами могут позволить себе это. Для 95% проектов FK обязательны.</p>
+</blockquote>
+
+<!-- ============================================= -->
+<!-- 5.4 -->
+<!-- ============================================= -->
+<h2>5.4. Типы данных — на что обратить внимание</h2>
+
+<p>Выбор типа данных — не техническая деталь, а <strong>бизнес-решение</strong>. Тип определяет, какие значения допустимы, сколько места занимает колонка, как она индексируется и как с ней работают запросы.</p>
+
+<h3>VARCHAR(N) vs TEXT</h3>
+
+<table>
+  <tr><th>Тип</th><th>Когда использовать</th><th>Пример</th></tr>
+  <tr><td><code>VARCHAR(50)</code></td><td>Короткие строки с известной макс. длиной</td><td>Email, телефон, имя</td></tr>
+  <tr><td><code>VARCHAR(255)</code></td><td>Стандартный выбор для недлинных строк</td><td>Адрес, название компании</td></tr>
+  <tr><td><code>TEXT</code></td><td>Длинный текст без ограничения по длине</td><td>Описание товара, комментарий, статья в блоге</td></tr>
+</table>
+
+<blockquote class="fact">
+  <p><strong>Факт:</strong> В большинстве СУБД (PostgreSQL, MySQL с InnoDB) разница в производительности между VARCHAR(N) и TEXT незначительна для колонок до нескольких килобайт. Главное — выбирать осмысленный лимит: <code>VARCHAR(2000)</code> для адреса — это странно, а <code>VARCHAR(254)</code> для email — обоснованно.</p>
+</blockquote>
+
+<h3>INTEGER vs BIGINT</h3>
+
+<p>Кажется, что выбор очевиден — бери BIGINT всегда. Но есть нюансы:</p>
+
+<table>
+  <tr><th>Тип</th><th>Диапазон</th><th>Размер</th><th>Риск переполнения</th></tr>
+  <tr><td><code>INTEGER</code> (INT)</td><td>−2<sup>31</sup> … +2<sup>31</sup>−1 (≈2.1 млрд)</td><td>4 байта</td><td>Есть — для ID популярных таблиц</td></tr>
+  <tr><td><code>BIGINT</code></td><td>−2<sup>63</sup> … +2<sup>63</sup>−1 (≈9.2 квинтиллиона)</td><td>8 байт</td><td>Практически нет</td></tr>
+  <tr><td><code>SMALLINT</code></td><td>−32 768 … +32 767</td><td>2 байта</td><td>Высокий — для статусов, флагов</td></tr>
+</table>
+
+<blockquote class="error">
+  <p><strong>Ошибка:</strong> Использовать <code>INTEGER</code> для ID в таблице, которая будет расти годами. Счётчик переполнится, и вы не сможете вставить новую строку. История знает случаи, когда production падал, потому что <code>AUTO_INCREMENT</code> дошёл до лимита. Берите <code>BIGINT</code> для ID всегда.</p>
+</blockquote>
+
+<h3>DECIMAL(18,2) — деньги</h3>
+
+<p>Деньги — критически важный тип данных. Никогда не используйте <code>FLOAT</code> или <code>DOUBLE</code> для денег. Почему?</p>
+
+<pre><code>-- Проблема с float:
+SELECT 0.1 + 0.2;  -- Результат: 0.30000000000000004
+
+-- Правильно с decimal:
+SELECT 0.1::decimal + 0.2::decimal;  -- Результат: 0.30</code></pre>
+
+<p><strong>Правило:</strong> для денег — <code>DECIMAL(18,2)</code> (или <code>DECIMAL(18,4)</code> для валют с четырьмя знаками после запятой). <code>18,2</code> означает: всего 18 цифр, из них 2 — после запятой. Этого хватит для сумм до 999 триллионов с копейками.</p>
+
+<h3>TIMESTAMP vs DATETIME</h3>
+
+<table>
+  <tr><th>Тип</th><th>Диапазон</th><th>Часовой пояс</th><th>Рекомендация</th></tr>
+  <tr><td><code>TIMESTAMP</code></td><td>1970…2038 (Unix epoch)</td><td>Учитывает timezone</td><td>PostgreSQL — да, MySQL — аккуратно</td></tr>
+  <tr><td><code>DATETIME</code></td><td>1000…9999</td><td>Не учитывает</td><td>Если храните уже в UTC</td></tr>
+  <tr><td><code>TIMESTAMPTZ</code> (PG)</td><td>1970…9999</td><td>Учитывает timezone</td><td>Лучший выбор для PostgreSQL</td></tr>
+</table>
+
+<blockquote class="best">
+  <p><strong>Лучшая практика:</strong> Храните все временные метки в UTC. Преобразование в локальный часовой пояс делайте на стороне приложения или в представлениях (views). Используйте <code>TIMESTAMP WITH TIME ZONE</code> в PostgreSQL.</p>
+</blockquote>
+
+<h3>BOOLEAN — есть не везде</h3>
+
+<p>В PostgreSQL есть полноценный тип <code>BOOLEAN</code> (true/false). В MySQL его нет — используется <code>TINYINT(1)</code> (0/1). В SQLite — <code>INTEGER</code> (0/1). Аналитик должен знать: флаг — это не всегда "галочка", это может быть <code>0</code> в базе, что в коде превращается в <code>false</code>.</p>
+
+<h3>ENUM — удобно, но больно менять</h3>
+
+<p>ENUM кажется удобным для полей с фиксированным набором значений:</p>
+
+<pre><code>CREATE TABLE orders (
+    status ENUM('pending', 'paid', 'shipped', 'delivered', 'cancelled')
+);</code></pre>
+
+<p>Проблема: если нужно добавить новое значение (например, <code>'refunded'</code>), придётся выполнять <code>ALTER TABLE ... MODIFY COLUMN</code>, что может заблокировать таблицу. Альтернатива: отдельная таблица-справочник <code>order_statuses</code> с FK.</p>
+
+<h3>JSON — удобно, но антипаттерн</h3>
+
+<p>Современные БД (PostgreSQL, MySQL 8+) поддерживают JSON-колонки. Это удобно: положил любой объект — и работает. Но это путь в никуда (подробно разберём в разделе 5.11).</p>
+
+<h3>Сводная таблица типов данных</h3>
+
+<table>
+  <tr><th>Назначение</th><th>MySQL</th><th>PostgreSQL</th><th>Рекомендация</th></tr>
+  <tr><td>ID (суррогат)</td><td>BIGINT UNSIGNED AUTO_INCREMENT</td><td>BIGSERIAL</td><td>Всегда BIGINT, не INTEGER</td></tr>
+  <tr><td>ID (UUID)</td><td>BINARY(16) или CHAR(36)</td><td>UUID</td><td>UUIDv7 для распределённых систем</td></tr>
+  <tr><td>Короткий текст</td><td>VARCHAR(N)</td><td>VARCHAR(N)</td><td>С осмысленным N</td></tr>
+  <tr><td>Длинный текст</td><td>TEXT</td><td>TEXT</td><td>Только для длинных строк</td></tr>
+  <tr><td>Деньги</td><td>DECIMAL(18,2)</td><td>NUMERIC(18,2)</td><td>Никогда FLOAT</td></tr>
+  <tr><td>Дата и время</td><td>DATETIME(6)</td><td>TIMESTAMPTZ</td><td>Всегда в UTC</td></tr>
+  <tr><td>Булево</td><td>TINYINT(1)</td><td>BOOLEAN</td><td>CHECK (col IN (0,1)) если нет типа</td></tr>
+  <tr><td>JSON</td><td>JSON</td><td>JSONB</td><td>Только для настроек/метаданных</td></tr>
+  <tr><td>Числа с плавающей точкой</td><td>DOUBLE</td><td>DOUBLE PRECISION</td><td>Только для научных расчётов</td></tr>
+</table>
+
+<!-- ============================================= -->
+<!-- 5.5 -->
+<!-- ============================================= -->
+<h2>5.5. NOT NULL vs NULL</h2>
+
+<p><code>NULL</code> — это не "пусто" и не "ноль". <code>NULL</code> — это <strong>отсутствие значения</strong>, "неизвестно". Это принципиально важно.</p>
+
+<h3>NULL в вычислениях даёт NULL</h3>
+
+<p>Одно из самых неожиданных свойств NULL:</p>
+
+<pre><code>SELECT 100 + NULL;  -- Результат: NULL
+SELECT NULL > 0;    -- Результат: NULL (не FALSE!)
+SELECT NULL = NULL; -- Результат: NULL (не TRUE!)</code></pre>
+
+<p>Проверка <code>WHERE price IS NULL</code> — это не то же самое, что <code>WHERE price = 0</code> или <code>WHERE price = ''</code>. Если в ваших данных есть NULL, все вычисления с ними дают NULL. Баланс клиента с NULL-полем — не 0, а "мы не знаем".</p>
+
+<h3>Разница между NULL, '' и 0</h3>
+
+<table>
+  <tr><th>Значение</th><th>Смысл</th><th>Пример</th></tr>
+  <tr><td><code>NULL</code></td><td>Значение не установлено / неизвестно</td><td><code>middle_name</code> — у человека нет отчества или мы его не знаем?</td></tr>
+  <tr><td><code>''</code> (пустая строка)</td><td>Значение установлено и оно пустое</td><td><code>nickname</code> — пользователь сознательно очистил поле</td></tr>
+  <tr><td><code>0</code></td><td>Числовое значение ноль</td><td><code>price = 0</code> — товар бесплатный</td></tr>
+</table>
+
+<blockquote class="bank">
+  <p><strong>Банковский пример:</strong> Поле <code>discount_percent</code> в кредитной заявке. <code>NULL</code> — скидка ещё не рассчитана. <code>0</code> — скидка рассчитана и равна нулю. <code>5</code> — скидка 5%. Если не различать NULL и 0, система может посчитать скидку как 0 для заявок, которые ещё не обработаны. Это потеря денег или ошибка.</p>
+</blockquote>
+
+<h3>Когда NULL допустим, когда нет</h3>
+
+<p><strong>Общее правило:</strong> если у сущности атрибут обязательный — <code>NOT NULL</code>. Если опциональный — можно разрешить NULL.</p>
+
+<pre><code>CREATE TABLE users (
+    id       BIGINT PRIMARY KEY,
+    email    VARCHAR(254) NOT NULL,   -- обязателен
+    phone    VARCHAR(20),             -- опционально, может быть NULL
+    birthday DATE                     -- клиент может не указать
+);</code></pre>
+
+<blockquote class="senior">
+  <p><strong>Senior:</strong> NULL — это всегда компромисс. С одной стороны, NULL — это честное "мы не знаем". С другой — NULL усложняет запросы (<code>IS NULL</code>, <code>COALESCE</code>, <code>NULL-safe joins</code>), замедляет индексацию (не все индексы работают с NULL) и порождает баги (NULL + число = NULL). В продакшене я предпочитаю <code>NOT NULL</code> везде, где возможно, а для опциональных полей ставлю значения по умолчанию: <code>''</code>, <code>0</code>, <code>false</code>, <code>1970-01-01</code>. Это не всегда корректно семантически, но спасает от скрытых багов.</p>
+</blockquote>
+
+<!-- ============================================= -->
+<!-- 5.6 -->
+<!-- ============================================= -->
+<h2>5.6. UNIQUE — почему это важно</h2>
+
+<p>Если первичный ключ гарантирует уникальность одной колонки, то <code>UNIQUE</code> — это ограничение, которое защищает от дубликатов в любом наборе колонок.</p>
+
+<h3>Зачем: защита от дубликатов</h3>
+
+<p>Представьте регистрацию пользователей. Два человека одновременно заполняют форму с одинаковым email:</p>
+
+<pre><code>-- Без UNIQUE
+CREATE TABLE users (id BIGINT PRIMARY KEY, email VARCHAR(254));
+INSERT INTO users VALUES (1, 'ivan@example.com');
+INSERT INTO users VALUES (2, 'ivan@example.com');  -- успех! Дубликат!
+
+-- С UNIQUE
+CREATE TABLE users (id BIGINT PRIMARY KEY, email VARCHAR(254) UNIQUE);
+INSERT INTO users VALUES (1, 'ivan@example.com');
+INSERT INTO users VALUES (2, 'ivan@example.com');  -- ОШИБКА! Дубликат отклонён</code></pre>
+
+<blockquote class="error">
+  <p><strong>Ошибка:</strong> Нет UNIQUE на email. В системе появляются дубликаты. Начинается путаница: какой из двух Иванов заходил в систему? Кому отправлять письма? Приходится писать скрипты для чистки, merge пользователей — боль и риск.</p>
+</blockquote>
+
+<h3>Составной UNIQUE</h3>
+
+<p>Часто нужно гарантировать уникальность комбинации колонок:</p>
+
+<pre><code>-- Пользователь может добавить товар в корзину только один раз
+CREATE TABLE cart_items (
+    id         BIGINT PRIMARY KEY,
+    user_id    BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    quantity   INTEGER NOT NULL DEFAULT 1,
+    UNIQUE (user_id, product_id)
+);</code></pre>
+
+<h3>Разница: UNIQUE vs Primary Key</h3>
+
+<table>
+  <tr><th>Характеристика</th><th>PRIMARY KEY</th><th>UNIQUE</th></tr>
+  <tr><td>NULL</td><td>Не допускает NULL</td><td>Допускает NULL (в большинстве СУБД)</td></tr>
+  <tr><td>Количество на таблицу</td><td>Только один</td><td>Много</td></tr>
+  <tr><td>Индекс</td><td>Автоматически кластерный (часто)</td><td>Автоматически некластерный</td></tr>
+  <tr><td>Смысл</td><td>Идентификация строки</td><td>Защита от дубликатов</td></tr>
+</table>
+
+<blockquote class="bank">
+  <p><strong>Банковский пример:</strong> У одного клиента не может быть двух активных дебетовых карт с одинаковым номером. UNIQUE на <code>card_number</code> — защита от бага в процессинге, который создал бы две карты с одним номером. Это спасёт от двойного списания.</p>
+</blockquote>
+
+<!-- ============================================= -->
+<!-- 5.7 -->
+<!-- ============================================= -->
+<h2>5.7. Индексы — ускоряем поиск</h2>
+
+<h3>Что такое индекс простыми словами</h3>
+
+<p>Индекс — это как оглавление в книге. Если вам нужно найти главу про "индексы" в книге на 500 страниц, вы не будете листать каждую страницу. Вы откроете оглавление, найдёте номер страницы и перейдёте сразу. Индекс в БД работает точно так же.</p>
+
+<p>Без индекса БД делает <strong>full table scan</strong> — читает каждую строку таблицы. С индексом — находит нужные страницы по оглавлению.</p>
+
+<div class="diagram">Без индекса:
+  SELECT * FROM users WHERE email = 'ivan@example.com';
+  ┌──────┬─────────────────────┐
+  │  id  │ email               │
+  ├──────┼─────────────────────┤
+  │    1 │ petr@example.com    │ ← проверяем — не то
+  │    2 │ anna@example.com    │ ← проверяем — не то
+  │    3 │ ivan@example.com    │ ← нашли!
+  │  ... │ ...                 │
+  │ 10^6 │ ...                 │ ← в худшем случае прочитаем 1 млн строк
+
+С индексом:
+  Index (email):
+  ┌─────────────────────┬──────┐
+  │ email               │ стр. │
+  ├─────────────────────┼──────┤
+  │ anna@example.com    │    2 │
+  │ ivan@example.com    │    3 │ ← нашли за 2 шага (B-tree)
+  │ petr@example.com    │    1 │
+  └─────────────────────┴──────┘</div>
+
+<h3>Как индекс ускоряет SELECT, замедляет INSERT/UPDATE</h3>
+
+<p><strong>Ускорение SELECT:</strong> огромное. Вместо миллиона строк — десяток операций по B-tree.</p>
+
+<p><strong>Замедление INSERT/UPDATE/DELETE:</strong> при каждой вставке нужно обновить не только таблицу, но и все индексы на ней. Чем больше индексов — тем медленнее запись. На таблице с 10 индексами INSERT будет в 5-10 раз медленнее, чем на таблице без индексов.</p>
+
+<h3>Какие колонки индексировать</h3>
+
+<ul>
+  <li><strong>WHERE</strong>: колонки, которые часто фильтруют (<code>WHERE status = 'active'</code>)</li>
+  <li><strong>JOIN</strong>: колонки, по которым соединяют таблицы (внешние ключи)</li>
+  <li><strong>ORDER BY</strong>: колонки, по которым сортируют (<code>ORDER BY created_at DESC</code>)</li>
+  <li><strong>GROUP BY</strong>: колонки, по которым группируют</li>
+</ul>
+
+<blockquote class="error">
+  <p><strong>Ошибка:</strong> Индекс на каждую колонку. "Напишем индекс на всё, чтобы работало быстро". Результат: БД тратит ресурсы на поддержание кучи индексов, INSERT-ы падают по скорости, а SELECT-ы не всегда ускоряются (оптимизатор может выбрать не тот индекс). Индекс — это баланс, а не панацея.</p>
+</blockquote>
+
+<blockquote class="error">
+  <p><strong>Ошибка:</strong> Нет индекса на внешний ключ. Каждый JOIN по FK при отсутствии индекса — full table scan дочерней таблицы. На таблице с миллионом строк это секунды вместо миллисекунд.</p>
+</blockquote>
+
+<h3>Составные индексы: порядок колонок важен</h3>
+
+<pre><code>-- Индекс на (status, created_at)
+CREATE INDEX idx_orders_status_created ON orders (status, created_at);
+
+-- Этот запрос использует индекс ЭФФЕКТИВНО:
+SELECT * FROM orders
+WHERE status = 'pending'
+ORDER BY created_at DESC;
+
+-- Этот запрос использует индекс НЕЭФФЕКТИВНО (status не указан):
+SELECT * FROM orders
+WHERE created_at > '2024-01-01';
+-- Индекс бесполезен — первая колонка статуса не задана</code></pre>
+
+<blockquote class="senior">
+  <p><strong>Senior:</strong> Индекс — это всегда баланс скорости чтения и записи. На аналитических отчётах можно иметь много индексов (OLAP). На OLTP-системах с тысячами вставок в секунду каждый лишний индекс — потеря производительности. Смотрите на реальные запросы (slow query log), а не стройте индексы наугад.</p>
+</blockquote>
+
+<!-- ============================================= -->
+<!-- 5.8 -->
+<!-- ============================================= -->
+<h2>5.8. Constraints — защита данных на уровне БД</h2>
+
+<p>Ограничения (constraints) — это правила, которые база данных принудительно применяет к данным. Это последняя линия обороны между вашими данными и хаосом.</p>
+
+<h3>CHECK — проверка на уровне строки</h3>
+
+<pre><code>-- Цена товара должна быть положительной
+CREATE TABLE products (
+    id    BIGINT PRIMARY KEY,
+    name  VARCHAR(200) NOT NULL,
+    price DECIMAL(18,2) NOT NULL CHECK (price > 0)
+);
+
+-- Дата рождения не может быть в будущем
+CREATE TABLE persons (
+    id         BIGINT PRIMARY KEY,
+    name       VARCHAR(200) NOT NULL,
+    birth_date DATE NOT NULL CHECK (birth_date < CURRENT_DATE)
+);</code></pre>
+
+<blockquote class="bank">
+  <p><strong>Банковский пример:</strong> <code>CHECK (amount > 0)</code> на таблице <code>payments</code> спасает от отрицательных платежей. Баг в коде может отправить транзакцию с <code>amount = -1000</code>. Если CHECK нет — деньги сняты. Если есть — ошибка и транзакция отклонена. CHECK стоит копейки, а спасает миллионы.</p>
+</blockquote>
+
+<h3>DEFAULT — значения по умолчанию</h3>
+
+<p>DEFAULT задаёт значение, которое будет вставлено, если колонка не указана:</p>
+
+<pre><code>CREATE TABLE orders (
+    id         BIGINT PRIMARY KEY,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status     VARCHAR(20) NOT NULL DEFAULT 'pending',
+    total      DECIMAL(18,2) NOT NULL DEFAULT 0.00
+);</code></pre>
+
+<h3>Все ограничения — это constraints</h3>
+
+<p>На самом деле <code>NOT NULL</code>, <code>UNIQUE</code>, <code>PRIMARY KEY</code>, <code>FOREIGN KEY</code> — это все частные случаи constraints. БД не позволит нарушить ни одно из них.</p>
+
+<h3>Почему валидация в БД — последняя линия обороны</h3>
+
+<p>Валидация должна быть на всех уровнях:</p>
+<ol>
+  <li><strong>Фронтенд</strong>: мгновенная обратная связь пользователю</li>
+  <li><strong>Бэкенд (API)</strong>: бизнес-логика и проверка прав доступа</li>
+  <li><strong>База данных</strong>: последняя защита от багов на верхних уровнях</li>
+</ol>
+
+<blockquote class="remember">
+  <p><strong>Запомните:</strong> Любой программист может ошибиться. Фронтенд может не прислать валидацию. Бэкенд может пропустить некорректные данные. Constraint в БД — это гарантия, что "мусорные" данные туда не попадут никогда. Даже если весь код перепишут, constraint останется.</p>
+</blockquote>
+
+<!-- ============================================= -->
+<!-- 5.9 -->
+<!-- ============================================= -->
+<h2>5.9. Soft Delete — почему записи не удаляют</h2>
+
+<h3>Что такое soft delete</h3>
+
+<p>Вместо физического удаления строки (<code>DELETE FROM</code>) запись помечается как удалённая:</p>
+
+<pre><code>CREATE TABLE users (
+    id         BIGINT PRIMARY KEY,
+    name       VARCHAR(200) NOT NULL,
+    email      VARCHAR(254) NOT NULL UNIQUE,
+    deleted_at TIMESTAMP  -- NULL = активен, дата = удалён
+);
+
+-- "Удаление" пользователя:
+UPDATE users SET deleted_at = NOW() WHERE id = 1;
+
+-- Все запросы должны учитывать:
+SELECT * FROM users WHERE deleted_at IS NULL;</code></pre>
+
+<h3>Почему DELETE — риск</h3>
+<ul>
+  <li><strong>Каскадное удаление</strong>: удалили пользователя — потеряли его заказы, комментарии, историю операций</li>
+  <li><strong>Потеря аудита</strong>: нельзя восстановить, кто что делал</li>
+  <li><strong>Бизнес-требования</strong>: многие регуляторы требуют хранить данные N лет</li>
+</ul>
+
+<h3>Проблемы soft delete</h3>
+<ul>
+  <li><strong>UNIQUE conflicts</strong>: если email уникален, удалённый пользователь блокирует email для нового. Решение: составной UNIQUE <code>(email, deleted_at)</code> или <code>NULL</code> в unique constraint пропускается</li>
+  <li><strong>Везде <code>WHERE deleted_at IS NULL</code></strong>: забыл добавить в запрос — получил удалённые данные. Ошибка, которая может уйти в прод</li>
+  <li><strong>Размер таблицы</strong>: удалённые записи не удаляются физически, таблица растёт</li>
+</ul>
+
+<h3>Альтернативы</h3>
+
+<table>
+  <tr><th>Стратегия</th><th>Описание</th><th>Когда использовать</th></tr>
+  <tr><td><strong>Hard Delete</strong></td><td>Физическое удаление строки</td><td>Логи, временные данные, сессии — то, что не жалко потерять; где аудит не нужен</td></tr>
+  <tr><td><strong>Soft Delete</strong></td><td>Пометка <code>deleted_at</code></td><td>Основные сущности (пользователи, заказы), когда данные должны быть доступны для восстановления</td></tr>
+  <tr><td><strong>Archive Table</strong></td><td>Перед удалением копирование строки в архивную таблицу <code>users_archive</code></td><td>Когда нужно хранить историю, но основная таблица должна быть чистой</td></tr>
+  <tr><td><strong>Status = 'ARCHIVED'</strong></td><td>Вместо deleted_at используется колонка <code>status</code> с ENUM</td><td>Когда удаление — это одно из состояний жизненного цикла сущности</td></tr>
+</table>
+
+<blockquote class="senior">
+  <p><strong>Senior:</strong> Выбираем стратегию удаления в зависимости от требований. Для финансовой системы — только soft delete с полным аудитом. Для кэша или логов — hard delete с TTL (time-to-live). Для социальной сети — soft delete с возможностью восстановления (deleted_at = NULL). Универсального решения нет.</p>
+</blockquote>
+
+<!-- ============================================= -->
+<!-- 5.10 -->
+<!-- ============================================= -->
+<h2>5.10. Аудит: кто, когда и что изменил</h2>
+
+<p>Любая вменяемая система должна знать, кто и когда создал запись и когда изменил её в последний раз. Это не "фича", а базовое требование для отладки, безопасности и регуляторов.</p>
+
+<h3>Минимальный аудит: created_at, updated_at</h3>
+
+<pre><code>CREATE TABLE accounts (
+    id         BIGINT PRIMARY KEY,
+    balance    DECIMAL(18,2) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Триггер для автоматического обновления updated_at
+CREATE OR REPLACE FUNCTION update_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_accounts_updated
+    BEFORE UPDATE ON accounts
+    FOR EACH ROW EXECUTE FUNCTION update_timestamp();</code></pre>
+
+<h3>Кто изменил: created_by, updated_by</h3>
+
+<p>Добавляем информацию о том, кто именно выполнил операцию:</p>
+
+<pre><code>CREATE TABLE documents (
+    id         BIGINT PRIMARY KEY,
+    title      VARCHAR(200) NOT NULL,
+    content    TEXT,
+    created_by BIGINT NOT NULL REFERENCES users(id),
+    updated_by BIGINT REFERENCES users(id),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);</code></pre>
+
+<h3>Продвинутый аудит: таблица audit_log</h3>
+
+<p>Просто хранить updated_at недостаточно — нужно видеть, что именно изменилось:</p>
+
+<pre><code>CREATE TABLE audit_log (
+    id          BIGSERIAL PRIMARY KEY,
+    table_name  VARCHAR(100) NOT NULL,
+    record_id   BIGINT NOT NULL,
+    operation   VARCHAR(10) NOT NULL CHECK (operation IN ('INSERT', 'UPDATE', 'DELETE')),
+    old_data    JSONB,   -- предыдущие значения
+    new_data    JSONB,   -- новые значения
+    changed_by  BIGINT NOT NULL REFERENCES users(id),
+    changed_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Пример записи:
+-- table_name: 'accounts'
+-- record_id: 42
+-- operation: 'UPDATE'
+-- old_data: {"balance": 1000.00}
+-- new_data: {"balance": 950.00}
+-- changed_by: 7 (пользователь)
+-- changed_at: 2024-06-15 14:30:00+00</code></pre>
+
+<blockquote class="bank">
+  <p><strong>Банковский пример:</strong> Система процессинга платежей — аудит каждого изменения баланса обязателен. Регулятор (ЦБ) может запросить историю операций за 5 лет. Если у вас нет audit_log — вы не сможете предоставить отчёт. Штрафы могут достигать миллионов рублей. Аудит — это не опция, а необходимость.</p>
+</blockquote>
+
+<blockquote class="remember">
+  <p><strong>Запомните:</strong> Проектируйте аудит с самого начала. Добавить audit_log в уже работающую систему — это миграция на миллион строк, изменение ORM, доработка API и тестов. Гораздо дешевле заложить created_at/updated_at в каждую таблицу сразу.</p>
+</blockquote>
+
+<!-- ============================================= -->
+<!-- 5.11 -->
+<!-- ============================================= -->
+<h2>5.11. JSON в БД — удобно, но опасно</h2>
+
+<h3>Почему разработчики используют JSON в БД</h3>
+
+<p>Причины простые и понятные:</p>
+<ul>
+  <li>Не нужно менять схему при добавлении нового поля — просто положил новый ключ в JSON</li>
+  <li>Удобно для хранения настроек, конфигов, метаданных</li>
+  <li>Быстрое прототипирование — не надо думать о нормализации</li>
+  <li>PostgreSQL JSONB поддерживает индексы (GIN) — можно искать внутри JSON</li>
+</ul>
+
+<h3>Проблемы JSON-колонок</h3>
+
+<table>
+  <tr><th>Проблема</th><th>Описание</th></tr>
+  <tr><td>Нет типов</td><td>В JSON можно положить и строку, и число, и null. Никто не проверит, что <code>price</code> — это число > 0. Ошибка в коде — и в базе лежит <code>"price": "бесплатно"</code>.</td></tr>
+  <tr><td>Нет индексов (обычных)</td><td>B-tree индекс на JSON не работает. GIN-индексы медленнее и не поддерживают все операции.</td></tr>
+  <tr><td>Нет JOIN</td><td>Вы не можете сделать <code>JOIN</code> по полю внутри JSON. Только если не достанете его в виртуальную колонку.</td></tr>
+  <tr><td>Сложно мигрировать</td><td>Как переименовать поле внутри JSON? Только скриптом на миллион строк. Нет рефакторинга.</td></tr>
+  <tr><td>Нет документации</td><td>Схема JSON живёт только в коде. Новый разработчик не знает, какие ключи есть и что они значат.</td></tr>
+</table>
+
+<h3>Когда JSON оправдан</h3>
+
+<pre><code>-- Хранение настроек — оправдано
+CREATE TABLE user_settings (
+    user_id BIGINT PRIMARY KEY REFERENCES users(id),
+    settings JSONB NOT NULL DEFAULT '{}'
+);
+-- {
+--   "theme": "dark",
+--   "language": "ru",
+--   "notifications": {"email": true, "sms": false}
+-- }
+
+-- Метаданные — оправдано
+CREATE TABLE files (
+    id          BIGINT PRIMARY KEY,
+    filename    VARCHAR(255) NOT NULL,
+    metadata    JSONB
+);
+-- {
+--   "width": 1920,
+--   "height": 1080,
+--   "camera": "Canon EOS R5",
+--   "gps": {"lat": 55.75, "lng": 37.61}
+-- }</code></pre>
+
+<blockquote class="antipattern">
+  <p><strong>Антипаттерн:</strong> JSON вместо нормализации. Видел таблицу <code>orders</code>, где весь заказ хранился в одной JSON-колонке: товары, покупатель, адрес доставки, оплата. 100500 полей в одном JSON. Вы не можете сделать выборку "все заказы с товаром X" без полного сканирования. Не можете проверить referential integrity. Не можете наложить CHECK. Это свалка.</p>
+</blockquote>
+
+<blockquote class="senior">
+  <p><strong>Senior:</strong> JSON в БД — это как свалка непонятно чего. Удобно скинуть всё в одну кучу, но когда нужно что-то найти — вы тоннами перебираете мусор. Если вы используете JSON, у вас должно быть железное обоснование: динамические атрибуты, настройки, метаданные из внешних систем. Если данные имеют структуру — создайте колонки. Пожалейте будущего разработчика (и себя через полгода).</p>
+</blockquote>
+
+<!-- ============================================= -->
+<!-- Итоги главы -->
+<!-- ============================================= -->
+<hr />
+<h2>Итоги главы</h2>
+
+<p>Проектирование базы данных — это не про SQL и не про выбор СУБД. Это про <strong>мышление структурами</strong>. Каждый раз, когда вы добавляете колонку, вы принимаете решение, которое будет влиять на систему годами.</p>
+
+<h3>Чек-лист проектирования таблицы</h3>
+
+<ul class="checklist">
+  <li>Определена сущность (что именно хранит таблица?)</li>
+  <li>Есть Primary Key (суррогатный, BIGINT или UUIDv7)</li>
+  <li>NOT NULL на обязательных полях</li>
+  <li>UNIQUE на бизнес-уникальных полях (email, номер карты)</li>
+  <li>FOREIGN KEY на ссылочные колонки</li>
+  <li>CHECK на диапазоны и условия (price &gt; 0)</li>
+  <li>DEFAULT для полей со значением по умолчанию</li>
+  <li>Типы данных обоснованы (не DECIMAL для денег → ошибка)</li>
+  <li>Индексы на WHERE, JOIN, ORDER BY колонки</li>
+  <li>created_at / updated_at — минимальный аудит</li>
+  <li>Стратегия удаления выбрана (soft delete или archive)</li>
+  <li>JSON только для настроек/метаданных, не для бизнес-данных</li>
+</ul>
+
+<h3>Вопросы для самопроверки</h3>
+
+<ol>
+  <li>Чем отличается NULL от 0 и от пустой строки? Приведите пример для каждого.</li>
+  <li>Почему номер паспорта — плохой Primary Key?</li>
+  <li>Что произойдёт с заказами, если удалить клиента без FOREIGN KEY?</li>
+  <li>В каких случаях JSON в БД оправдан, а в каких — антипаттерн?</li>
+  <li>Почему индексы замедляют INSERT?</li>
+  <li>Что такое soft delete и какие у него недостатки?</li>
+  <li>Почему CHECK (amount &gt; 0) важен для платёжной системы?</li>
+  <li>Что такое составной UNIQUE и зачем он нужен?</li>
+</ol>
+
+<h3>Что должен понять аналитик</h3>
+
+<blockquote class="remember">
+  <p><strong>Главный вывод:</strong> База данных — не просто место для хранения. Это слой приложения, который обеспечивает контракты между данными. Если аналитик предлагает "просто добавить поле в JSON" или "у нас не будет дубликатов, код проверит" — он создаёт технический долг. Понимание схемы БД — это понимание того, как устроен бизнес: какие сущности есть, как они связаны, какие правила работают на уровне данных. Аналитик, который мыслит схемами, — ценный член команды.</p>
+</blockquote>
+
+<!-- ============================================= -->
+<!-- Chapter Navigation -->
+<!-- ============================================= -->
+<div class="chapter-nav">
+  <span>&#8592; Глава 5: <a href="chapter05.html">Frontend глазами аналитика</a></span>
+  <span>Глава 7: <a href="chapter07.html">Нормализация данных</a> &#8594;</span>
+</div>
+
+</div>
+</body>
+</html>

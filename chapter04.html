@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<title>Глава 4 — Что происходит внутри Backend</title>
+<style>
+/* === Base === */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #1a1a2e;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  background: #fff;
+}
+
+/* === Headings === */
+h1 { font-size: 2.2em; border-bottom: 3px solid #2d3436; padding-bottom: 12px; margin-top: 48px; color: #2d3436; }
+h2 { font-size: 1.6em; margin-top: 40px; padding-bottom: 8px; border-bottom: 1px solid #dfe6e9; color: #2d3436; }
+h3 { font-size: 1.3em; margin-top: 32px; color: #636e72; }
+h4 { font-size: 1.1em; margin-top: 24px; color: #636e72; }
+
+/* === Paragraphs & Lists === */
+p { margin: 16px 0; }
+ul, ol { margin: 12px 0; padding-left: 24px; }
+li { margin: 6px 0; }
+
+/* === Tables === */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 15px;
+}
+th {
+  background: #2d3436;
+  color: #fff;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+}
+td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #dfe6e9;
+}
+tr:nth-child(even) td {
+  background: #f8f9fa;
+}
+tr:hover td {
+  background: #e8f4f8;
+}
+
+/* === Code === */
+code {
+  background: #f1f2f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.9em;
+  color: #2d3436;
+}
+pre {
+  background: #2d3436;
+  color: #dfe6e9;
+  padding: 16px 20px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 16px 0;
+}
+pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+/* === Blockquotes / Callouts === */
+blockquote {
+  margin: 20px 0;
+  padding: 16px 20px;
+  border-left: 5px solid;
+  border-radius: 6px;
+  font-size: 15px;
+}
+blockquote p { margin: 4px 0; }
+
+/* Specific callout colors */
+blockquote.idea { border-color: #6c5ce7; background: #f0edff; }
+blockquote.idea strong { color: #6c5ce7; }
+
+blockquote.bank { border-color: #0984e3; background: #e8f4fd; }
+blockquote.bank strong { color: #0984e3; }
+
+blockquote.error { border-color: #d63031; background: #ffeef0; }
+blockquote.error strong { color: #d63031; }
+
+blockquote.antipattern { border-color: #e17055; background: #fdf0ed; }
+blockquote.antipattern strong { color: #e17055; }
+
+blockquote.best { border-color: #00b894; background: #e6faf4; }
+blockquote.best strong { color: #00b894; }
+
+blockquote.senior { border-color: #fdcb6e; background: #fef9e7; }
+blockquote.senior strong { color: #d68910; }
+
+blockquote.remember { border-color: #2d3436; background: #f1f2f6; }
+blockquote.remember strong { color: #2d3436; }
+
+blockquote.tip { border-color: #00b894; background: #e6faf4; }
+blockquote.tip strong { color: #00b894; }
+
+blockquote.fact { border-color: #a29bfe; background: #f5f3ff; }
+blockquote.fact strong { color: #a29bfe; }
+
+blockquote.warning { border-color: #e17055; background: #fdf0ed; }
+blockquote.warning strong { color: #e17055; }
+
+/* === Checkboxes === */
+input[type="checkbox"] { margin-right: 8px; }
+
+/* === Horizontal Rule === */
+hr {
+  border: none;
+  border-top: 2px solid #dfe6e9;
+  margin: 40px 0;
+}
+
+/* === Links === */
+a { color: #0984e3; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* === Chapter Navigation === */
+.chapter-nav {
+  background: #f8f9fa;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 24px 0;
+  display: flex;
+  justify-content: space-between;
+}
+.chapter-nav a { font-weight: 600; }
+
+/* === TOC === */
+.toc { margin: 24px 0; }
+.toc-item {
+  padding: 10px 16px;
+  border-bottom: 1px solid #dfe6e9;
+  display: flex;
+  align-items: center;
+}
+.toc-item .num {
+  font-weight: 700;
+  color: #0984e3;
+  min-width: 40px;
+  font-size: 1.1em;
+}
+.toc-item .title { font-weight: 600; color: #2d3436; }
+.toc-item:hover { background: #f8f9fa; }
+
+/* === Diagrams === */
+.diagram {
+  background: #f8f9fa;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 16px 0;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* === Checklists === */
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding: 6px 0; }
+.checklist li::before { content: "☐ "; font-size: 1.2em; }
+
+/* === Subtitle === */
+.subtitle {
+  font-size: 1.2em;
+  color: #636e72;
+  margin-top: -12px;
+  margin-bottom: 32px;
+}
+
+/* === Meta === */
+.meta {
+  color: #636e72;
+  font-size: 14px;
+  margin: 16px 0;
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  body { padding: 20px 12px; font-size: 15px; }
+  h1 { font-size: 1.8em; }
+  h2 { font-size: 1.4em; }
+  .chapter-nav { flex-direction: column; gap: 12px; }
+}
+</style>
+</head>
+<body>
+<div id="content">
+
+<h1>Глава 4: Что происходит внутри Backend</h1>
+
+<p class="subtitle">Путешествие запроса от клиента до базы данных и обратно</p>
+
+<blockquote class="idea">
+  <p><strong>Аналог</strong> Backend — это ресторан. Клиент (frontend) делает заказ (запрос) официанту (API Gateway / Controller), который передаёт его на кухню (Service Layer). Там повара (Business Logic) готовят блюдо, используя продукты (данные) из холодильника (Database). Когда блюдо готово, официант несёт его обратно клиенту.</p>
+</blockquote>
+
+<p>Каждый день аналитик описывает требования к бэкенду: «сервер должен сохранить заказ», «проверить баланс пользователя», «отправить уведомление». Но что на самом деле происходит внутри этого чёрного ящика? Почему разработчики не могут «просто взять и сохранить»? Зачем столько слоёв, классов, транзакций?</p>
+
+<p>В этой главе мы заглянем под капот backend-разработки и проследим путь одного запроса от клиента до базы данных и обратно. Вы поймёте, какие слои существуют, зачем каждый из них нужен и как это знание поможет вам писать более точные требования.</p>
+
+<div class="toc">
+  <h3>Содержание главы</h3>
+  <div class="toc-item"><span class="num">4.1</span><span class="title">Путь запроса: от клиента до базы и обратно</span></div>
+  <div class="toc-item"><span class="num">4.2</span><span class="title">Controller — входные ворота</span></div>
+  <div class="toc-item"><span class="num">4.3</span><span class="title">DTO — объект передачи данных</span></div>
+  <div class="toc-item"><span class="num">4.4</span><span class="title">Service — мозг приложения</span></div>
+  <div class="toc-item"><span class="num">4.5</span><span class="title">Repository — доступ к данным</span></div>
+  <div class="toc-item"><span class="num">4.6</span><span class="title">Модели и Entity</span></div>
+  <div class="toc-item"><span class="num">4.7</span><span class="title">Валидация — где и что проверяется</span></div>
+  <div class="toc-item"><span class="num">4.8</span><span class="title">Обработка ошибок</span></div>
+  <div class="toc-item"><span class="num">4.9</span><span class="title">Транзакции и ACID</span></div>
+  <div class="toc-item"><span class="num">—</span><span class="title">Итоги главы</span></div>
+</div>
+
+<!-- ========================================================================================== -->
+<!-- 4.1 -->
+<!-- ========================================================================================== -->
+
+<h2>4.1. Путь запроса: от клиента до базы и обратно</h2>
+
+<p>Любой запрос к бэкенду проходит несколько стадий обработки. Даже самая простая операция — «получить профиль пользователя» — проходит через цепочку слоёв. Вот как это выглядит:</p>
+
+<div class="diagram">
+Клиент (Frontend / Mobile / Postman)
+    │
+    │  HTTP-запрос (GET /api/users/42)
+    ▼
+┌──────────────────────┐
+│     Controller       │  ← принимает запрос, парсит JSON, проверяет токен
+└────────┬─────────────┘
+         │  DTO
+         ▼
+┌──────────────────────┐
+│      Service         │  ← бизнес-логика: проверка прав, расчёты, правила
+└────────┬─────────────┘
+         │  Entity / Model
+         ▼
+┌──────────────────────┐
+│     Repository       │  ← работа с БД: CRUD-операции
+└────────┬─────────────┘
+         │  SQL
+         ▼
+┌──────────────────────┐
+│    Database (SQL)    │  ← хранилище данных (PostgreSQL, MySQL, ...)
+└──────────────────────┘
+         │
+         ▼  Данные возвращаются обратно по цепочке
+  Клиент получает JSON-ответ
+</div>
+
+<p>Каждый слой решает свою узкую задачу. Давайте посмотрим на таблицу ответственности:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Слой</th>
+      <th>Задача</th>
+      <th>Что делает</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Controller</strong></td>
+      <td>Входные ворота</td>
+      <td>Принимает HTTP-запрос, парсит JSON, проверяет авторизацию, вызывает Service</td>
+    </tr>
+    <tr>
+      <td><strong>DTO</strong></td>
+      <td>Объект передачи</td>
+      <td>Определяет формат данных для API — что отправить и что получить</td>
+    </tr>
+    <tr>
+      <td><strong>Service</strong></td>
+      <td>Бизнес-логика</td>
+      <td>Расчёты, проверки, оркестрация нескольких операций</td>
+    </tr>
+    <tr>
+      <td><strong>Repository</strong></td>
+      <td>Доступ к данным</td>
+      <td>CRUD, SQL-запросы, скрытие деталей хранения</td>
+    </tr>
+    <tr>
+      <td><strong>Entity</strong></td>
+      <td>Модель данных</td>
+      <td>Отображение таблицы БД на объект в коде</td>
+    </tr>
+    <tr>
+      <td><strong>Database</strong></td>
+      <td>Хранилище</td>
+      <td>Хранение, индексация, целостность, транзакции</td>
+    </tr>
+  </tbody>
+</table>
+
+<blockquote class="fact">
+  <p><strong>Почему так много слоёв?</strong> Каждый слой — это точка изменения. Если завтра вы поменяете базу данных с PostgreSQL на MongoDB, изменится только Repository. Controller и Service останутся нетронутыми. Если изменится бизнес-правило — вы правите только Service. Разделение слоёв — это не «усложнение ради усложнения», это управление сложностью.</p>
+</blockquote>
+
+<p>Теперь пройдёмся по каждому слою детально.</p>
+
+<!-- ========================================================================================== -->
+<!-- 4.2 -->
+<!-- ========================================================================================== -->
+
+<h2>4.2. Controller — входные ворота</h2>
+
+<p>Controller (контроллер) — это первый слой, который встречает запрос. Его задача — принять HTTP-запрос от клиента, быстро проверить его «на входе» и передать дальше.</p>
+
+<h3>Что происходит в Controller</h3>
+
+<ol>
+  <li><strong>Парсинг входящих данных</strong> — преобразование JSON-тела запроса в DTO.</li>
+  <li><strong>Базовая валидация</strong> — проверка обязательных полей, формат email, длина строки.</li>
+  <li><strong>Авторизация</strong> — проверка JWT-токена, прав доступа.</li>
+  <li><strong>Вызов Service</strong> — передача управления слою бизнес-логики.</li>
+  <li><strong>Формирование ответа</strong> — упаковка результата в HTTP-ответ с нужным статус-кодом.</li>
+</ol>
+
+<blockquote class="antipattern">
+  <p><strong>❌ Ошибка: контроллер, который считает скидку</strong></p>
+  <p>Встречается сплошь и рядом. Контроллер сам вычисляет скидку для пользователя, проверяет баланс и решает, можно ли оформить заказ. Почему это плохо? Бизнес-логика оказывается «зашита» в слой, который должен заниматься только маршрутизацией. Если завтра изменится правило расчёта скидки — придётся искать это в контроллерах, а не в сервисе.</p>
+</blockquote>
+
+<p>Правильный контроллер — это тонкий слой. Он похож на пульта охраны в здании: проверил пропуск, открыл дверь, указал, в какой кабинет идти. И всё. Внутренние дела здания пульт не решает.</p>
+
+<h3>Пример: правильный контроллер</h3>
+
+<pre>
+<code>// Контроллер НЕ должен содержать бизнес-логику
+@PostMapping("/orders")
+public ResponseEntity&lt;OrderResponse&gt; createOrder(@RequestBody @Valid CreateOrderRequest request) {
+    // 1. Парсинг и валидация — уже сделаны (@Valid превращает JSON в DTO)
+    // 2. Вызов сервиса — вся логика там
+    OrderResponse result = orderService.createOrder(request);
+    // 3. Ответ
+    return ResponseEntity.status(201).body(result);
+}</code>
+</pre>
+
+<blockquote class="senior">
+  <p><strong>🧠 Как думает Senior</strong> Controller — это только маршрутизация. Если вы видите в контроллере <code>if</code>, <code>for</code> или <code>switch</code> с бизнес-условием — вы видите проблему. Контроллер должен умещаться в 3–5 строк без логики.</p>
+</blockquote>
+
+<!-- ========================================================================================== -->
+<!-- 4.3 -->
+<!-- ========================================================================================== -->
+
+<h2>4.3. DTO — объект передачи данных</h2>
+
+<p>DTO (Data Transfer Object) — это объект, который определяет, какие данные попадают в API-запрос и возвращаются в ответе. Это «форма для заполнения».</p>
+
+<h3>Зачем нужен DTO</h3>
+
+<p>Самая частая ошибка новичков — отдавать клиенту entity (объект базы данных) напрямую. Чем это опасно?</p>
+
+<blockquote class="best">
+  <p><strong>Почему нельзя отдавать entity из БД напрямую</strong></p>
+  <ul>
+    <li><strong>Безопасность:</strong> в entity может быть password_hash, внутренний id, служебные флаги. Вы случайно отправите их клиенту.</li>
+    <li><strong>Избыточность:</strong> у User в БД 20 полей, а на фронте нужны только 5. Зачем гонять лишние мегабайты?</li>
+    <li><strong>Зависимость:</strong> если вы измените структуру БД, изменится API. А это две разные сущности.</li>
+  </ul>
+</blockquote>
+
+<h3>Схема преобразования</h3>
+
+<div class="diagram">
+  Entity (БД)          DTO (API)            JSON (клиент)
+  ┌────────────┐     ┌────────────┐     ┌────────────────┐
+  │ id         │     │ id         │     │ {              │
+  │ email      │ ──▶ │ email      │ ──▶ │   "id": 42,    │
+  │ name       │     │ name       │     │   "email":...  │
+  │ password   │     └────────────┘     │   "name":...   │
+  │ created_at │                        │ }              │
+  │ deleted    │                        └────────────────┘
+  └────────────┘
+      ╰── password_hash НЕ попадает в DTO — это внутреннее поле
+</div>
+
+<blockquote class="bank">
+  <p><strong>🏦 Пример: банк</strong> Представьте, что банковское API возвращает entity Card напрямую. В ответе окажется полный номер карты, CVV-код и срок действия. Вместо этого API возвращает DTO с маскированным номером: <code>"cardNumber": "**** **** **** 1234"</code>. Внутренние поля (PIN, CVV, полный номер) никогда не покидают сервер.</p>
+</blockquote>
+
+<blockquote class="error">
+  <p><strong>⚠️ Security: никогда не отдавать внутренние поля</strong> Явно опишите в требованиях, какие поля <strong>не</strong> должны попадать в API-ответ. Пароли, хеши, токены, внутренние идентификаторы, служебные флаги (<code>is_deleted</code>, <code>internal_note</code>) — всё это должно остаться внутри бэкенда. Если аналитик не пропишет это в требованиях — разработчик может «забыть» сделать DTO.</p>
+</blockquote>
+
+<blockquote class="idea">
+  <p><strong>Аналогия</strong> DTO — это форма для визы. Консульство не просит вас показать всю вашу медицинскую карту. Только страницу с паспортными данными и фото. Так и DTO отдаёт только то, что нужно для конкретной операции.</p>
+</blockquote>
+
+<!-- ========================================================================================== -->
+<!-- 4.4 -->
+<!-- ========================================================================================== -->
+
+<h2>4.4. Service — мозг приложения</h2>
+
+<p>Service (сервис) — это слой, где живёт бизнес-логика. Именно здесь принимаются решения: можно ли оформить заказ, как рассчитать скидку, достаточно ли денег на счету.</p>
+
+<blockquote class="fact">
+  <p><strong>Факт</strong> В хорошо спроектированном приложении 70–80% всех изменений происходит именно в Service-слое. Контроллеры и репозитории меняются редко.</p>
+</blockquote>
+
+<h3>Что делает Service</h3>
+
+<ul>
+  <li><strong>Проверка бизнес-правил:</strong> «баланс не может быть отрицательным», «заказ можно отменить только в течение часа».</li>
+  <li><strong>Расчёты:</strong> налоги, скидки, комиссии.</li>
+  <li><strong>Оркестрация:</strong> вызвать несколько репозиториев, объединить данные, выполнить действия в правильном порядке.</li>
+  <li><strong>Транзакции:</strong> обеспечить, чтобы несколько операций выполнились атомарно.</li>
+</ul>
+
+<h3>Пример: сервис перевода денег</h3>
+
+<pre>
+<code>public class PaymentService {
+
+    @Transactional
+    public TransferResult transferMoney(TransferRequest request) {
+        // 1. Проверка бизнес-правил
+        Account from = accountRepository.findById(request.getFromId());
+        Account to = accountRepository.findById(request.getToId());
+
+        if (from.getBalance() &lt; request.getAmount()) {
+            throw new InsufficientFundsException("Недостаточно средств");
+        }
+
+        // 2. Выполнение операций
+        from.withdraw(request.getAmount());
+        to.deposit(request.getAmount());
+
+        // 3. Сохранение
+        accountRepository.save(from);
+        accountRepository.save(to);
+
+        // 4. Аудит
+        auditLogger.log("Перевод", from.getId(), to.getId(), request.getAmount());
+
+        return new TransferResult("Успешно");
+    }
+}</code>
+</pre>
+
+<blockquote class="bank">
+  <p><strong>🏦 Пример: перевод денег</strong> Представьте, что при переводе 1000 рублей мы списали деньги с карты А, но сервер упал до того, как зачислил их на карту Б. Деньги исчезли. Транзакция гарантирует: или произойдут <strong>оба</strong> действия, или <strong>ни одного</strong>. В программировании это называется атомарность.</p>
+</blockquote>
+
+<blockquote class="antipattern">
+  <p><strong>❌ Ошибка: бизнес-логика в SQL-запросе</strong> Иногда разработчики пишут сложные вычисления прямо в SQL: <code>UPDATE users SET bonus = salary * 0.1 + (SELECT ...)</code>. Это ошибка: бизнес-логика оказывается «зашита» в запрос, её нельзя покрыть юнит-тестами, её сложно менять. Любое изменение правила требует правки SQL, а не кода. Бизнес-логика должна быть в Service, а SQL — только операции чтения/записи.</p>
+</blockquote>
+
+<blockquote class="senior">
+  <p><strong>🧠 Как думает Senior</strong> Один метод сервиса — одна бизнес-операция. Нельзя делать гигантский метод на 500 строк. Если операция сложная — разбейте на несколько приватных методов. Каждый метод должен отвечать на вопрос «что произошло?» на уровне бизнеса, а не на уровне кода.</p>
+</blockquote>
+
+<!-- ========================================================================================== -->
+<!-- 4.5 -->
+<!-- ========================================================================================== -->
+
+<h2>4.5. Repository — доступ к данным</h2>
+
+<p>Repository (репозиторий) — это слой, который абстрагирует работу с базой данных. Он скрывает от сервиса, какая именно БД используется: PostgreSQL, MySQL, MongoDB или даже обычный файл.</p>
+
+<h3>CRUD — основа работы с данными</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Операция</th>
+      <th>SQL</th>
+      <th>HTTP-метод</th>
+      <th>Пример из жизни</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>C</strong>reate</td>
+      <td><code>INSERT</code></td>
+      <td>POST</td>
+      <td>Создать заказ</td>
+    </tr>
+    <tr>
+      <td><strong>R</strong>ead</td>
+      <td><code>SELECT</code></td>
+      <td>GET</td>
+      <td>Получить профиль</td>
+    </tr>
+    <tr>
+      <td><strong>U</strong>pdate</td>
+      <td><code>UPDATE</code></td>
+      <td>PUT / PATCH</td>
+      <td>Изменить адрес доставки</td>
+    </tr>
+    <tr>
+      <td><strong>D</strong>elete</td>
+      <td><code>DELETE</code></td>
+      <td>DELETE</td>
+      <td>Удалить товар из корзины</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Зачем нужен отдельный слой для данных</h3>
+
+<p>Без Repository бизнес-логика и SQL смешиваются. Service начинает содержать запросы — и через полгода вы не можете поменять БД, потому что все запросы размазаны по коду. Repository — это <strong>контракт</strong>: «я умею сохранять пользователя, искать по id, удалять. Как именно — неважно».</p>
+
+<blockquote class="error">
+  <p><strong>SQL injection — что это и как защититься</strong></p>
+  <p>SQL injection — это когда пользователь вводит в поле «имя» не имя, а SQL-команду: <code>'; DROP TABLE users; --</code>. Если бэкенд просто подставляет значение в строку запроса, база данных выполнит эту команду. Защита: <strong>параметризованные запросы</strong> (prepared statements). Современные ORM делают это автоматически, но аналитик должен знать, что передача сырых данных в SQL — это дыра в безопасности.</p>
+</blockquote>
+
+<blockquote class="senior">
+  <p><strong>🧠 Как думает Senior</strong> Repository — это контракт с данными. Сервис говорит: «дай мне пользователя с id = 42». Repository решает: это будет SQL-запрос к PostgreSQL, или чтение из кэша Redis, или вызов внешнего API. Сервису всё равно. Контракт важен, реализация — деталь.</p>
+</blockquote>
+
+<!-- ========================================================================================== -->
+<!-- 4.6 -->
+<!-- ========================================================================================== -->
+
+<h2>4.6. Модели и Entity</h2>
+
+<p>Entity (сущность) — это объект, который напрямую отражает таблицу в базе данных. Каждая строка таблицы — один экземпляр entity.</p>
+
+<h3>Пример: User в БД</h3>
+
+<p>Таблица <code>users</code>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Поле</th>
+      <th>Тип</th>
+      <th>Назначение</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>id</td>
+      <td>BIGINT</td>
+      <td>Внутренний идентификатор</td>
+    </tr>
+    <tr>
+      <td>email</td>
+      <td>VARCHAR(255)</td>
+      <td>Email пользователя</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td>VARCHAR(100)</td>
+      <td>Имя</td>
+    </tr>
+    <tr>
+      <td>password_hash</td>
+      <td>VARCHAR(255)</td>
+      <td>Хеш пароля (никому не отдаём!)</td>
+    </tr>
+    <tr>
+      <td>phone</td>
+      <td>VARCHAR(20)</td>
+      <td>Телефон</td>
+    </tr>
+    <tr>
+      <td>birth_date</td>
+      <td>DATE</td>
+      <td>Дата рождения</td>
+    </tr>
+    <tr>
+      <td>is_active</td>
+      <td>BOOLEAN</td>
+      <td>Флаг активности</td>
+    </tr>
+    <tr>
+      <td>created_at</td>
+      <td>TIMESTAMP</td>
+      <td>Дата регистрации</td>
+    </tr>
+    <!-- and more fields up to 20 -->
+  </tbody>
+</table>
+
+<p>В entity будет ровно те же поля, что в таблице. Но API (через DTO) отдаёт только 5 из них:</p>
+
+<pre>
+<code>{
+  "id": 42,
+  "email": "user@example.com",
+  "name": "Иван Петров",
+  "phone": "+7-999-123-45-67",
+  "isActive": true
+}</code>
+</pre>
+
+<blockquote class="fact">
+  <p><strong>Что такое ORM</strong> ORM (Object-Relational Mapping) — это библиотека, которая автоматически преобразует строки из БД в объекты в коде. Вы пишете <code>userRepository.findById(42)</code> — ORM выполняет <code>SELECT * FROM users WHERE id = 42</code> и возвращает объект User. Разработчику не нужно писать SQL вручную. Примеры: Hibernate (Java), Entity Framework (.NET), SQLAlchemy (Python), TypeORM (TypeScript).</p>
+</blockquote>
+
+<blockquote class="best">
+  <p><strong>Почему entity не должен быть DTO и наоборот</strong> У них разные цели. Entity отражает структуру БД. DTO — структуру API. Если вы используете entity как DTO, вы «светите» внутренние поля и привязываете API к схеме БД. Если вы используете DTO как entity — вы теряете данные из БД, которые могут понадобиться внутри.</p>
+</blockquote>
+
+<!-- ========================================================================================== -->
+<!-- 4.7 -->
+<!-- ========================================================================================== -->
+
+<h2>4.7. Валидация — где и что проверяется</h2>
+
+<p>Валидация данных происходит на трёх уровнях. Аналитик должен понимать, на каком уровне что проверяется, и явно указывать это в требованиях.</p>
+
+<h3>Три уровня валидации</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Уровень</th>
+      <th>Что проверяет</th>
+      <th>Пример</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>DTO (Controller)</strong></td>
+      <td>Формат данных, синтаксис</td>
+      <td>Email содержит @, поле обязательно, длина не больше 255</td>
+    </tr>
+    <tr>
+      <td><strong>Service</strong></td>
+      <td>Бизнес-правила</td>
+      <td>Баланс > 0, статус заказа позволяет отмену, товар есть на складе</td>
+    </tr>
+    <tr>
+      <td><strong>Database</strong></td>
+      <td>Constraints, целостность</td>
+      <td>UNIQUE(email), NOT NULL, FOREIGN KEY, CHECK (price > 0)</td>
+    </tr>
+  </tbody>
+</table>
+
+<blockquote class="warning">
+  <p><strong>❌ Ошибка: полагаться только на frontend-валидацию</strong> Фронтенд можно взломать, отключить JavaScript или отправить запрос напрямую через Postman/cURL. Валидация на клиенте — для удобства пользователя. Валидация на бэкенде — для безопасности системы. Никогда не считайте, что «фронт уже проверил».</p>
+</blockquote>
+
+<blockquote class="bank">
+  <p><strong>🏦 Пример: negative price</strong> Представьте, что пользователь указывает цену товара <code>-1000</code> рублей.</p>
+  <ul>
+    <li><strong>DTO:</strong> проверит, что цена — это число. Но число может быть отрицательным.</li>
+    <li><strong>Service:</strong> проверит, что цена > 0. Это бизнес-правило.</li>
+    <li><strong>БД:</strong> constraint <code>CHECK (price > 0)</code> — страховка на случай, если ошибка проскочила через код.</li>
+  </ul>
+  <p>Только все три уровня вместе дают надёжную защиту.</p>
+</blockquote>
+
+<!-- ========================================================================================== -->
+<!-- 4.8 -->
+<!-- ========================================================================================== -->
+
+<h2>4.8. Обработка ошибок</h2>
+
+<p>Ошибки неизбежны. Пользователь указал неверный пароль, сервер перегружен, товара нет на складе. Архитектура бэкенда должна обрабатывать ошибки предсказуемо и безопасно.</p>
+
+<h3>Как ошибка проходит слои</h3>
+
+<div class="diagram">
+DB ──▶ Repository ──▶ Service ──▶ Controller ──▶ Клиент
+
+Пример:
+1. DB: нарушен CONSTRAINT UNIQUE — дубликат email
+2. Repository: ловит SQLException, оборачивает в DataAccessException
+3. Service: ловит DataAccessException, формирует бизнес-ошибку "Email уже занят"
+4. Controller: ловит исключение, возвращает HTTP 409 Conflict
+5. Клиент: получает JSON { "error": "Email уже занят", "code": "EMAIL_DUPLICATE" }
+</div>
+
+<h3>Маппинг ошибок в HTTP-статусы</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>HTTP-статус</th>
+      <th>Когда используется</th>
+      <th>Пример</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>200 OK</strong></td>
+      <td>Всё хорошо</td>
+      <td>Успешный GET-запрос</td>
+    </tr>
+    <tr>
+      <td><strong>201 Created</strong></td>
+      <td>Сущность создана</td>
+      <td>Оформлен заказ</td>
+    </tr>
+    <tr>
+      <td><strong>400 Bad Request</strong></td>
+      <td>Неверный формат запроса</td>
+      <td>Некорректный JSON, пропущено поле</td>
+    </tr>
+    <tr>
+      <td><strong>401 Unauthorized</strong></td>
+      <td>Не аутентифицирован</td>
+      <td>Токен истёк или отсутствует</td>
+    </tr>
+    <tr>
+      <td><strong>403 Forbidden</strong></td>
+      <td>Нет прав</td>
+      <td>Пользователь не админ, но пытается удалить юзера</td>
+    </tr>
+    <tr>
+      <td><strong>404 Not Found</strong></td>
+      <td>Ресурс не найден</td>
+      <td>Нет заказа с таким id</td>
+    </tr>
+    <tr>
+      <td><strong>409 Conflict</strong></td>
+      <td>Конфликт данных</td>
+      <td>Дубликат email, попытка отменить уже отправленный заказ</td>
+    </tr>
+    <tr>
+      <td><strong>422 Unprocessable Entity</strong></td>
+      <td>Бизнес-правило нарушено</td>
+      <td>Недостаточно средств</td>
+    </tr>
+    <tr>
+      <td><strong>500 Internal Server Error</strong></td>
+      <td>Неизвестная ошибка сервера</td>
+      <td>Упала БД, NullPointerException</td>
+    </tr>
+  </tbody>
+</table>
+
+<blockquote class="error">
+  <p><strong>Почему стектрейс нельзя отдавать клиенту</strong> Stack trace — это внутренняя кухня: имена классов, версии библиотек, пути на сервере. Злоумышленник может использовать эту информацию для атаки. Клиент должен видеть только: «что пошло не так» и «код ошибки». Подробности — в логи сервера.</p>
+</blockquote>
+
+<blockquote class="idea">
+  <p><strong>Аналогия</strong> Сообщение об ошибке в самолёте для пассажиров: «Уважаемые пассажиры, отказал двигатель №2, мы возвращаемся в аэропорт». А не «java.lang.NullPointerException в модуле FuelInjectorController при вызове метода getEngineStatus()». Клиенту нужен понятный ответ, а не техническая диагностика.</p>
+</blockquote>
+
+<!-- ========================================================================================== -->
+<!-- 4.9 -->
+<!-- ========================================================================================== -->
+
+<h2>4.9. Транзакции и ACID</h2>
+
+<p>Транзакция — это группа операций, которые выполняются как одно целое. Если хотя бы одна операция не удалась — отменяются все.</p>
+
+<p>Аббревиатура ACID описывает свойства, которым должна удовлетворять транзакция:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Свойство</th>
+      <th>Что означает</th>
+      <th>Пример</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>A</strong>tomicity<br><small>Атомарность</small></td>
+      <td>Всё или ничего. Операция либо выполняется полностью, либо не выполняется вовсе.</td>
+      <td>Перевод денег: списание + зачисление. Если упало — деньги возвращаются.</td>
+    </tr>
+    <tr>
+      <td><strong>C</strong>onsistency<br><small>Согласованность</small></td>
+      <td>Данные всегда корректны. После транзакции все constraints соблюдены.</td>
+      <td>Сумма балансов до перевода = сумме после. Деньги не появляются из ниоткуда.</td>
+    </tr>
+    <tr>
+      <td><strong>I</strong>solation<br><small>Изоляция</small></td>
+      <td>Параллельные транзакции не мешают друг другу.</td>
+      <td>Два человека одновременно покупают последний билет — купит только один.</td>
+    </tr>
+    <tr>
+      <td><strong>D</strong>urability<br><small>Долговечность</small></td>
+      <td>Если транзакция подтверждена — данные не пропадут даже при отключении питания.</td>
+      <td>После ответа «оплата прошла» деньги точно зачислены, даже если сервер тут же выключится.</td>
+    </tr>
+  </tbody>
+</table>
+
+<blockquote class="bank">
+  <p><strong>🏦 Пример: перевод с карты на карту</strong></p>
+  <ol>
+    <li>Вы нажимаете «Перевести 5000 рублей другу».</li>
+    <li>Бэкенд открывает транзакцию.</li>
+    <li>Списывает 5000 с вашей карты.</li>
+    <li>Зачисляет 5000 на карту друга.</li>
+    <li>Если всё ок — транзакция подтверждается (commit).</li>
+    <li>Если на шаге 4 ошибка (карта друга заблокирована) — транзакция откатывается (rollback), и ваши 5000 возвращаются.</li>
+  </ol>
+  <p>Без транзакции вы бы потеряли деньги: с вашей карты списалось, а другу не пришло.</p>
+</blockquote>
+
+<blockquote class="remember">
+  <p><strong>Почему аналитик должен понимать ACID</strong> Когда вы пишете требование «при переводе денег нужно списать с одной карты и зачислить на другую» — вы неявно описываете транзакцию с атомарностью. Если вы этого не пропишете, разработчик может не реализовать транзакцию, и вы получите баг на продакшене. Указывайте: «операция должна быть атомарной: или выполняются оба действия, или ни одного». Это заставит разработчика использовать транзакцию.</p>
+</blockquote>
+
+<!-- ========================================================================================== -->
+<!-- ИТОГИ -->
+<!-- ========================================================================================== -->
+
+<hr />
+
+<h2>Итоги главы</h2>
+
+<h3>Чек-лист: что проверить в требованиях для backend</h3>
+
+<ul class="checklist">
+  <li><strong>DTO:</strong> какие поля отдаём клиенту, какие НЕ отдаём (security)?</li>
+  <li><strong>Валидация:</strong> прописана валидация на всех трёх уровнях (формат, бизнес-правила, БД)?</li>
+  <li><strong>Транзакции:</strong> нужно ли объединять несколько операций в одну транзакцию?</li>
+  <li><strong>Обработка ошибок:</strong> какой HTTP-статус и какое сообщение получает клиент в каждом сценарии?</li>
+  <li><strong>Бизнес-логика в SQL:</strong> нет ли расчётов, которые лучше вынести в Service?</li>
+  <li><strong>SQL injection:</strong> предусмотрена ли защита (параметризованные запросы)?</li>
+  <li><strong>Entity vs DTO:</strong> не светим ли внутренние поля БД через API?</li>
+  <li><strong>Изоляция:</strong> что будет, если два пользователя одновременно выполнят одно и то же действие?</li>
+</ul>
+
+<h3>Что должен понять аналитик</h3>
+
+<ol>
+  <li><strong>Слои — это не усложнение, а защита.</strong> Каждый слой решает свою задачу. Чем чётче разделение, тем проще менять систему.</li>
+  <li><strong>Бизнес-логика живёт в Service.</strong> Не в SQL, не в контроллере, не на фронтенде.</li>
+  <li><strong>DTO защищает данные.</strong> Никогда не отдавайте клиенту то, что ему не нужно.</li>
+  <li><strong>Транзакции спасают деньги.</strong> Любая операция с деньгами, статусами или важными данными должна быть атомарной.</li>
+  <li><strong>Валидация на всех уровнях.</strong> Фронтенд — для удобства, бэкенд — для безопасности, БД — для гарантии.</li>
+  <li><strong>Ошибки должны быть человекочитаемыми.</strong> Клиент получает понятный ответ, разработчик — логи.</li>
+</ol>
+
+<h3>Вопросы для самопроверки</h3>
+
+<ol>
+  <li>Какие слои проходит запрос от клиента до БД?</li>
+  <li>Почему контроллер не должен содержать бизнес-логику?</li>
+  <li>Чем DTO отличается от Entity?</li>
+  <li>Какие три уровня валидации существуют и зачем каждый?</li>
+  <li>Что такое транзакция? Приведите пример из банковской сферы.</li>
+  <li>Что означает каждая буква в ACID?</li>
+  <li>Почему нельзя отдавать stack trace клиенту?</li>
+  <li>Что такое SQL injection и как от него защититься?</li>
+  <li>Почему Repository скрывает, какая БД используется?</li>
+  <li>Какой HTTP-статус вернуть при дубликате email? А при недостатке средств?</li>
+</ol>
+
+<hr />
+
+<blockquote class="senior">
+  <p><strong>🧠 Резюме для Senior Analyst</strong> Понимание внутреннего устройства backend превращает аналитика из «передатчика пожеланий» в полноценного участника архитектурных обсуждений. Когда вы говорите «это должно быть в DTO», «здесь нужна транзакция» или «эта валидация — бизнес-правило, она должна быть в Service» — разработчики воспринимают вас как равного. Не бойтесь технических деталей: за ними стоит логика, а логика — это ваш язык.</p>
+</blockquote>
+
+<div class="chapter-nav">
+  <a href="chapter03.html">← Глава 3: JSON как контракт</a>
+  <a href="index.html">Содержание</a>
+  <a href="chapter05.html">Глава 5: Frontend глазами аналитика →</a>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<title>Глава 2 — REST API без магии</title>
+<style>
+/* === Base === */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #1a1a2e;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  background: #fff;
+}
+
+/* === Headings === */
+h1 { font-size: 2.2em; border-bottom: 3px solid #2d3436; padding-bottom: 12px; margin-top: 48px; color: #2d3436; }
+h2 { font-size: 1.6em; margin-top: 40px; padding-bottom: 8px; border-bottom: 1px solid #dfe6e9; color: #2d3436; }
+h3 { font-size: 1.3em; margin-top: 32px; color: #636e72; }
+h4 { font-size: 1.1em; margin-top: 24px; color: #636e72; }
+
+/* === Paragraphs & Lists === */
+p { margin: 16px 0; }
+ul, ol { margin: 12px 0; padding-left: 24px; }
+li { margin: 6px 0; }
+
+/* === Tables === */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 15px;
+}
+th {
+  background: #2d3436;
+  color: #fff;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+}
+td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #dfe6e9;
+}
+tr:nth-child(even) td {
+  background: #f8f9fa;
+}
+tr:hover td {
+  background: #e8f4f8;
+}
+
+/* === Code === */
+code {
+  background: #f1f2f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.9em;
+  color: #2d3436;
+}
+pre {
+  background: #2d3436;
+  color: #dfe6e9;
+  padding: 16px 20px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 16px 0;
+}
+pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+/* === Blockquotes / Callouts === */
+blockquote {
+  margin: 20px 0;
+  padding: 16px 20px;
+  border-left: 5px solid;
+  border-radius: 6px;
+  font-size: 15px;
+}
+blockquote p { margin: 4px 0; }
+
+/* Specific callout colors */
+blockquote.idea { border-color: #6c5ce7; background: #f0edff; }
+blockquote.idea strong { color: #6c5ce7; }
+
+blockquote.bank { border-color: #0984e3; background: #e8f4fd; }
+blockquote.bank strong { color: #0984e3; }
+
+blockquote.error { border-color: #d63031; background: #ffeef0; }
+blockquote.error strong { color: #d63031; }
+
+blockquote.antipattern { border-color: #e17055; background: #fdf0ed; }
+blockquote.antipattern strong { color: #e17055; }
+
+blockquote.best { border-color: #00b894; background: #e6faf4; }
+blockquote.best strong { color: #00b894; }
+
+blockquote.senior { border-color: #fdcb6e; background: #fef9e7; }
+blockquote.senior strong { color: #d68910; }
+
+blockquote.remember { border-color: #2d3436; background: #f1f2f6; }
+blockquote.remember strong { color: #2d3436; }
+
+blockquote.tip { border-color: #00b894; background: #e6faf4; }
+blockquote.tip strong { color: #00b894; }
+
+blockquote.fact { border-color: #a29bfe; background: #f5f3ff; }
+blockquote.fact strong { color: #a29bfe; }
+
+blockquote.warning { border-color: #e17055; background: #fdf0ed; }
+blockquote.warning strong { color: #e17055; }
+
+/* === Checkboxes === */
+input[type="checkbox"] { margin-right: 8px; }
+
+/* === Horizontal Rule === */
+hr {
+  border: none;
+  border-top: 2px solid #dfe6e9;
+  margin: 40px 0;
+}
+
+/* === Links === */
+a { color: #0984e3; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* === Chapter Navigation === */
+.chapter-nav {
+  background: #f8f9fa;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 24px 0;
+  display: flex;
+  justify-content: space-between;
+}
+.chapter-nav a { font-weight: 600; }
+
+/* === TOC === */
+.toc { margin: 24px 0; }
+.toc-item {
+  padding: 10px 16px;
+  border-bottom: 1px solid #dfe6e9;
+  display: flex;
+  align-items: center;
+}
+.toc-item .num {
+  font-weight: 700;
+  color: #0984e3;
+  min-width: 40px;
+  font-size: 1.1em;
+}
+.toc-item .title { font-weight: 600; color: #2d3436; }
+.toc-item:hover { background: #f8f9fa; }
+
+/* === Diagrams === */
+.diagram {
+  background: #f8f9fa;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 16px 0;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* === Checklists === */
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding: 6px 0; }
+.checklist li::before { content: "☐ "; font-size: 1.2em; }
+
+/* === Subtitle === */
+.subtitle {
+  font-size: 1.2em;
+  color: #636e72;
+  margin-top: -12px;
+  margin-bottom: 32px;
+}
+
+/* === Meta === */
+.meta {
+  color: #636e72;
+  font-size: 14px;
+  margin: 16px 0;
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  body { padding: 20px 12px; font-size: 15px; }
+  h1 { font-size: 1.8em; }
+  h2 { font-size: 1.4em; }
+  .chapter-nav { flex-direction: column; gap: 12px; }
+}
+</style>
+</head>
+<body>
+<div id="content">
+
+<h1>Глава 2. REST API без магии</h1>
+
+<div class="subtitle">Как перестать бояться эндпоинтов и начать проектировать API, которые не ломаются</div>
+
+<!-- ========== ВВЕДЕНИЕ ========== -->
+<h2>Введение</h2>
+
+<p>Представьте, что вы заходите в большой отель. Вы подходите к стойке регистрации и говорите: «Я хочу заселиться в номер 404, бронирование на имя Иванова». Портье проверяет систему, находит запись, выдаёт ключ-карту — и вы идёте в номер. Вы не видите, что происходит за стойкой: какая база данных хранит брони, как система проверки оплаты связана с модулем расчёта налогов, как служба горничных узнаёт, что номер готов. Для вас есть только стойка регистрации — единая точка входа.</p>
+
+<p><strong>REST API — это и есть такая стойка регистрации.</strong> Клиент (фронтенд, мобильное приложение, сторонний сервис) приходит с запросом, сервер обрабатывает его и возвращает результат. За стойкой может быть вся сложность мира, но для клиента есть только чётко определённый интерфейс.</p>
+
+<p>Цель этой главы — не просто перечислить методы HTTP или правила именования эндпоинтов. Вы должны научиться <em>чувствовать</em> REST API: понимать, почему он устроен именно так, какие решения принимает разработчик и — главное — как самому спроектировать API так, чтобы его не хотелось переписать через месяц.</p>
+
+<p>Эта глава написана для аналитика, которому предстоит:</p>
+<ul>
+  <li>описывать контракты API в документации;</li>
+  <li>задавать правильные вопросы разработчикам;</li>
+  <li>принимать решения о дизайне новых эндпоинтов;</li>
+  <li>понимать, почему «вдруг всё сломалось» после изменения API.</li>
+</ul>
+
+<!-- ========== 2.1 ========== -->
+<h2>2.1. Что такое REST API на самом деле</h2>
+
+<h3>Аналогия с библиотекой</h3>
+
+<p>Представьте библиотеку. В библиотеке есть <strong>книги</strong> — это <strong>ресурсы</strong>. Есть <strong>каталог</strong>, по которому можно найти книгу, — это <strong>эндпоинты</strong>. И есть <strong>библиотекарь</strong>, который достаёт книгу, проверяет ваш читательский билет и фиксирует выдачу — это <strong>сервер</strong>.</p>
+
+<p>Вы не кричите библиотекарю: «Эй, найди мне книгу!» Вы обращаетесь к каталогу: «Дайте мне книгу с ISBN 978-5-699-12345-6». Библиотекарь идёт, проверяет, есть ли книга, и возвращает вам её (или сообщает, что книги нет на месте).</p>
+
+<p>REST (Representational State Transfer) — это архитектурный стиль, который описывает правила такого взаимодействия. Ключевая идея: <strong>в центре внимания — ресурсы, а не действия</strong>.</p>
+
+<blockquote class="fact">
+<p><strong>Факт.</strong> Термин REST предложил Рой Филдинг в своей докторской диссертации в 2000 году. Он же был одним из создателей протокола HTTP/1.1. Так что REST и HTTP — не случайные соседи, они рождались вместе.</p>
+</blockquote>
+
+<h3>Ресурс — центральное понятие</h3>
+
+<p>В REST всё строится вокруг <strong>ресурса</strong>. Ресурс — это некая сущность, к которой можно обратиться по уникальному адресу (URI). Что может быть ресурсом:</p>
+
+<ul>
+  <li><strong>Заказ</strong> — /api/orders/12345</li>
+  <li><strong>Пользователь</strong> — /api/users/42</li>
+  <li><strong>Товар</strong> — /api/products/sku-77812</li>
+  <li><strong>Платёж</strong> — /api/payments/txn-abc-001</li>
+  <li><strong>Корзина покупателя</strong> — /api/carts/user-42</li>
+  <li><strong>Отчёт по продажам</strong> — /api/reports/daily-sales</li>
+</ul>
+
+<blockquote class="tip">
+<p><strong>Важно.</strong> Ресурс — это <em>существительное</em>. Не «создать заказ» (глагол), а «заказы» (существительное). REST — это архитектура существительных, а не глаголов.</p>
+</blockquote>
+
+<h3>Почему REST — это не про глаголы?</h3>
+
+<p>Когда вы проектируете API, вам хочется назвать эндпоинты логично: <code>/createOrder</code>, <code>/getUserList</code>, <code>/deleteItem</code>. Это кажется естественным — мы же описываем действия. Но проблема в том, что действий десятки, а глаголов в языке — сотни. Каждый разработчик назовёт их по-своему: <code>/getOrders</code>, <code>/fetchOrders</code>, <code>/retrieveOrders</code>, <code>/listOrders</code>. Хаос.</p>
+
+<p>REST предлагает другой подход: <strong>ресурсов ограниченное количество, а действия над ними описываются HTTP-методами</strong>. Вместо <code>/createOrder</code> — POST /api/orders. Вместо <code>/deleteOrder</code> — DELETE /api/orders/{id}.</p>
+
+<div class="diagram">HTTP-методы + Ресурсы = REST API
+
+Ресурс:         /api/orders
+
+GET     /api/orders      → Получить список заказов
+POST    /api/orders      → Создать новый заказ
+GET     /api/orders/1    → Получить заказ №1
+PUT     /api/orders/1    → Полностью заменить заказ №1
+PATCH   /api/orders/1    → Частично обновить заказ №1
+DELETE  /api/orders/1    → Удалить заказ №1</div>
+
+<blockquote class="remember">
+<p><strong>Запомните.</strong> Если в URL эндпоинта есть глагол — что-то пошло не так. Правильный URL состоит из существительных (ресурсов) и их идентификаторов.</p>
+</blockquote>
+
+<!-- ========== 2.2 ========== -->
+<h2>2.2. HTTP-методы — не просто GET и POST</h2>
+
+<p>Большинство людей, далёких от бэкенда, знают два метода: GET — «получить данные», POST — «отправить данные». В реальности их пять основных, и каждый несёт строго определённый смысл. Аналитик обязан их различать.</p>
+
+<table>
+<thead>
+<tr>
+  <th>Метод</th>
+  <th>Действие</th>
+  <th>Идемпотентность</th>
+  <th>Безопасность</th>
+  <th>Тело запроса</th>
+  <th>Пример</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>GET</code></td>
+  <td>Получить ресурс(ы)</td>
+  <td>Да</td>
+  <td>Да</td>
+  <td>Нет</td>
+  <td>GET /api/users/1</td>
+</tr>
+<tr>
+  <td><code>POST</code></td>
+  <td>Создать ресурс</td>
+  <td>Нет</td>
+  <td>Нет</td>
+  <td>Да</td>
+  <td>POST /api/users</td>
+</tr>
+<tr>
+  <td><code>PUT</code></td>
+  <td>Полностью заменить</td>
+  <td>Да</td>
+  <td>Нет</td>
+  <td>Да</td>
+  <td>PUT /api/users/1</td>
+</tr>
+<tr>
+  <td><code>PATCH</code></td>
+  <td>Частично обновить</td>
+  <td>Нет*</td>
+  <td>Нет</td>
+  <td>Да</td>
+  <td>PATCH /api/users/1</td>
+</tr>
+<tr>
+  <td><code>DELETE</code></td>
+  <td>Удалить ресурс</td>
+  <td>Да</td>
+  <td>Нет</td>
+  <td>Нет**</td>
+  <td>DELETE /api/users/1</td>
+</tr>
+</tbody>
+</table>
+
+<p><small>* PATCH может быть идемпотентным, если операция замены задана абсолютно, но спецификация не гарантирует этого.<br>
+** Тело у DELETE технически допустимо, но лучшие практики запрещают его использовать.</small></p>
+
+<h3>Разбираем каждый метод</h3>
+
+<h4>GET — получить (безопасно и идемпотентно)</h4>
+
+<p>GET используется только для чтения данных. Он <strong>безопасен</strong> — то есть не меняет состояние сервера. Его можно вызывать сколько угодно раз — результат будет одинаковым (идемпотентность). Именно поэтому GET-запросы кешируются, индексируются поисковиками и не требуют подтверждения.</p>
+
+<p><strong>Правило:</strong> если эндпоинт что-то меняет (списывает деньги, создаёт запись, отправляет письмо) — это не GET.</p>
+
+<h4>POST — создать (не идемпотентно)</h4>
+
+<p>POST — единственный метод, который не является идемпотентным по определению. Отправляя один и тот же POST-запрос дважды, вы рискуете получить два разных результата (например, два заказа).</p>
+
+<p><strong>Важно для аналитика:</strong> если вы проектируете платёжный эндпоинт, POST без защиты от дубликатов — это путь к двойным списаниям. Об этом мы поговорим в разделе 2.7.</p>
+
+<h4>PUT — полностью заменить (идемпотентно)</h4>
+
+<p>PUT заменяет <em>весь</em> ресурс новой версией. Если вы отправите один и тот же PUT-запрос дважды — результат будет одинаковым. PUT идемпотентен, потому что он закрепляет конкретное состояние ресурса.</p>
+
+<blockquote class="antipattern">
+<p><strong>Антипаттерн.</strong> Использовать PUT для частичного обновления (<code>PUT /api/users/1</code> с телом <code>{"name": "Новое имя"}</code>, ожидая, что остальные поля не изменятся). Это ломает идемпотентность: повторный PUT может неожиданно перезаписать данные, которых не было в первом запросе. Для частичного обновления есть PATCH.</p>
+</blockquote>
+
+<h4>PATCH — частично обновить</h4>
+
+<p>PATCH появился в HTTP позже остальных, но быстро стал незаменимым. Он обновляет только те поля, которые переданы в теле запроса. Остальные поля остаются без изменений.</p>
+
+<h4>DELETE — удалить</h4>
+
+<p>DELETE удаляет ресурс. Идемпотентен: повторный DELETE вернёт 404 (ресурса уже нет), но это нормально — сервер не сломается.</p>
+
+<blockquote class="error">
+<p><strong>Типичная ошибка.</strong> DELETE с телом запроса. DELETE не должен иметь тела. Если вам нужно передать причину удаления или другие параметры — используйте заголовки или query-параметры. Например: <code>DELETE /api/orders/1?reason=duplicate</code> (хотя лучше POST /api/orders/1/cancel).</p>
+</blockquote>
+
+<h3>Почему это важно для аналитика</h3>
+
+<p>Выбирая метод, вы задаёте <strong>семантику</strong> эндпоинта. Клиент (фронтенд, другой сервис) полагается на эту семантику. Если вы повесите удаление на GET — кеширующий прокси решит, что это безопасный запрос, и закеширует результат. Если вы используете POST для получения данных — потеряете кеширование и идемпотентность. Метод — это контракт.</p>
+
+<blockquote class="bank">
+<p><strong>Реальный пример: API банковского перевода.</strong></p>
+<p>Предположим, мы проектируем эндпоинт для перевода средств между счетами.</p>
+<ul>
+  <li><strong>Неправильно:</strong> <code>GET /api/transfer?from=123&to=456&amount=1000</code> — GET безопасный, его может выполнить поисковый робот или браузер при prefetch'е. Деньги уйдут просто от того, что кто-то перешёл по ссылке.</li>
+  <li><strong>Неправильно:</strong> <code>POST /api/transfer</code> — если клиент потеряет соединение и повторит запрос, перевод выполнится дважды.</li>
+  <li><strong>Правильно:</strong> <code>POST /api/transfers</code> с заголовком <code>Idempotency-Key: uuid</code>. Сервер проверяет ключ: если такой перевод уже был — возвращает сохранённый результат, не выполняя повторного списания.</li>
+</ul>
+</blockquote>
+
+<!-- ========== 2.3 ========== -->
+<h2>2.3. Endpoint — это существительное, не глагол</h2>
+
+<p>Это настолько важное правило, что оно стоит отдельного раздела. URL в REST API — это <strong>путь к ресурсу</strong>, а не описание действия.</p>
+
+<h3>Правильно vs Неправильно</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Неправильно (глагол)</th>
+  <th>Правильно (существительное)</th>
+  <th>Метод</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>/api/getOrders</code></td>
+  <td><code>/api/orders</code></td>
+  <td>GET</td>
+</tr>
+<tr>
+  <td><code>/api/createOrder</code></td>
+  <td><code>/api/orders</code></td>
+  <td>POST</td>
+</tr>
+<tr>
+  <td><code>/api/updateOrder</code></td>
+  <td><code>/api/orders/1</code></td>
+  <td>PATCH</td>
+</tr>
+<tr>
+  <td><code>/api/deleteOrder</code></td>
+  <td><code>/api/orders/1</code></td>
+  <td>DELETE</td>
+</tr>
+<tr>
+  <td><code>/api/getUserOrders?id=1</code></td>
+  <td><code>/api/users/1/orders</code></td>
+  <td>GET</td>
+</tr>
+<tr>
+  <td><code>/api/changePassword</code></td>
+  <td><code>/api/users/1/password</code></td>
+  <td>PATCH</td>
+</tr>
+</tbody>
+</table>
+
+<blockquote class="idea">
+<p><strong>Аналогия.</strong> Представьте шкаф с папками. Каждая папка подписана: «Заказы 2024», «Клиенты», «Счета». Вы не пишете на папке «Положить сюда новый заказ» или «Взять отсюда заказ». Вы просто подходите к папке «Заказы» и делаете то, что нужно: кладёте новый бланк (POST), вынимаете старый (GET), заменяете содержимое (PUT) или выбрасываете папку (DELETE). URL — это имя папки, а не инструкция.</p>
+</blockquote>
+
+<h3>Почему это важно</h3>
+
+<ol>
+  <li><strong>Единообразие.</strong> Все эндпоинты следуют одному шаблону. Не нужно гадать, как называется эндпоинт для обновления — метод меняется, а путь остаётся тем же.</li>
+  <li><strong>Предсказуемость.</strong> Зная структуру API, клиент может угадать эндпоинт для нового ресурса. Если есть <code>/api/users</code> и <code>/api/orders</code>, то будет и <code>/api/products</code>.</li>
+  <li><strong>Масштабирование.</strong> Добавление нового метода (например, PATCH) не ломает существующие эндпоинты. Путь не меняется — меняется только HTTP-метод.</li>
+  <li><strong>Инструментальная поддержка.</strong> Swagger, OpenAPI, клиентские генераторы — все они рассчитывают на существительные.</li>
+</ol>
+
+<h3>RESTful naming conventions</h3>
+
+<p>Несколько правил именования, которые помогут сделать API читаемым:</p>
+<ul>
+  <li><strong>Множественное число для коллекций:</strong> <code>/api/users</code>, <code>/api/orders</code> (а не <code>/api/user</code>).</li>
+  <li><strong>Вложенность для связанных ресурсов:</strong> <code>/api/users/1/orders/5/items</code>.</li>
+  <li><strong>kebab-case для составных имён:</strong> <code>/api/shipping-addresses</code> (а не <code>/api/shippingAddresses</code> или <code>/api/shipping_addresses</code>).</li>
+  <li><strong>Без глаголов:</strong> никаких <code>/api/getAllUsers</code>.</li>
+  <li><strong>Без точек и расширений:</strong> <code>/api/users/1</code>, а не <code>/api/users/1.json</code>.</li>
+  <li><strong>Параметры — в query, не в path:</strong> <code>/api/orders?status=paid</code>, а не <code>/api/orders/status/paid</code>.</li>
+</ul>
+
+<blockquote class="best">
+<p><strong>Лучшая практика.</strong> Если вам кажется, что без глагола не обойтись — подумайте, не создаёте ли вы новый ресурс. Например, <code>POST /api/orders/1/cancel</code> можно заменить на <code>POST /api/orders/1/cancellations</code>, где «отмена» — это самостоятельный ресурс.</p>
+</blockquote>
+
+<!-- ========== 2.4 ========== -->
+<h2>2.4. HTTP Status Codes — язык без слов</h2>
+
+<p>Код ответа HTTP — это первое, что видит клиент после запроса. Он говорит: «Всё хорошо» или «Что-то пошло не так». Аналитик должен знать коды не хуже разработчика, потому что именно аналитик описывает в документации, что и когда возвращается.</p>
+
+<h3>Категории статусов</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Диапазон</th>
+  <th>Категория</th>
+  <th>Смысл</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>1xx</td>
+  <td>Informational</td>
+  <td>Запрос получен, продолжается обработка</td>
+</tr>
+<tr>
+  <td>2xx</td>
+  <td>Success</td>
+  <td>Запрос успешно обработан</td>
+</tr>
+<tr>
+  <td>3xx</td>
+  <td>Redirection</td>
+  <td>Клиенту нужно выполнить дополнительное действие</td>
+</tr>
+<tr>
+  <td>4xx</td>
+  <td>Client Error</td>
+  <td>Ошибка на стороне клиента</td>
+</tr>
+<tr>
+  <td>5xx</td>
+  <td>Server Error</td>
+  <td>Ошибка на стороне сервера</td>
+</tr>
+</tbody>
+</table>
+
+<h3>Самые важные коды (которые нужно знать наизусть)</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Код</th>
+  <th>Название</th>
+  <th>Когда использовать</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>200</strong></td>
+  <td>OK</td>
+  <td>Запрос выполнен успешно. Для GET — тело содержит запрошенные данные. Для POST — тело содержит результат операции.</td>
+</tr>
+<tr>
+  <td><strong>201</strong></td>
+  <td>Created</td>
+  <td>Ресурс успешно создан (POST). В ответе — созданный ресурс и заголовок Location с URL нового ресурса.</td>
+</tr>
+<tr>
+  <td><strong>204</strong></td>
+  <td>No Content</td>
+  <td>Запрос выполнен успешно, но тело ответа пусто. Используется для DELETE, иногда для PUT/PATCH, когда обновление не требует возврата данных.</td>
+</tr>
+<tr>
+  <td><strong>301</strong></td>
+  <td>Moved Permanently</td>
+  <td>Ресурс перемещён навсегда. Клиент должен обновить URL.</td>
+</tr>
+<tr>
+  <td><strong>304</strong></td>
+  <td>Not Modified</td>
+  <td>Клиент может использовать кешированную версию.</td>
+</tr>
+<tr>
+  <td><strong>400</strong></td>
+  <td>Bad Request</td>
+  <td>Сервер не может обработать запрос из-за ошибки клиента: невалидный JSON, неверный формат, пропущенные поля.</td>
+</tr>
+<tr>
+  <td><strong>401</strong></td>
+  <td>Unauthorized</td>
+  <td>Клиент не предоставил учётные данные (или они неверны). Нужен токен / логин-пароль.</td>
+</tr>
+<tr>
+  <td><strong>403</strong></td>
+  <td>Forbidden</td>
+  <td>Клиент аутентифицирован, но не имеет прав на выполнение операции.</td>
+</tr>
+<tr>
+  <td><strong>404</strong></td>
+  <td>Not Found</td>
+  <td>Ресурс не найден. Может означать как отсутствие конкретной записи, так и неверный URL.</td>
+</tr>
+<tr>
+  <td><strong>409</strong></td>
+  <td>Conflict</td>
+  <td>Конфликт с текущим состоянием ресурса. Например, попытка создать дубликат или удалить объект, на который есть ссылки.</td>
+</tr>
+<tr>
+  <td><strong>422</strong></td>
+  <td>Unprocessable Entity</td>
+  <td>Запрос синтаксически верен (JSON валидный), но семантически некорректен: отрицательная цена, дата рождения в будущем.</td>
+</tr>
+<tr>
+  <td><strong>429</strong></td>
+  <td>Too Many Requests</td>
+  <td>Превышен лимит запросов (rate limiting).</td>
+</tr>
+<tr>
+  <td><strong>500</strong></td>
+  <td>Internal Server Error</td>
+  <td>Внутренняя ошибка сервера. Клиент не виноват, сервер сломался.</td>
+</tr>
+<tr>
+  <td><strong>502</strong></td>
+  <td>Bad Gateway</td>
+  <td>Сервер (обычно прокси) получил некорректный ответ от вышестоящего сервера.</td>
+</tr>
+<tr>
+  <td><strong>503</strong></td>
+  <td>Service Unavailable</td>
+  <td>Сервер временно недоступен (перегрузка, техническое обслуживание).</td>
+</tr>
+</tbody>
+</table>
+
+<blockquote class="senior">
+<p><strong>Как думает Senior.</strong> Аналитик, который различает 401 и 403, сразу вызывает уважение разработчиков. 401 — «кто ты?» (нужна аутентификация). 403 — «ты кто, но тебе нельзя» (не хватает прав). Путать их — значит путать идентификацию с авторизацией. Разные сценарии, разная логика обработки на клиенте. При 401 клиент показывает форму логина. При 403 — сообщение «доступ запрещён».</p>
+</blockquote>
+
+<blockquote class="antipattern">
+<p><strong>Антипаттерн: 200 на ошибку.</strong> Некоторые разработчики возвращают 200 OK всегда, а результат помещают в тело: <code>{"success": false, "error": "Недостаточно средств"}</code>. Проблема в том, что HTTP-статус теряет смысл. Кеширующие прокси не узнают об ошибке. Клиент должен разбирать тело ответа, чтобы понять, что пошло не так. Это путь к хаосу. Если произошла ошибка — верните соответствующий 4xx или 5xx код.</p>
+</blockquote>
+
+<h3>Таблица: какой статус и когда использовать</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Сценарий</th>
+  <th>Метод</th>
+  <th>Статус</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Получение списка заказов</td>
+  <td>GET</td>
+  <td>200 OK</td>
+</tr>
+<tr>
+  <td>Создание заказа</td>
+  <td>POST</td>
+  <td>201 Created</td>
+</tr>
+<tr>
+  <td>Удаление заказа</td>
+  <td>DELETE</td>
+  <td>204 No Content</td>
+</tr>
+<tr>
+  <td>Обновление заказа</td>
+  <td>PATCH</td>
+  <td>200 OK</td>
+</tr>
+<tr>
+  <td>Частичное обновление без возврата</td>
+  <td>PATCH</td>
+  <td>204 No Content</td>
+</tr>
+<tr>
+  <td>Невалидный JSON в теле запроса</td>
+  <td>POST</td>
+  <td>400 Bad Request</td>
+</tr>
+<tr>
+  <td>Токен не предоставлен</td>
+  <td>GET</td>
+  <td>401 Unauthorized</td>
+</tr>
+<tr>
+  <td>Токен есть, но нет прав на удаление</td>
+  <td>DELETE</td>
+  <td>403 Forbidden</td>
+</tr>
+<tr>
+  <td>Заказ не найден</td>
+  <td>GET</td>
+  <td>404 Not Found</td>
+</tr>
+<tr>
+  <td>Попытка создать дубликат заказа</td>
+  <td>POST</td>
+  <td>409 Conflict</td>
+</tr>
+<tr>
+  <td>Некорректная сумма заказа (&le; 0)</td>
+  <td>POST</td>
+  <td>422 Unprocessable Entity</td>
+</tr>
+<tr>
+  <td>Превышение лимита запросов</td>
+  <td>GET</td>
+  <td>429 Too Many Requests</td>
+</tr>
+<tr>
+  <td>База данных упала</td>
+  <td>GET</td>
+  <td>500 Internal Server Error</td>
+</tr>
+<tr>
+  <td>API gateway не может достучаться до сервиса заказов</td>
+  <td>GET</td>
+  <td>502 Bad Gateway</td>
+</tr>
+<tr>
+  <td>Сервис заказов на техническом перерыве</td>
+  <td>GET</td>
+  <td>503 Service Unavailable</td>
+</tr>
+</tbody>
+</table>
+
+<!-- ========== 2.5 ========== -->
+<h2>2.5. URL-дизайн: структура и иерархия</h2>
+
+<p>Хороший URL читается как путь к файлу. Плохой URL — как строка с секретным кодом.</p>
+
+<h3>Ресурсы и подресурсы</h3>
+
+<p>Связанные ресурсы вкладываются друг в друга. Это отражает их иерархию в предметной области:</p>
+
+<div class="diagram">/api/users/{userId}/orders/{orderId}/items/{itemId}</div>
+
+<p>Читается как: «у пользователя №42 есть заказ №5, а в нём — позиция №1». Каждый уровень сужает контекст.</p>
+
+<p><strong>Глубина вложенности.</strong> Не увлекайтесь. Три уровня — предел. Если нужно глубже — используйте query-параметры или плоскую структуру.</p>
+
+<blockquote class="best">
+<p><strong>Лучшая практика.</strong> Плоская структура с фильтрацией часто предпочтительнее глубокой вложенности. Вместо <code>/api/users/1/orders/5/items/3/attachments/7</code> — <code>/api/attachments?orderItemId=3</code>.</p>
+</blockquote>
+
+<h3>Path vs Query: что куда</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Идёт в URL (path)</th>
+  <th>Идёт в query-параметры</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Идентификатор ресурса (userId, orderId)</td>
+  <td>Фильтры (status, dateFrom, category)</td>
+</tr>
+<tr>
+  <td>Имя ресурса (users, orders, products)</td>
+  <td>Пагинация (page, size, offset)</td>
+</tr>
+<tr>
+  <td>Действие в виде подресурса (cancel, activate)</td>
+  <td>Сортировка (sort, order)</td>
+</tr>
+<tr>
+  <td>Версия API (/api/v1/)</td>
+  <td>Поиск (q, search, query)</td>
+</tr>
+<tr>
+  <td>Локализация (/en/, /ru/)</td>
+  <td>Формат ответа (?format=json) — хотя лучше через заголовки Accept</td>
+</tr>
+</tbody>
+</table>
+
+<h3>Версионирование</h3>
+
+<p>API меняется, и клиенты должны к этому адаптироваться. Версионирование через URL — самый простой и понятный способ:</p>
+
+<div class="diagram">/api/v1/orders
+/api/v2/orders</div>
+
+<p>Когда вы выпускаете v2, v1 продолжает работать для старых клиентов. Да, это значит, что вы поддерживаете две версии. Но это лучше, чем ломать работающие интеграции.</p>
+
+<p>Альтернативы: версионирование через заголовки (<code>Accept: application/vnd.api+json;version=2</code>) или query-параметры (<code>?version=2</code>). Но URL-версия — самый прозрачный вариант.</p>
+
+<h3>Примеры правильных и неправильных URL</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Неправильно</th>
+  <th>Правильно</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>/api/getAllOrders?userId=42</code></td>
+  <td><code>/api/users/42/orders</code></td>
+</tr>
+<tr>
+  <td><code>/api/orders?delete=true&id=5</code></td>
+  <td><code>DELETE /api/orders/5</code></td>
+</tr>
+<tr>
+  <td><code>/api/order/create</code></td>
+  <td><code>POST /api/orders</code></td>
+</tr>
+<tr>
+  <td><code>/api/UpdateStatusOfOrder</code></td>
+  <td><code>PATCH /api/orders/123/status</code></td>
+</tr>
+<tr>
+  <td><code>/api/users/listOrders?userId=1</code></td>
+  <td><code>/api/users/1/orders</code></td>
+</tr>
+<tr>
+  <td><code>/api/products/sortByPrice</code></td>
+  <td><code>/api/products?sort=price,asc</code></td>
+</tr>
+<tr>
+  <td><code>/api/items/byCategory?cat=books</code></td>
+  <td><code>/api/categories/books/items</code></td>
+</tr>
+</tbody>
+</table>
+
+<blockquote class="bank">
+<p><strong>Реальный пример: API интернет-магазина.</strong></p>
+<p>Спроектируем фрагмент API для интернет-магазина:</p>
+
+<table>
+<thead>
+<tr>
+  <th>Описание</th>
+  <th>Метод и URL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Список товаров с фильтром по категории</td>
+  <td><code>GET /api/v1/products?categoryId=5&page=1&size=20</code></td>
+</tr>
+<tr>
+  <td>Карточка товара</td>
+  <td><code>GET /api/v1/products/sku-001</code></td>
+</tr>
+<tr>
+  <td>Добавление товара в корзину</td>
+  <td><code>POST /api/v1/cart/items</code> с телом: {productId, quantity}</td>
+</tr>
+<tr>
+  <td>Оформление заказа из корзины</td>
+  <td><code>POST /api/v1/orders</code> (сервер переносит товары из корзины в заказ)</td>
+</tr>
+<tr>
+  <td>Получение статуса заказа</td>
+  <td><code>GET /api/v1/orders/ORD-12345</code></td>
+</tr>
+<tr>
+  <td>Оплата заказа</td>
+  <td><code>POST /api/v1/orders/ORD-12345/payments</code> с <code>Idempotency-Key</code></td>
+</tr>
+<tr>
+  <td>Отмена заказа</td>
+  <td><code>POST /api/v1/orders/ORD-12345/cancellations</code></td>
+</tr>
+<tr>
+  <td>История заказов пользователя</td>
+  <td><code>GET /api/v1/users/42/orders?sort=date,desc</code></td>
+</tr>
+<tr>
+  <td>Получение отзыва на товар</td>
+  <td><code>GET /api/v1/products/sku-001/reviews</code></td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+
+<!-- ========== 2.6 ========== -->
+<h2>2.6. Контракты API — почему их нельзя менять</h2>
+
+<blockquote class="idea">
+<p><strong>Аналогия.</strong> API — это электрическая розетка. Форма розетки не менялась десятилетиями, хотя за стенами электростанции могут модернизироваться хоть каждый день. Клиент (вилка) должен подходить к розетке (API) без напильника.</p>
+</blockquote>
+
+<p><strong>Контракт API</strong> — это соглашение между клиентом и сервером. Клиент обещает отправлять запросы определённого формата. Сервер обещает возвращать ответы определённого формата. Изменение контракта без предупреждения — это нарушение доверия.</p>
+
+<h3>Обратная совместимость</h3>
+
+<p>Изменение считается обратно совместимым (не ломающим), если старые клиенты продолжают работать без изменений. Что можно делать:</p>
+<ul>
+  <li>Добавлять новые поля в ответ (клиенты, которые не читают эти поля, не сломаются).</li>
+  <li>Добавлять новые эндпоинты.</li>
+  <li>Добавлять новые опциональные параметры запроса.</li>
+  <li>Расширять диапазон допустимых значений (например, увеличить лимит пагинации).</li>
+</ul>
+
+<h3>Breaking changes — что ломает клиентов</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Изменение</th>
+  <th>Почему ломает</th>
+  <th>Степень</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Удаление поля из ответа</td>
+  <td>Клиент ожидает поле, получает undefined — падает</td>
+  <td>Критично</td>
+</tr>
+<tr>
+  <td>Переименование поля (name → fullName)</td>
+  <td>Клиент ищет name, не находит</td>
+  <td>Критично</td>
+</tr>
+<tr>
+  <td>Изменение типа поля (string → number)</td>
+  <td>Клиент ожидает строку, получает число</td>
+  <td>Критично</td>
+</tr>
+<tr>
+  <td>Изменение URL эндпоинта</td>
+  <td>Клиент шлёт запрос на старый URL</td>
+  <td>Критично</td>
+</tr>
+<tr>
+  <td>Изменение HTTP-метода (был GET, стал POST)</td>
+  <td>Клиент использует GET</td>
+  <td>Критично</td>
+</tr>
+<tr>
+  <td>Изменение статус-кода (был 200, стал 201)</td>
+  <td>Клиент проверяет === 200</td>
+  <td>Средне</td>
+</tr>
+<tr>
+  <td>Добавление обязательного поля в запрос</td>
+  <td>Старые клиенты его не шлют</td>
+  <td>Критично</td>
+</tr>
+<tr>
+  <td>Изменение формата даты (DD.MM → ISO 8601)</td>
+  <td>Клиент парсит по старому формату</td>
+  <td>Критично</td>
+</tr>
+<tr>
+  <td>Добавление нового поля в ответ</td>
+  <td>Клиент игнорирует неизвестные поля</td>
+  <td>Безопасно</td>
+</tr>
+</tbody>
+</table>
+
+<blockquote class="senior">
+<p><strong>Как думает Senior.</strong> «Кажется, что переименовать поле — мелочь. Но за каждым полем в ответе стоит клиентский код: парсинг, отображение на UI, валидация, расчёты. Клиент не узнает о переименовании — он просто упадёт. Если очень нужно переименовать — добавьте новое поле, а старое пометьте deprecated. Через полгода можно удалить, предупредив всех клиентов.»</p>
+</blockquote>
+
+<h3>Как добавлять новые поля без боли</h3>
+
+<ol>
+  <li><strong>Расширяйте, а не изменяйте.</strong> Новое поле — новый ключ в JSON. Старые поля остаются без изменений.</li>
+  <li><strong>Используйте дефолтные значения.</strong> Если поле опционально — укажите значение по умолчанию в документации.</li>
+  <li><strong>Помечайте deprecated.</strong> Устаревшие поля документируйте с пометкой <code>deprecated</code> и указывайте, чем их заменить.</li>
+  <li><strong>Дайте миграционный период.</strong> Удаляйте поля не раньше, чем через N месяцев после объявления deprecation.</li>
+  <li><strong>Документируйте.</strong> Любое изменение должно быть отражено в changelog API.</li>
+</ol>
+
+<blockquote class="error">
+<p><strong>Типичная ошибка.</strong> «Мы удалим поле <code>user_name</code>, потому что оно нигде не используется на фронтенде». Но оно может использоваться мобильным приложением, которое обновляется раз в месяц, или сторонним партнёром, о котором вы забыли. <strong>Правило:</strong> если вы не знаете всех клиентов API — вы не можете просто удалить поле.</p>
+</blockquote>
+
+<!-- ========== 2.7 ========== -->
+<h2>2.7. Идемпотентность — важное понятие</h2>
+
+<p>Идемпотентность звучит страшно, но объясняется просто: <strong>сколько раз ни повторяй запрос — результат будет одинаковым</strong>.</p>
+
+<p>Представьте кнопку лифта. Если нажать один раз — лифт приедет. Если нажать пять раз — лифт всё равно приедет один раз. Кнопка лифта идемпотентна. А кнопка дверного звонка — нет: нажали один раз — звонок прозвенел один раз, нажали пять раз — прозвенел пять раз.</p>
+
+<h3>Почему это важно</h3>
+
+<p>В мире API сети ненадёжны. Клиент отправил запрос, но ответ не пришёл (таймаут, обрыв соединения). Что делать клиенту? Повторить запрос. Но если запрос не идемпотентен — повторное выполнение может создать дубликат: второй заказ, второе списание денег, вторую регистрацию.</p>
+
+<table>
+<thead>
+<tr>
+  <th>Метод</th>
+  <th>Идемпотентен?</th>
+  <th>Комментарий</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>GET</td>
+  <td>Да</td>
+  <td>Просто читает данные</td>
+</tr>
+<tr>
+  <td>PUT</td>
+  <td>Да</td>
+  <td>Заменяет ресурс целиком. Повтор — то же состояние.</td>
+</tr>
+<tr>
+  <td>DELETE</td>
+  <td>Да</td>
+  <td>Первый раз удаляет, второй раз — 404, но это нормально.</td>
+</tr>
+<tr>
+  <td>PATCH</td>
+  <td>Нет*</td>
+  <td>Зависит от реализации. Если патч «прибавить 10 к balance» — не идемпотентен.</td>
+</tr>
+<tr>
+  <td>POST</td>
+  <td>Нет</td>
+  <td>Создаёт новый ресурс. Повтор — ещё один ресурс.</td>
+</tr>
+</tbody>
+</table>
+
+<h3>Идемпотентность в платежах</h3>
+
+<p>Платежи — критическая область, где отсутствие идемпотентности ведёт к финансовым потерям. Рассмотрим сценарий:</p>
+
+<div class="diagram">Клиент → POST /api/payments  →  Сервер списывает деньги
+         ← [ТАЙМАУТ]          ← Клиент не получил ответ
+Клиент → POST /api/payments  →  Сервер списывает деньги снова
+         ← 200 OK             ← Два списания!</div>
+
+<p>Решение — <strong>Idempotency-Key</strong>:</p>
+
+<div class="diagram">Клиент → POST /api/payments
+         Headers: { Idempotency-Key: "uuid-123" }
+         → Сервер: проверяет, был ли ключ "uuid-123"
+           → Нет: списывает деньги, сохраняет результат под ключом
+           → Да: возвращает сохранённый результат, НЕ списывая повторно
+
+Повторный запрос с тем же ключом → сервер возвращает тот же ответ.
+Результат: деньги списаны один раз.</div>
+
+<pre><code>// Первый запрос — создаём платёж с уникальным ключом
+POST /api/payments
+Idempotency-Key: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+
+{
+  "from": "account-123",
+  "to": "account-456",
+  "amount": 1000,
+  "currency": "USD"
+}
+
+// Ответ: 201 Created
+{
+  "paymentId": "pay-001",
+  "status": "completed",
+  "amount": 1000
+}
+
+// Клиент не получил ответ, повторяет с тем же ключом
+POST /api/payments
+Idempotency-Key: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+
+// Тело запроса то же самое
+
+// Ответ: 200 OK (не 201 — потому что ресурс уже существует)
+// Но деньги НЕ списываются повторно!
+{
+  "paymentId": "pay-001",
+  "status": "completed",
+  "amount": 1000
+}</code></pre>
+
+<blockquote class="senior">
+<p><strong>Как думает Senior.</strong> «Idempotency-Key — это спасательный круг для надёжности. Он превращает неидемпотентный POST в идемпотентную операцию. Все операции, которые меняют финансовое состояние, должны поддерживать этот механизм. Срок хранения ключа — минимум 24 часа, чтобы клиент успел повторить запрос при любых сетевых проблемах.»</p>
+</blockquote>
+
+<!-- ========== 2.8 ========== -->
+<h2>2.8. Пагинация, сортировка, фильтрация — стандарты</h2>
+
+<p>Редкий API обходится без списков данных. А если данных много — их нужно разбивать на страницы, сортировать и фильтровать. У аналитика должен быть готовый шаблон для этого.</p>
+
+<h3>Page-based vs Cursor-based пагинация</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Характеристика</th>
+  <th>Page-based</th>
+  <th>Cursor-based</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Как работает</td>
+  <td><code>?page=1&amp;size=20</code> — указываете номер страницы</td>
+  <td><code>?cursor=abc123&amp;size=20</code> — указываете последний элемент</td>
+</tr>
+<tr>
+  <td>Стабильность</td>
+  <td>При добавлении новых записей страницы «съезжают»</td>
+  <td>Новые записи не влияют на текущий курсор</td>
+</tr>
+<tr>
+  <td>Переход к странице N</td>
+  <td>Просто: <code>?page=N</code></td>
+  <td>Только последовательно: next / prev</td>
+</tr>
+<tr>
+  <td>Производительность на больших данных</td>
+  <td>OFFSET замедляется на больших значениях</td>
+  <td>Стабильна, зависит от индекса по полю курсора</td>
+</tr>
+<tr>
+  <td>Когда использовать</td>
+  <td>Небольшие наборы (&lt;10K), UI с номерами страниц</td>
+  <td>Ленты, бесконечный скролл, большие объёмы, реальное время</td>
+</tr>
+<tr>
+  <td>Пример</td>
+  <td>Админка, список пользователей</td>
+  <td>Лента новостей, история операций</td>
+</tr>
+</tbody>
+</table>
+
+<blockquote class="antipattern">
+<p><strong>Антипаттерн: offset-based пагинация в ленте.</strong> Представьте ленту новостей. Вы открываете страницу 1 — видите 20 постов. Пока вы читаете, приходит 5 новых постов. Вы нажимаете «страница 2» — и видите те же посты, что и на странице 1, потому что они «съехали» на 5 позиций. Пользователь думает, что сошёл с ума. Cursor-based пагинация решает эту проблему: курсор — это ID последнего поста, который вы видели. Новые посты добавляются сверху, но курсор остаётся на месте.</p>
+</blockquote>
+
+<h3>Стандартные параметры</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Параметр</th>
+  <th>Описание</th>
+  <th>Пример</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>page</code></td>
+  <td>Номер страницы (1-based)</td>
+  <td><code>?page=1</code></td>
+</tr>
+<tr>
+  <td><code>size</code></td>
+  <td>Количество элементов на странице</td>
+  <td><code>?size=20</code></td>
+</tr>
+<tr>
+  <td><code>offset</code></td>
+  <td>Смещение от начала (альтернатива page)</td>
+  <td><code>?offset=0&limit=20</code></td>
+</tr>
+<tr>
+  <td><code>sort</code></td>
+  <td>Поле и направление сортировки</td>
+  <td><code>?sort=date,desc</code></td>
+</tr>
+<tr>
+  <td><code>filter</code> или <code>status</code></td>
+  <td>Фильтрация по полю</td>
+  <td><code>?status=paid</code></td>
+</tr>
+<tr>
+  <td><code>q</code></td>
+  <td>Полнотекстовый поиск</td>
+  <td><code>?q=iphone</code></td>
+</tr>
+<tr>
+  <td><code>cursor</code></td>
+  <td>Идентификатор для cursor-based пагинации</td>
+  <td><code>?cursor=eyJsYXN0SWQiOjEwMH0=</code></td>
+</tr>
+</tbody>
+</table>
+
+<h3>Стандартный формат ответа с пагинацией</h3>
+
+<pre><code>GET /api/v1/orders?page=1&size=20&sort=date,desc&filter=status:paid
+
+{
+  "data": [
+    { "id": 1, "status": "paid", "total": 1500, "date": "2026-07-10T14:30:00Z" },
+    { "id": 2, "status": "paid", "total": 2300, "date": "2026-07-09T10:15:00Z" }
+  ],
+  "pagination": {
+    "page": 1,
+    "size": 20,
+    "totalItems": 58,
+    "totalPages": 3,
+    "hasNext": true,
+    "hasPrev": false
+  }
+}</code></pre>
+
+<blockquote class="senior">
+<p><strong>Как думает Senior: выбор стратегии пагинации.</strong></p>
+<p>«Для админки интернет-магазина (сотни заказов в день) — page-based пагинация идеальна. Пользователи хотят перейти к странице 5, администратору нужны точные номера страниц. Cursor-based здесь избыточен.</p>
+<p>Для ленты операций в банковском приложении (миллионы транзакций) — только cursor-based. Номера страниц не нужны, а стабильность важна: между запросами могут пройти часы, за которые появятся тысячи новых операций.</p>
+<p>Всегда устанавливайте лимит на size. Если клиент запросит size=100000 — верните ошибку 422 или обрежьте до разумного максимума (например, 100). Иначе один неаккуратный клиент положит базу данных.»</p>
+</blockquote>
+
+<h3>Пример комплексного запроса</h3>
+
+<pre><code># Запрос: заказы со статусом "paid" за последний месяц, 
+# отсортированные по сумме (по убыванию), страница 2, 50 записей
+
+GET /api/v1/orders?status=paid&dateFrom=2026-06-14&dateTo=2026-07-14
+     &sort=total,desc&page=2&size=50</code></pre>
+
+<!-- ========== 2.9 ========== -->
+<h2>2.9. REST API в Confluence — как должен выглядеть контракт</h2>
+
+<p>Аналитик — не разработчик и не инженер документации. Но именно аналитик чаще всего описывает API в Confluence или другом инструменте. Вот минимальный набор информации, который должен быть у каждого эндпоинта.</p>
+
+<h3>Шаблон описания эндпоинта</h3>
+
+<p>Для каждого эндпоинта документация должна содержать:</p>
+
+<ol>
+  <li><strong>URL и метод</strong> — однозначная идентификация.</li>
+  <li><strong>Назначение</strong> — что делает эндпоинт на языке бизнеса.</li>
+  <li><strong>Параметры запроса</strong> — path, query, headers, body.</li>
+  <li><strong>Пример запроса</strong> — curl или JSON.</li>
+  <li><strong>Пример ответа</strong> — успешный сценарий.</li>
+  <li><strong>Возможные статус-коды</strong> — все, не только 200.</li>
+  <li><strong>Возможные ошибки</strong> — описание ошибок для каждого статуса.</li>
+  <li><strong>Ограничения</strong> — rate limit, максимальный размер, пагинация.</li>
+</ol>
+
+<h3>Пример готового описания эндпоинта</h3>
+
+<h4>Создание заказа</h4>
+
+<table>
+<tbody>
+<tr>
+  <td><strong>Метод</strong></td>
+  <td><code>POST</code></td>
+</tr>
+<tr>
+  <td><strong>URL</strong></td>
+  <td><code>/api/v1/orders</code></td>
+</tr>
+<tr>
+  <td><strong>Назначение</strong></td>
+  <td>Создание нового заказа. Заказ создаётся из товаров, добавленных в корзину пользователя. После создания корзина очищается.</td>
+</tr>
+<tr>
+  <td><strong>Аутентификация</strong></td>
+  <td>Требуется Bearer token (заголовок <code>Authorization</code>)</td>
+</tr>
+<tr>
+  <td><strong>Idempotency-Key</strong></td>
+  <td>Обязателен в заголовке. Повторный запрос с тем же ключом не создаёт дубликат.</td>
+</tr>
+</tbody>
+</table>
+
+<h4>Request Body</h4>
+
+<pre><code>{
+  "cartId": "cart-42",            // string, required — ID корзины пользователя
+  "shippingAddressId": "addr-7",  // string, required — ID адреса доставки
+  "promoCode": "SALE2026",        // string, optional — промокод
+  "comment": "Позвонить перед доставкой", // string, optional — комментарий к заказу
+  "deliveryDate": "2026-07-20"    // string (date), optional — желаемая дата доставки
+}</code></pre>
+
+<h4>Response (успех)</h4>
+
+<table>
+<thead>
+<tr>
+  <th>Код</th>
+  <th>Тело ответа</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>201 Created</strong></td>
+  <td>Объект созданного заказа</td>
+</tr>
+</tbody>
+</table>
+
+<pre><code>{
+  "orderId": "ORD-20260714-001",
+  "status": "created",
+  "items": [
+    { "productId": "sku-001", "name": "iPhone 16", "quantity": 1, "price": 99900 },
+    { "productId": "sku-042", "name": "Чехол", "quantity": 2, "price": 2990 }
+  ],
+  "total": 105880,
+  "currency": "RUB",
+  "createdAt": "2026-07-14T12:00:00Z",
+  "estimatedDelivery": "2026-07-20"
+}</code></pre>
+
+<h4>Возможные ошибки</h4>
+
+<table>
+<thead>
+<tr>
+  <th>Код</th>
+  <th>Тело ошибки</th>
+  <th>Когда возникает</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>400 Bad Request</td>
+  <td><code>{"error": "validation_error", "details": [{"field": "cartId", "message": "cartId is required"}]}</code></td>
+  <td>Не указан cartId, невалидный JSON</td>
+</tr>
+<tr>
+  <td>401 Unauthorized</td>
+  <td><code>{"error": "unauthorized", "message": "Missing or invalid token"}</code></td>
+  <td>Токен не предоставлен или истёк</td>
+</tr>
+<tr>
+  <td>404 Not Found</td>
+  <td><code>{"error": "not_found", "message": "Cart cart-42 not found"}</code></td>
+  <td>Корзина или адрес не найдены</td>
+</tr>
+<tr>
+  <td>409 Conflict</td>
+  <td><code>{"error": "conflict", "message": "Idempotency-Key already used"}</code></td>
+  <td>Повторный запрос с тем же Idempotency-Key, но другим телом</td>
+</tr>
+<tr>
+  <td>422 Unprocessable Entity</td>
+  <td><code>{"error": "business_error", "message": "Cart is empty"}</code></td>
+  <td>Корзина пуста, товара нет в наличии, сумма меньше минимальной</td>
+</tr>
+<tr>
+  <td>429 Too Many Requests</td>
+  <td><code>{"error": "rate_limit", "message": "Too many requests. Try again in 30 seconds"}</code></td>
+  <td>Превышен лимит запросов (100 запросов в минуту)</td>
+</tr>
+<tr>
+  <td>500 Internal Server Error</td>
+  <td><code>{"error": "internal_error", "message": "Something went wrong"}</code></td>
+  <td>Внутренняя ошибка сервера</td>
+</tr>
+</tbody>
+</table>
+
+<blockquote class="best">
+<p><strong>Лучшая практика.</strong> Добавьте в документацию раздел с примерами ошибок. Разработчики клиентской стороны (фронтенд, мобильное приложение) будут вам благодарны: они увидят не только код, но и формат тела ошибки, что позволяет правильно обработать каждый сценарий.</p>
+</blockquote>
+
+<h3>Что аналитик обязательно должен указать в документации API</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Раздел</th>
+  <th>Что включить</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Общая информация</td>
+  <td>Base URL, версия API, формат данных, аутентификация</td>
+</tr>
+<tr>
+  <td>Эндпоинты</td>
+  <td>Для каждого: метод, URL, описание, параметры, тело запроса/ответа</td>
+</tr>
+<tr>
+  <td>Статус-коды</td>
+  <td>Таблица всех возможных кодов для каждого эндпоинта</td>
+</tr>
+<tr>
+  <td>Ошибки</td>
+  <td>Формат ошибки, примеры для каждого статуса</td>
+</tr>
+<tr>
+  <td>Пагинация</td>
+  <td>Стандартные параметры, формат ответа, лимиты</td>
+</tr>
+<tr>
+  <td>Rate limiting</td>
+  <td>Лимиты, заголовки (X-RateLimit-*), реакция на 429</td>
+</tr>
+<tr>
+  <td>Идемпотентность</td>
+  <td>Какие методы требуют Idempotency-Key, срок хранения ключей</td>
+</tr>
+<tr>
+  <td>Changelog</td>
+  <td>История изменений API с датами и описанием breaking changes</td>
+</tr>
+</tbody>
+</table>
+
+<!-- ========== ИТОГИ ========== -->
+<h2>Итоги главы</h2>
+
+<h3>Чек-лист: 10 вопросов, которые аналитик должен задать при проектировании API</h3>
+
+<ol>
+  <li><strong>Какой ресурс?</strong> Какая сущность предметной области лежит в основе эндпоинта?</li>
+  <li><strong>Какой HTTP-метод?</strong> GET, POST, PUT, PATCH или DELETE — и почему?</li>
+  <li><strong>Какой URL?</strong> Это существительное во множественном числе? Нет ли глагола в пути?</li>
+  <li><strong>Какие статус-коды?</strong> Каждый возможный исход операции имеет свой код?</li>
+  <li><strong>Нужна ли идемпотентность?</strong> Может ли запрос быть повторён? Есть ли Idempotency-Key?</li>
+  <li><strong>Какая пагинация?</strong> Page-based или cursor-based? Какие параметры?</li>
+  <li><strong>Какая фильтрация и сортировка?</strong> Какие поля можно фильтровать? Какой формат sort?</li>
+  <li><strong>Что с обратной совместимостью?</strong> Не ломает ли новое поле существующих клиентов?</li>
+  <li><strong>Какие ошибки?</strong> Описан ли формат ошибки для каждого статус-кода?</li>
+  <li><strong>Как документируется?</strong> Есть ли пример запроса и ответа для каждого сценария?</li>
+</ol>
+
+<h3>Что должен понять аналитик</h3>
+
+<ul>
+  <li>REST API — это не магия, а строгие соглашения о том, как клиент и сервер общаются.</li>
+  <li><strong>Ресурсы</strong> (существительные) — основа REST. <strong>Методы</strong> (глаголы) — способ манипуляции ресурсами.</li>
+  <li>URL должен быть читаемым, предсказуемым и единообразным.</li>
+  <li>Статус-коды — это язык, который клиент понимает без разбора тела ответа.</li>
+  <li>Контракт API менять нельзя без миграционного периода.</li>
+  <li>Идемпотентность — база надёжных финансовых операций.</li>
+  <li>Документация API — это не «для галочки», а инструмент, который экономит часы переписки с разработчиками.</li>
+</ul>
+
+<blockquote class="remember">
+<p><strong>Золотое правило.</strong> Хороший API — это API, который не заставляет клиента читать документацию, чтобы понять, как им пользоваться. А если документация всё-таки нужна — она должна быть настолько полной, чтобы клиент ни разу не задал вопрос разработчику.</p>
+</blockquote>
+
+<h3>Вопросы для самопроверки</h3>
+
+<ol>
+  <li>Чем отличается PUT от PATCH? Приведите пример, когда использовать каждый.</li>
+  <li>Почему <code>/api/getOrders</code> — плохой URL? Как его исправить?</li>
+  <li>В чём разница между 401 и 403? Приведите сценарии для каждого.</li>
+  <li>Что такое идемпотентность и как её обеспечить для POST-запроса?</li>
+  <li>Когда следует использовать cursor-based пагинацию вместо page-based?</li>
+  <li>Какие изменения в API считаются breaking changes? Приведите три примера.</li>
+  <li>Почему возвращать 200 OK с телом <code>{"success": false}</code> — антипаттерн?</li>
+  <li>Как правильно добавить новое поле в ответ API, не ломая старых клиентов?</li>
+  <li>Спроектируйте эндпоинты для системы бронирования отелей: поиск номеров, бронирование, отмена, история броней.</li>
+  <li>Что должен содержать раздел документации для одного эндпоинта?</li>
+</ol>
+
+<hr />
+
+<div class="chapter-nav">
+  <a href="chapter01.html">← Глава 1: Как думает разработчик</a>
+  <a href="index.html">Содержание</a>
+  <a href="chapter03.html">Глава 3: JSON как контракт →</a>
+</div>
+
+</div>
+</body>
+</html>

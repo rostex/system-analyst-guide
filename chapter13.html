@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<title>Глава 13 — Чек-листы Senior аналитика | Техническое мышление аналитика</title>
+<style>
+/* === Base === */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #1a1a2e;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  background: #fff;
+}
+
+/* === Headings === */
+h1 { font-size: 2.2em; border-bottom: 3px solid #2d3436; padding-bottom: 12px; margin-top: 48px; color: #2d3436; }
+h2 { font-size: 1.6em; margin-top: 40px; padding-bottom: 8px; border-bottom: 1px solid #dfe6e9; color: #2d3436; }
+h3 { font-size: 1.3em; margin-top: 32px; color: #636e72; }
+h4 { font-size: 1.1em; margin-top: 24px; color: #636e72; }
+
+/* === Paragraphs & Lists === */
+p { margin: 16px 0; }
+ul, ol { margin: 12px 0; padding-left: 24px; }
+li { margin: 6px 0; }
+
+/* === Tables === */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 15px;
+}
+th {
+  background: #2d3436;
+  color: #fff;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+}
+td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #dfe6e9;
+}
+tr:nth-child(even) td {
+  background: #f8f9fa;
+}
+tr:hover td {
+  background: #e8f4f8;
+}
+
+/* === Code === */
+code {
+  background: #f1f2f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.9em;
+  color: #2d3436;
+}
+pre {
+  background: #2d3436;
+  color: #dfe6e9;
+  padding: 16px 20px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 16px 0;
+}
+pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+/* === Blockquotes / Callouts === */
+blockquote {
+  margin: 20px 0;
+  padding: 16px 20px;
+  border-left: 5px solid;
+  border-radius: 6px;
+  font-size: 15px;
+}
+blockquote p { margin: 4px 0; }
+
+blockquote.idea { border-color: #6c5ce7; background: #f0edff; }
+blockquote.idea strong { color: #6c5ce7; }
+
+blockquote.bank { border-color: #0984e3; background: #e8f4fd; }
+blockquote.bank strong { color: #0984e3; }
+
+blockquote.error { border-color: #d63031; background: #ffeef0; }
+blockquote.error strong { color: #d63031; }
+
+blockquote.antipattern { border-color: #e17055; background: #fdf0ed; }
+blockquote.antipattern strong { color: #e17055; }
+
+blockquote.best { border-color: #00b894; background: #e6faf4; }
+blockquote.best strong { color: #00b894; }
+
+blockquote.senior { border-color: #fdcb6e; background: #fef9e7; }
+blockquote.senior strong { color: #d68910; }
+
+blockquote.remember { border-color: #2d3436; background: #f1f2f6; }
+blockquote.remember strong { color: #2d3436; }
+
+blockquote.tip { border-color: #00b894; background: #e6faf4; }
+blockquote.tip strong { color: #00b894; }
+
+blockquote.fact { border-color: #a29bfe; background: #f5f3ff; }
+blockquote.fact strong { color: #a29bfe; }
+
+blockquote.warning { border-color: #e17055; background: #fdf0ed; }
+blockquote.warning strong { color: #e17055; }
+
+/* === Checkboxes === */
+input[type="checkbox"] { margin-right: 8px; }
+
+/* === Horizontal Rule === */
+hr {
+  border: none;
+  border-top: 2px solid #dfe6e9;
+  margin: 40px 0;
+}
+
+/* === Links === */
+a { color: #0984e3; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* === Chapter Navigation === */
+.chapter-nav {
+  background: #f8f9fa;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 24px 0;
+  display: flex;
+  justify-content: space-between;
+}
+.chapter-nav a { font-weight: 600; }
+
+/* === TOC === */
+.toc { margin: 24px 0; }
+.toc-item {
+  padding: 10px 16px;
+  border-bottom: 1px solid #dfe6e9;
+  display: flex;
+  align-items: center;
+}
+.toc-item .num {
+  font-weight: 700;
+  color: #0984e3;
+  min-width: 40px;
+  font-size: 1.1em;
+}
+.toc-item .title { font-weight: 600; color: #2d3436; }
+.toc-item:hover { background: #f8f9fa; }
+
+/* === Diagrams === */
+.diagram {
+  background: #f8f9fa;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 16px 0;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* === Checklists === */
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding: 6px 0; }
+.checklist li::before { content: "☐ "; font-size: 1.2em; }
+
+.checklist-input { list-style: none; padding-left: 0; }
+.checklist-input li { padding: 6px 0; }
+.checklist-input li label { display: inline-flex; align-items: baseline; cursor: pointer; gap: 8px; }
+
+/* === Subtitle === */
+.subtitle {
+  font-size: 1.2em;
+  color: #636e72;
+  margin-top: -12px;
+  margin-bottom: 32px;
+}
+
+/* === Meta === */
+.meta {
+  color: #636e72;
+  font-size: 14px;
+  margin: 16px 0;
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  body { padding: 20px 12px; font-size: 15px; }
+  h1 { font-size: 1.8em; }
+  h2 { font-size: 1.4em; }
+  .chapter-nav { flex-direction: column; gap: 12px; }
+}
+</style>
+</head>
+<body>
+<div id="content">
+
+<!-- ============================================================ -->
+<!-- ГЛАВА 12 -->
+<!-- ============================================================ -->
+
+<h1>Глава 13. Чек-листы Senior аналитика</h1>
+
+<blockquote class="senior">
+<p><strong>🧠 Senior tip:</strong> Чек-лист — это не про недоверие к себе. Чек-лист — это уважение к разработчику, к тестировщику и к будущему себе, который будет перечитывать эти требования через полгода.</p>
+</blockquote>
+
+<h2>Введение</h2>
+
+<p>Пилот перед взлётом проходит по чек-листу из 50 пунктов. Не потому что он плохой пилот, а потому что человеческая память ненадёжна. Хирурги перед операцией пересчитывают инструменты — не потому что они забыли стерилизацию, а потому что цена ошибки — жизнь пациента.</p>
+
+<p>Аналитик не управляет самолётом и не держит скальпель. Но цена его ошибки — недели разработки, часы пересогласований, простои в production. И точно так же он должен иметь чек-листы.</p>
+
+<p>В этой главе нет новой теории. Здесь — готовые инструменты, которые можно распечатать, повесить на стену и использовать каждый день. Каждый чек-лист собирает ключевые вопросы из предыдущих глав в структурированные списки.</p>
+
+<blockquote class="fact">
+<p><strong>💡 Факт:</strong> Исследования в авиации показали, что внедрение чек-листов снизило количество катастроф, связанных с человеческим фактором, на 80%. В разработке ПО эффект не менее значителен — требования, прошедшие чек-лист, возвращаются на доработку в 3–5 раз реже.</p>
+</blockquote>
+
+<p>Каждый чек-лист можно адаптировать под свой проект. Добавьте пункты, которые актуальны для вашей команды. Удалите те, что не применимы. Но <strong>не удаляйте пункты только потому, что «это и так очевидно»</strong> — именно очевидные вещи забываются в первую очередь.</p>
+
+<hr />
+
+<!-- ============================================================ -->
+<!-- 12.1 -->
+<!-- ============================================================ -->
+
+<h2>12.1. Чек-лист перед передачей требований разработчику</h2>
+
+<p>Прежде чем позвать разработчика на grooming и показать ему задачу, <strong>пройди по этому списку</strong>. Если хотя бы один пункт не отмечен — ты не готов.</p>
+
+<blockquote class="senior">
+<p><strong>🧠 Senior:</strong> Не передавай требования, пока сам не проверишь по чек-листу. Твоя репутация строится на том, сколько раз разработчик сказал «вопросов нет» вместо «а что здесь?».</p>
+</blockquote>
+
+<h3>🔲 Типы и форматы данных</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Типы данных указаны для каждого поля (integer, string, boolean, uuid, timestamp)</label></li>
+  <li><label><input type="checkbox" /> Форматы данных явно заданы (YYYY-MM-DD, ISO 8601, UUID v4, RFC 3339)</label></li>
+  <li><label><input type="checkbox" /> Различие между <code>null</code> и <code>optional</code> явно обозначено</li></label>
+  <li><label><input type="checkbox" /> Ограничения (length, range, enum values) заданы для каждого поля</label></li>
+  <li><label><input type="checkbox" /> Значения по умолчанию (<code>default</code>) указаны для опциональных полей</label></li>
+</ul>
+
+<h3>🔲 Обработка ошибок и граничные случаи</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Error cases описаны для каждого возможного отказа (что если БД недоступна? API не отвечает?)</label></li>
+  <li><label><input type="checkbox" /> Edge cases (граничные случаи) перечислены — пустой список, минимальное/максимальное значение, дубликаты</label></li>
+  <li><label><input type="checkbox" /> Acceptance criteria сформулированы в Given-When-Then</label></li>
+  <li><label><input type="checkbox" /> Примеры корректных и <strong>некорректных</strong> данных приведены</label></li>
+  <li><label><input type="checkbox" /> Описано поведение при превышении лимитов (количество записей, размер файла, длина строки)</label></li>
+</ul>
+
+<h3>🔲 Логика и зависимости</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Алгоритмы или бизнес-логика описаны однозначно — без «как-то обработать», «в особом порядке»</label></li>
+  <li><label><input type="checkbox" /> Указаны внешние зависимости (какие сервисы, API или БД участвуют?)</label></li>
+  <li><label><input type="checkbox" /> Временные характеристики (таймауты, задержки, TTL) указаны</label></li>
+  <li><label><input type="checkbox" /> Описаны сценарии отказа внешних систем и fallback-поведение</label></li>
+  <li><label><input type="checkbox" /> Требования к идемпотентности описаны — что будет при повторном вызове?</label></li>
+</ul>
+
+<h3>🔲 Non-functional и безопасность</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Требования к логированию указаны (что, когда, в каком формате)</label></li>
+  <li><label><input type="checkbox" /> Требования к мониторингу и метрикам указаны</label></li>
+  <li><label><input type="checkbox" /> Требования к безопасности (авторизация, роли, доступ к данным) описаны</label></li>
+  <li><label><input type="checkbox" /> Требования к производительности — ожидаемое время ответа, RPS</label></li>
+  <li><label><input type="checkbox" /> Требования проверены на непротиворечивость — одно требование не отменяет другое</label></li>
+</ul>
+
+<hr />
+
+<!-- ============================================================ -->
+<!-- 12.2 -->
+<!-- ============================================================ -->
+
+<h2>12.2. Чек-лист проверки API-контракта</h2>
+
+<p>API — это язык, на котором общаются сервисы. Ошибка в контракте означает переписывание кода на обеих сторонах. Пройди по чек-листу перед тем, как отдать контракт на реализацию.</p>
+
+<blockquote class="best">
+<p><strong>✅ Best practice:</strong> Храните API-контракты в OpenAPI/Swagger-спецификации. Чек-лист используйте как дополнительную проверку — все ли поля спецификации заполнены корректно.</p>
+</blockquote>
+
+<h3>🔲 Endpoint и заголовки</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> HTTP-метод указан и соответствует действию (GET — чтение, POST — создание, PUT — полная замена, PATCH — частичное обновление, DELETE — удаление)</label></li>
+  <li><label><input type="checkbox" /> URL-путь полностью специфицирован, включая path-параметры (<code>/users/{id}/orders</code>)</label></li>
+  <li><label><input type="checkbox" /> Path-параметры описаны с типами и форматами</label></li>
+  <li><label><input type="checkbox" /> Query-параметры описаны с типами, обязательностью и значениями по умолчанию</label></li>
+  <li><label><input type="checkbox" /> Заголовок <code>Authorization</code> описан (Bearer Token, Basic Auth, API Key)</label></li>
+  <li><label><input type="checkbox" /> Заголовок <code>Content-Type</code> для запроса и ответа указан (application/json, multipart/form-data)</label></li>
+  <li><label><input type="checkbox" /> <code>Idempotency-Key</code> поддержка описана (если нужна для идемпотентности)</label></li>
+</ul>
+
+<h3>🔲 Request и Response</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Request body schema (JSON / XML / Protobuf) приложена или описана</label></li>
+  <li><label><input type="checkbox" /> Все поля request body явно помечены: <code>required</code>, <code>nullable</code>, <code>optional</code></label></li>
+  <li><label><input type="checkbox" /> Response для успешного кода 2xx описан (тело ответа, структура)</label></li>
+  <li><label><input type="checkbox" /> Response для 4xx ошибок описан — какие коды, в каких ситуациях</label></li>
+  <li><label><input type="checkbox" /> Response для 5xx ошибок описан — что возвращается при внутренней ошибке сервера</label></li>
+  <li><label><input type="checkbox" /> Формат ошибки единообразен: <code>{ "code": "...", "message": "...", "details": {} }</code></label></li>
+</ul>
+
+<h3>🔲 Валидация и данные</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Валидация полей: <code>format</code> (email, uuid, date), <code>pattern</code> (regex), <code>minLength</code> / <code>maxLength</code>, <code>minimum</code> / <code>maximum</code></label></li>
+  <li><label><input type="checkbox" /> Enum values перечислены для полей с фиксированным набором значений</label></li>
+  <li><label><input type="checkbox" /> Пагинация: параметры <code>page</code>, <code>size</code>, ответ содержит <code>total</code> или <code>cursor</code></label></li>
+  <li><label><input type="checkbox" /> Сортировка: указаны доступные поля и направление (asc / desc)</label></li>
+  <li><label><input type="checkbox" /> Фильтрация: перечислены поля, по которым можно фильтровать, и операторы (<code>eq</code>, <code>gt</code>, <code>like</code>, <code>in</code>)</label></li>
+</ul>
+
+<h3>🔲 Версионирование и лимиты</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Версионирование API указано (через URL: <code>/v1/</code> или заголовок <code>Accept-Version</code>)</label></li>
+  <li><label><input type="checkbox" /> Rate limiting: лимиты запросов, заголовки (<code>X-RateLimit-Remaining</code>), поведение при превышении (HTTP 429)</label></li>
+  <li><label><input type="checkbox" /> Пример полного запроса и ответа приложен — чтобы разработчик мог сверить своё понимание</label></li>
+</ul>
+
+<hr />
+
+<!-- ============================================================ -->
+<!-- 12.3 -->
+<!-- ============================================================ -->
+
+<h2>12.3. Чек-лист требований к данным</h2>
+
+<p>Данные — фундамент любой системы. Ошибка в модели данных аукнется через год миграциями и костылями. Пройди по чек-листу перед утверждением схемы.</p>
+
+<blockquote class="warning">
+<p><strong>⚠️ Warning:</strong> Недостаточно сказать «поле name — строка». Нужно указать: максимальная длина, nullable/not null, есть ли дефолтное значение, уникальность, формат (например, только латиница). Каждое уточнение — сэкономленный час поддержки.</p>
+</blockquote>
+
+<h3>🔲 Описание полей</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Тип данных для каждого поля определён (INTEGER, VARCHAR, TIMESTAMP, BOOLEAN, UUID, JSONB)</label></li>
+  <li><label><input type="checkbox" /> Формат для строковых полей (UUID, email, URL, phone, enum) явно указан</label></li>
+  <li><label><input type="checkbox" /> <code>nullable</code> vs <code>NOT NULL</code> явно указано для каждого поля</label></li>
+  <li><label><input type="checkbox" /> <code>DEFAULT</code> значение задано (если применимо)</label></li>
+  <li><label><input type="checkbox" /> Пример валидных данных приведён для каждого поля</label></li>
+</ul>
+
+<h3>🔲 Ограничения и целостность</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> <code>UNIQUE</code> constraints описаны — на какие поля или комбинации полей</label></li>
+  <li><label><input type="checkbox" /> <code>PRIMARY KEY</code> определён (суррогатный или естественный)</label></li>
+  <li><label><input type="checkbox" /> <code>FOREIGN KEY</code> с правилами <code>ON DELETE</code> / <code>ON UPDATE</code> (CASCADE, SET NULL, RESTRICT)</label></li>
+  <li><label><input type="checkbox" /> <code>CHECK</code> constraints заданы (диапазон значений, формат, длина)</label></li>
+  <li><label><input type="checkbox" /> Ссылочная целостность проверена — нет «висячих» ссылок на несуществующие записи</label></li>
+</ul>
+
+<h3>🔲 Аудит и жизненный цикл</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Поля аудита: <code>created_at</code>, <code>updated_at</code> — с автоустановкой (DEFAULT now())</label></li>
+  <li><label><input type="checkbox" /> Поля аудита: <code>created_by</code>, <code>updated_by</code> — кто создал и изменил запись</label></li>
+  <li><label><input type="checkbox" /> Soft delete: нужно ли? Если да — поле <code>deleted_at</code>, фильтрация по умолчанию <code>WHERE deleted_at IS NULL</code></label></li>
+  <li><label><input type="checkbox" /> Индексы: по каким полям будет поиск и фильтрация? Указать тип индекса (B-tree, GIN, GiST, GIN для JSONB)</label></li>
+  <li><label><input type="checkbox" /> Составные индексы для частых запросов — порядок полей в индексе соответствует порядку в WHERE</label></li>
+</ul>
+
+<h3>🔲 Архивация</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Требования к архивированию / очистке данных: TTL, политика хранения, партиционирование по дате</label></li>
+</ul>
+
+<hr />
+
+<!-- ============================================================ -->
+<!-- 12.4 -->
+<!-- ============================================================ -->
+
+<h2>12.4. Чек-лист проверки user story</h2>
+
+<p>User story — не просто формат записи. Это способ мышления, который фокусирует на ценности для пользователя. Плохая user story — причина бесконечных уточнений на спринте.</p>
+
+<blockquote class="idea">
+<p><strong>💡 Idea:</strong> Если из user story нельзя понять, <strong>кому, что и зачем</strong> нужно — это не user story, а заметка. Отправляй её обратно Product Owner'у.</p>
+</blockquote>
+
+<h3>🔲 Структура story</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Роль (актор) явно указана — «Как <strong>кто</strong>...» (администратор, менеджер, внешняя система)</label></li>
+  <li><label><input type="checkbox" /> Действие сформулировано глаголом в активном залоге — «...я <strong>могу</strong> создать, удалить, экспортировать...»</label></li>
+  <li><label><input type="checkbox" /> Бизнес-ценность сформулирована — «...<strong>чтобы</strong> ускорить отчётность, сократить ручной ввод, снизить ошибки»</label></li>
+  <li><label><input type="checkbox" /> Acceptance criteria написаны в формате <strong>Given-When-Then</strong></label></li>
+</ul>
+
+<h3>🔲 Acceptance criteria</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> <strong>Given</strong> — начальное состояние системы описано (какие данные есть, в каком статусе система)</label></li>
+  <li><label><input type="checkbox" /> <strong>When</strong> — действие пользователя или системы описано конкретно (нажал кнопку, отправил запрос, наступило время)</label></li>
+  <li><label><input type="checkbox" /> <strong>Then</strong> — ожидаемый результат описан измеримо (статус 200, запись в БД, email отправлен)</label></li>
+</ul>
+
+<h3>🔲 Preconditions и Postconditions</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Preconditions — что должно быть истинно до начала (пользователь авторизован, запись существует, баланс положительный)</label></li>
+  <li><label><input type="checkbox" /> Postconditions — что изменилось в системе после выполнения (запись создана, статус изменён, деньги списаны)</label></li>
+  <li><label><input type="checkbox" /> Alternative flows — что если основной шаг не удался (неверный пароль, превышен лимит, запрос отклонён)</label></li>
+  <li><label><input type="checkbox" /> Exception flows — что если внешняя система недоступна (БД упала, API не отвечает, сетевой таймаут)</label></li>
+  <li><label><input type="checkbox" /> Non-functional requirements указаны (производительность, безопасность, совместимость)</label></li>
+</ul>
+
+<hr />
+
+<!-- ============================================================ -->
+<!-- 12.5 -->
+<!-- ============================================================ -->
+
+<h2>12.5. Чек-лист для проверки интеграций</h2>
+
+<p>Интеграция двух систем — зона максимального риска. Каждая интеграция — это два независимых разработчика, два графика релизов, два набора ошибок. Чек-лист помогает не упустить ни одного аспекта.</p>
+
+<blockquote class="antipattern">
+<p><strong>⛔ Антипаттерн:</strong> «А пусть они просто вызовут наш API — и всё». Без спецификации таймаутов, retry и обработки ошибок такая интеграция развалится при первой же нагрузке.</p>
+</blockquote>
+
+<h3>🔲 Тип и протокол</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Тип интеграции определён: <strong>синхронная</strong> (ожидает ответа) или <strong>асинхронная</strong> (через очередь / событие)</label></li>
+  <li><label><input type="checkbox" /> Протокол указан: HTTP/REST, gRPC, WebSocket, RabbitMQ, Kafka, SQS</label></li>
+  <li><label><input type="checkbox" /> Формат сериализации: JSON, Protocol Buffers, Avro, XML</label></li>
+</ul>
+
+<h3>🔲 Таймауты и Retry</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Таймаут соединения (connection timeout) указан — сколько ждать установки соединения</label></li>
+  <li><label><input type="checkbox" /> Таймаут ожидания ответа (read timeout) указан — сколько ждать полного ответа</label></li>
+  <li><label><input type="checkbox" /> Поведение при превышении таймаута описано — retry, fallback, ошибка пользователю</label></li>
+  <li><label><input type="checkbox" /> Retry: максимальное количество попыток указано</label></li>
+  <li><label><input type="checkbox" /> Retry: задержка между попытками (backoff strategy) — фиксированная, exponential, jitter</label></li>
+  <li><label><input type="checkbox" /> Retry: exponential backoff с джиттером — чтобы избежать «тиканья» всех клиентов одновременно</label></li>
+</ul>
+
+<h3>🔲 Идемпотентность и ошибки</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Идемпотентность: нужна ли? Если да — какой ключ (Idempotency-Key, UUID операции)</label></li>
+  <li><label><input type="checkbox" /> Идемпотентность: что происходит при повторном запросе с тем же ключом — возвращается тот же результат</label></li>
+  <li><label><input type="checkbox" /> Коды ошибок перечислены: какие HTTP-статусы обрабатываются, какие считаются фатальными (не retry)</label></li>
+  <li><label><input type="checkbox" /> Структура тела ошибки единая: <code>{ "code", "message", "details", "requestId" }</code></label></li>
+  <li><label><input type="checkbox" /> Circuit breaker: описан ли механизм размыкания при падении downstream-сервиса</label></li>
+</ul>
+
+<h3>🔲 Версионирование</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Версионирование контракта: какая версия используется, где указана</label></li>
+  <li><label><input type="checkbox" /> Политика изменения версий: breaking vs non-breaking changes, как анонсируется, срок поддержки старых версий</label></li>
+  <li><label><input type="checkbox" /> Миграционный план при смене версии: порядок развёртывания, backward compatibility, feature toggles</label></li>
+</ul>
+
+<hr />
+
+<!-- ============================================================ -->
+<!-- 12.6 -->
+<!-- ============================================================ -->
+
+<h2>12.6. Чек-лист вопросов перед оценкой</h2>
+
+<p>Оценка — это не гадание на картах Таро. Это прогноз, основанный на понимании задачи. Чем больше вопросов ты задал до оценки — тем точнее будет прогноз.</p>
+
+<blockquote class="remember">
+<p><strong>📌 Remember:</strong> Разработчик спросит «сколько времени?». Ты спроси «а что мы знаем о задаче?». Если ответ — «почти ничего», оценка будет +/- 300%. Твоя задача — сузить до +/- 20%.</p>
+</blockquote>
+
+<h3>🔲 Данные и границы</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Какие данные нужны на входе? (источник, объём, формат)</label></li>
+  <li><label><input type="checkbox" /> Какие данные отдаём на выходе? (формат, объём, потребитель)</label></li>
+  <li><label><input type="checkbox" /> Какие граничные случаи возможны? (пустой список, 1 запись, 10⁷ записей, дубликаты, специальные символы)</label></li>
+  <li><label><input type="checkbox" /> Какая нагрузка ожидается? (RPS, DAU, объём данных на старте и через год)</label></li>
+  <li><label><input type="checkbox" /> Профиль нагрузки — равномерная или с пиками? (закрытие квартала, начало рабочего дня, чёрная пятница)</label></li>
+</ul>
+
+<h3>🔲 Ошибки и влияние</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Какие ошибки могут возникнуть? (сетевые, валидационные, бизнес-логики, аппаратные)</label></li>
+  <li><label><input type="checkbox" /> Какие сервисы / системы затрагивает изменение? (перечислить все — от фронтенда до БД)</label></li>
+  <li><label><input type="checkbox" /> Нужна ли миграция данных? (сколько данных мигрировать, время миграции, простой)</label></li>
+  <li><label><input type="checkbox" /> Есть ли обратная совместимость? (старые клиенты, старые данные, старые API-версии)</label></li>
+  <li><label><input type="checkbox" /> Объём изменений в каждом сервисе оценён? (новый endpoint, новая логика, косметические правки)</label></li>
+</ul>
+
+<h3>🔲 Инфраструктура и риски</h3>
+<ul class="checklist-input">
+  <li><label><input type="checkbox" /> Требуется ли изменение схемы БД? (новые таблицы, колонки, индексы, миграции)</label></li>
+  <li><label><input type="checkbox" /> Нужно ли развёртывание новой инфраструктуры? (новый сервис, очередь, кэш, CDN)</label></li>
+  <li><label><input type="checkbox" /> Риски и неопределённости оценки перечислены? (есть ли «серые зоны», которые увеличат срок)</label></li>
+  <li><label><input type="checkbox" /> Зависимости от других команд / систем учтены? (ждём API от команды B, релиз платформы)</label></li>
+  <li><label><input type="checkbox" /> Как проверять корректность? (тесты, staging, canary, мониторинг после релиза)</label></li>
+</ul>
+
+<hr />
+
+<!-- ============================================================ -->
+<!-- 12.7 -->
+<!-- ============================================================ -->
+
+<h2>12.7. Таблица антипаттернов (сводная)</h2>
+
+<p>В этой таблице собраны антипаттерны аналитика — как из предыдущей главы, так и новые. Держи под рукой, чтобы вовремя заметить, что ты или твоя команда скатываетесь в знакомую ловушку.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Антипаттерн</th>
+      <th>Симптом</th>
+      <th>Последствие</th>
+      <th>Как правильно</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Золотая пуля</strong></td>
+      <td>Ищем одно идеальное решение. «А давайте сделаем идеальную архитектуру»</td>
+      <td>Paralysis by analysis — проект стоит, решение не выбрано</td>
+      <td>Эволюционная архитектура. Выберите рабочий вариант, улучшайте итерационно</td>
+    </tr>
+    <tr>
+      <td><strong>Анализ до бесконечности</strong></td>
+      <td>Бесконечно уточняем требования, добавляем новые вопросы, не начиная реализацию</td>
+      <td>Сроки срываются, бизнес теряет интерес</td>
+      <td>Timebox на анализ. После таймбокса — прототип, обратная связь, уточнение</td>
+    </tr>
+    <tr>
+      <td><strong>«Я так вижу»</strong></td>
+      <td>Требования без обоснования. Ответ на вопрос «почему?» — «ну, я так вижу» или «так надо»</td>
+      <td>Разработчик не понимает контекст, принимает неверные решения</td>
+      <td>Каждое требование сопровождается <strong>business justification</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Телефонный пересказ</strong></td>
+      <td>Устная передача требований: «я разработчику уже всё объяснил»</td>
+      <td>Искажение смысла, потеря деталей, blame game</td>
+      <td>Все требования — в письменном виде. Устно — только пояснения к написанному</td>
+    </tr>
+    <tr>
+      <td><strong>Документ-кладбище</strong></td>
+      <td>Требования написаны, утверждены и <strong>больше никогда не открывались</strong></td>
+      <td>Расхождение кода и документации, «документ — это fiction»</td>
+      <td>Документ живёт вместе с кодом. Обновляется при каждом изменении. Рецензируется</td>
+    </tr>
+    <tr>
+      <td><strong>Всё включено</strong></td>
+      <td>Одна задача включает всё: от изменения БД до нового UI и нескольких API</td>
+      <td>Задача не оцениваема, не тестируема, не релизится месяцами</td>
+      <td>Декомпозиция: одна задача — одно атомарное изменение</td>
+    </tr>
+    <tr>
+      <td><strong>Магические числа</strong></td>
+      <td>Константы без объяснения: таймаут 300, лимит 1000, but nothing else than a number in a spec</td>
+      <td>Никто не знает, почему именно 300. Через год число меняют, ломают систему</td>
+      <td>Каждая константа сопровождается обоснованием: на основе чего выбрано значение</td>
+    </tr>
+    <tr>
+      <td><strong>Бумажный тигр</strong></td>
+      <td>UML-диаграммы, BPMN, ERD — ради самих диаграмм, а не для понимания</td>
+      <td>Много красивых картинок, ноль пользы. Диаграммы не отвечают на вопросы</td>
+      <td>Диаграмма должна отвечать на конкретный вопрос. Нет вопроса — нет диаграммы</td>
+    </tr>
+    <tr>
+      <td><strong>Эффект попутчика</strong></td>
+      <td>Соглашательство без критического анализа: «да, так и сделаем», хотя есть сомнения</td>
+      <td>Проблемы всплывают на code review или в production</td>
+      <td>Сомневаешься — задавай вопросы. Лучше задать «глупый» вопрос сейчас, чем фиксить баг в prod</td>
+    </tr>
+    <tr>
+      <td><strong>Слепая вера в спецификацию</strong></td>
+      <td>Убеждённость, что если написано в спецификации — то так и работает в коде</td>
+      <td>Расхождение спецификации и реальности. Баги не ловятся до prod</td>
+      <td>Спецификация — гипотеза. Проверяй каждое предположение на staging</td>
+    </tr>
+    <tr>
+      <td><strong>Технический снобизм</strong></td>
+      <td>Игнорирование бизнес-ценности: «это технически некрасиво», хотя бизнесу всё равно</td>
+      <td>Переусложнение, потеря времени, недовольство бизнеса</td>
+      <td>Техническое совершенство оправдано только если приносит бизнес-ценность</td>
+    </tr>
+    <tr>
+      <td><strong>Микроменеджмент требований</strong></td>
+      <td>Каждая запятая утверждается, любое отклонение — новый документ</td>
+      <td>Бюрократия убивает скорость. Команда перестаёт думать</td>
+      <td>Acceptance criteria — контракт. Детали реализации оставь разработчику</td>
+    </tr>
+    <tr>
+      <td><strong>Аналитик-ретранслятор</strong></td>
+      <td>Просто передаёт слова бизнеса разработчикам, не анализируя, не уточняя</td>
+      <td>Разработчик переспрашивает то же самое. Аналитик не добавляет ценности</td>
+      <td>Аналитик — фильтр: задаёт вопросы, выявляет противоречия, предлагает решения</td>
+    </tr>
+    <tr>
+      <td><strong>Презумпция очевидности</strong></td>
+      <td>«Это же очевидно!» — фраза, после которой начинаются проблемы</td>
+      <td>Каждый понимает «очевидное» по-своему. Результат — баги на пустом месте</td>
+      <td>Всё, что может быть понято неоднозначно — должно быть явно зафиксировано</td>
+    </tr>
+    <tr>
+      <td><strong>Гонка за новой версией</strong></td>
+      <td>Постоянная смена версий API без миграционного плана: «пусть переходят на новую версию»</td>
+      <td>Клиенты не успевают мигрировать, старые версии висят годами</td>
+      <td>Каждое breaking change — документ миграции. Graceful deprecation. Чёткие сроки</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<!-- ============================================================ -->
+<!-- 12.8 -->
+<!-- ============================================================ -->
+
+<h2>12.8. Вопросы, которые Senior-аналитик задаёт себе</h2>
+
+<p>Прежде чем нести требования разработчику, закрой дверь, сядь и честно ответь себе на эти 10 вопросов. Если хотя бы на один ответ «нет» или «не уверен» — ты ещё не готов.</p>
+
+<blockquote class="senior">
+<p><strong>🧠 Senior:</strong> Разница между Junior и Senior — не в количестве инструментов, а в количестве вопросов, которые аналитик задаёт <strong>сам себе до того, как их зададут другие</strong>.</p>
+</blockquote>
+
+<ol class="checklist-input">
+  <li><label><input type="checkbox" /> <strong>Я описал, что будет, если БД недоступна?</strong><br />Не просто «будет ошибка», а конкретно — какой HTTP-статус, какой fallback, что видит пользователь?</label></li>
+  <li><label><input type="checkbox" /> <strong>Я указал, какие поля обязательные, а какие опциональные?</strong><br />Не «вроде все нужны», а каждое поле — required или optional?</label></li>
+  <li><label><input type="checkbox" /> <strong>Я учел, что данных может быть 10, а может быть 10 миллионов?</strong><br />Работает ли решение для обоих случаев? Нет ли O(n²) в алгоритме?</label></li>
+  <li><label><input type="checkbox" /> <strong>Я описал все сценарии отказа — не только happy path?</strong><br />Что если запрос невалидный? Что если сервис B упал? Что если истекло время сессии?</label></li>
+  <li><label><input type="checkbox" /> <strong>Мои требования однозначны или их можно интерпретировать по-разному?</strong><br />Проверь: дай прочитать коллеге. Если у него возник хотя бы один вопрос — дорабатывай.</label></li>
+  <li><label><input type="checkbox" /> <strong>Я проверил, что требования непротиворечивы?</strong><br />Одно требование не отменяет другое. Проверь на логические конфликты.</label></li>
+  <li><label><input type="checkbox" /> <strong>Есть ли у меня пример для каждого требования?</strong><br />Пример — лучший способ избежать неоднозначности. JSON-пример запроса, ответа, ошибки.</label></li>
+  <li><label><input type="checkbox" /> <strong>Я учёл нефункциональные требования?</strong><br />Производительность, безопасность, доступность, совместимость, удобство поддержки.</label></li>
+  <li><label><input type="checkbox" /> <strong>Может ли разработчик реализовать это без дополнительных вопросов?</strong><br />Идеальные требования — те, по которым можно писать код, не отвлекая аналитика.</label></li>
+  <li><label><input type="checkbox" /> <strong>Я сам понимаю, ПОЧЕМУ мы это делаем?</strong><br />Какая бизнес-ценность? Какую проблему решаем? Если не понимаешь — узнай, прежде чем требовать.</label></li>
+</ol>
+
+<hr />
+
+<!-- ============================================================ -->
+<!-- 12.9 -->
+<!-- ============================================================ -->
+
+<h2>12.9. Roadmap: от Junior до Senior аналитика</h2>
+
+<p>Техническое мышление не появляется за неделю. Это путь, который проходит каждый аналитик. Карта ниже поможет понять, где ты сейчас и куда двигаться дальше.</p>
+
+<blockquote class="fact">
+<p><strong>💡 Факт:</strong> Переход от Junior к Middle занимает в среднем 1,5–2 года. От Middle к Senior — ещё 2–3 года. Но это не про «отсидеть срок», а про освоение компетенций. Некоторые проходят этот путь за год, некоторые не проходят никогда.</p>
+</blockquote>
+
+<table>
+  <thead>
+    <tr>
+      <th>Уровень</th>
+      <th>Навыки</th>
+      <th>Ключевые вопросы</th>
+      <th>Как проверить себя</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Junior</strong></td>
+      <td>
+        • Основы HTTP: методы, статусы, заголовки<br />
+        • Форматы данных: JSON, XML, CSV<br />
+        • Типы данных: integer, string, boolean, array, object<br />
+        • Базовая работа с API: Postman / cURL<br />
+        • Написание user story по шаблону
+      </td>
+      <td>
+        • Какие бывают HTTP-методы?<br />
+        • Чем отличается 401 от 403?<br />
+        • Как описать простой API-запрос?
+      </td>
+      <td>Могу написать user story, которую разработчик поймёт без переспросов</td>
+    </tr>
+    <tr>
+      <td><strong>Middle</strong></td>
+      <td>
+        • Понимание БД: таблицы, ключи, индексы<br />
+        • Нормализация и денормализация<br />
+        • Написание требований к данным<br />
+        • OpenAPI / Swagger спецификации<br />
+        • Оценка задач (story points / hours)<br />
+        • Работа с ошибками и граничными случаями
+      </td>
+      <td>
+        • Какие индексы нужны для этого запроса?<br />
+        • Какова кардинальность поля?<br />
+        • Что если данных станет в 10 раз больше?
+      </td>
+      <td>Могу оценить задачу с точностью +/- 30% и обосновать оценку</td>
+    </tr>
+    <tr>
+      <td><strong>Senior</strong></td>
+      <td>
+        • Архитектура: монолит vs микросервисы<br />
+        • Интеграции: синхронные, асинхронные<br />
+        • Таймауты, retry, circuit breaker, идемпотентность<br />
+        • Оценка влияния изменений<br />
+        • Работа с нефункциональными требованиями<br />
+        • Владение чек-листами из этой главы
+      </td>
+      <td>
+        • Как это изменение влияет на соседние сервисы?<br />
+        • Какие сценарии отказа мы не учли?<br />
+        • Как обеспечить идемпотентность?
+      </td>
+      <td>Могу провести архитектурное ревью и найти проблемы, которые не заметили разработчики</td>
+    </tr>
+    <tr>
+      <td><strong>Lead</strong></td>
+      <td>
+        • Стратегическое мышление и vision<br />
+        • Метрики продукта и бизнес-показатели<br />
+        • SLA / SLO / SLI — работа с надёжностью<br />
+        • Архитектурные решения и компромиссы<br />
+        • Управление стейкхолдерами<br />
+        • Менторство и развитие команды<br />
+        • Построение процессов
+      </td>
+      <td>
+        • Какая бизнес-ценность этой фичи?<br />
+        • Как мы измерим успех?<br />
+        • Какой у нас SLA и что будет при его нарушении?<br />
+        • Какие компромиссы мы готовы принять?
+      </td>
+      <td>Команда не принимает архитектурные решения без моего участия. Бизнес доверяет моим оценкам</td>
+    </tr>
+  </tbody>
+</table>
+
+<blockquote class="best">
+<p><strong>✅ Best practice:</strong> Переход на следующий уровень — это не только новые знания, но и <strong>новый масштаб ответственности</strong>. Junior отвечает за корректность задачи. Middle — за оценку и реализацию. Senior — за архитектуру и влияние. Lead — за стратегию и людей.</p>
+</blockquote>
+
+<hr />
+
+<!-- ============================================================ -->
+<!-- ИТОГИ ГЛАВЫ И ВСЕЙ КНИГИ -->
+<!-- ============================================================ -->
+
+<h2>Итоги главы 12</h2>
+
+<p>Чек-листы — это не про «я всё забываю». Чек-листы — это про <strong>систему</strong>. Когда у тебя есть система, ты не полагаешься на память. Ты полагаешься на процесс.</p>
+
+<p>Собери свою папку чек-листов. Адаптируй их под свой проект. Добавляй новые пункты, когда находишь грабли. Удаляй те, что стали автоматическими. Но всегда держи под рукой базовый набор — он спасёт тебя в цейтноте.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Чек-лист</th>
+      <th>Когда использовать</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>12.1</td>
+      <td>Перед передачей требований разработчику</td>
+      <td>Перед каждым grooming / kick-off задачи</td>
+    </tr>
+    <tr>
+      <td>12.2</td>
+      <td>Проверки API-контракта</td>
+      <td>Перед утверждением OpenAPI-спецификации</td>
+    </tr>
+    <tr>
+      <td>12.3</td>
+      <td>Требований к данным</td>
+      <td>Перед созданием или изменением схемы БД</td>
+    </tr>
+    <tr>
+      <td>12.4</td>
+      <td>Проверки user story</td>
+      <td>Перед добавлением story в бэклог спринта</td>
+    </tr>
+    <tr>
+      <td>12.5</td>
+      <td>Проверки интеграций</td>
+      <td>Перед проектированием взаимодействия сервисов</td>
+    </tr>
+    <tr>
+      <td>12.6</td>
+      <td>Вопросов перед оценкой</td>
+      <td>Перед planning-сессией</td>
+    </tr>
+    <tr>
+      <td>12.7</td>
+      <td>Таблица антипаттернов</td>
+      <td>Еженедельная ретроспектива: в какой антипаттерн мы скатились?</td>
+    </tr>
+    <tr>
+      <td>12.8</td>
+      <td>Вопросы Senior себе</td>
+      <td>Каждый раз перед передачей требований</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2>Итоги всей книги</h2>
+
+<p>Поздравляю. Ты дошёл до конца. Но на самом деле — ты только начал.</p>
+
+<p>Эта книга была не про инструменты — хотя мы разобрали HTTP, JSON, API, базы данных, интеграции и архитектуру. Эта книга была про <strong>мышление</strong>.</p>
+
+<p>Что меняется в мышлении аналитика после прочтения:</p>
+
+<ol>
+  <li><strong>Ты перестаёшь писать «как-то обработать».</strong> Теперь ты пишешь: «если БД недоступна, вернуть HTTP 503 с телом { "code": "DB_UNAVAILABLE" }, клиент ждёт 3 секунды, retry 3 раза с exponential backoff».</li>
+  <li><strong>Ты видишь систему целиком.</strong> Не отдельную фичу, а её влияние на все соседние сервисы, БД, очереди, кэши.</li>
+  <li><strong>Ты задаёшь вопрос «ПОЧЕМУ?»</strong> — и не успокаиваешься, пока не получишь ответ. Почему это поле обязательно? Почему таймаут 5 секунд? Почему мы используем PostgreSQL, а не Cassandra?</li>
+  <li><strong>Ты требуешь примеров.</strong> Любая абстракция иллюстрируется конкретными входными и выходными данными.</li>
+  <li><strong>Ты проектируешь отказоустойчивость.</strong> Не только happy path, но и error path, edge cases, сценарии недоступности, race conditions.</li>
+</ol>
+
+<blockquote class="senior">
+<p><strong>🧠 Главный принцип:</strong> Всегда спрашивай ПОЧЕМУ. Пять раз подряд. Пока не дойдёшь до сути. Аналитик, который не задаёт вопросов — не аналитик, а секретарь.</p>
+</blockquote>
+
+<h3>Напутствие</h3>
+
+<p>Аналитик с инженерным мышлением — самый ценный член команды. Не потому что он лучше всех пишет требования. А потому что он:</p>
+
+<ul>
+  <li><strong>Понимает разработчика</strong> — говорит на одном языке, уважает ограничения, знает цену компромиссам.</li>
+  <li><strong>Понимает бизнес</strong> — не просто записывает пожелания, а выявляет истинные потребности.</li>
+  <li><strong>Понимает продукт</strong> — видит, как текущая фича вписывается в общую картину.</li>
+  <li><strong>Понимает пользователя</strong> — знает, кому и зачем это нужно.</li>
+</ul>
+
+<p>Таких аналитиков — единицы. Большинство останавливаются на уровне «записал — передал». Те, кто дочитал эту книгу, — уже шагнули дальше.</p>
+
+<blockquote class="best">
+<p><strong>✅ Напутствие:</strong> Возьми любой чек-лист из этой главы и примени его на ближайшей задаче. Потом возьми следующий. Через месяц это станет привычкой. Через год — второй натурой. Техническое мышление — это не дар свыше. Это результат систематической работы над собой.</p>
+</blockquote>
+
+<p>Удачи. И помни: лучший аналитик — тот, без кого разработка идёт гладко, но без кого она <strong>не может</strong> обойтись.</p>
+
+<!-- ============================================================ -->
+<!-- КОНЕЦ ГЛАВЫ 12 -->
+<!-- ============================================================ -->
+
+<div class="chapter-nav">
+  <a href="chapter12.html">← Глава 12: Антипаттерны аналитиков</a>
+  <a href="index.html">Содержание</a>
+  <span>Конец книги</span>
+</div>
+
+</div>
+</body>
+</html>

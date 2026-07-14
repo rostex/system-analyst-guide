@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<title>Глава 3. JSON как контракт — Техническое мышление аналитика</title>
+<style>
+/* === Base === */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #1a1a2e;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  background: #fff;
+}
+
+/* === Headings === */
+h1 { font-size: 2.2em; border-bottom: 3px solid #2d3436; padding-bottom: 12px; margin-top: 48px; color: #2d3436; }
+h2 { font-size: 1.6em; margin-top: 40px; padding-bottom: 8px; border-bottom: 1px solid #dfe6e9; color: #2d3436; }
+h3 { font-size: 1.3em; margin-top: 32px; color: #636e72; }
+h4 { font-size: 1.1em; margin-top: 24px; color: #636e72; }
+
+/* === Paragraphs & Lists === */
+p { margin: 16px 0; }
+ul, ol { margin: 12px 0; padding-left: 24px; }
+li { margin: 6px 0; }
+
+/* === Tables === */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 15px;
+}
+th {
+  background: #2d3436;
+  color: #fff;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+}
+td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #dfe6e9;
+}
+tr:nth-child(even) td {
+  background: #f8f9fa;
+}
+tr:hover td {
+  background: #e8f4f8;
+}
+
+/* === Code === */
+code {
+  background: #f1f2f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.9em;
+  color: #2d3436;
+}
+pre {
+  background: #2d3436;
+  color: #dfe6e9;
+  padding: 16px 20px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 16px 0;
+}
+pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+/* === Blockquotes / Callouts === */
+blockquote {
+  margin: 20px 0;
+  padding: 16px 20px;
+  border-left: 5px solid;
+  border-radius: 6px;
+  font-size: 15px;
+}
+blockquote p { margin: 4px 0; }
+
+/* Specific callout colors */
+blockquote.idea { border-color: #6c5ce7; background: #f0edff; }
+blockquote.idea strong { color: #6c5ce7; }
+
+blockquote.bank { border-color: #0984e3; background: #e8f4fd; }
+blockquote.bank strong { color: #0984e3; }
+
+blockquote.error { border-color: #d63031; background: #ffeef0; }
+blockquote.error strong { color: #d63031; }
+
+blockquote.antipattern { border-color: #e17055; background: #fdf0ed; }
+blockquote.antipattern strong { color: #e17055; }
+
+blockquote.best { border-color: #00b894; background: #e6faf4; }
+blockquote.best strong { color: #00b894; }
+
+blockquote.senior { border-color: #fdcb6e; background: #fef9e7; }
+blockquote.senior strong { color: #d68910; }
+
+blockquote.remember { border-color: #2d3436; background: #f1f2f6; }
+blockquote.remember strong { color: #2d3436; }
+
+blockquote.tip { border-color: #00b894; background: #e6faf4; }
+blockquote.tip strong { color: #00b894; }
+
+blockquote.fact { border-color: #a29bfe; background: #f5f3ff; }
+blockquote.fact strong { color: #a29bfe; }
+
+blockquote.warning { border-color: #e17055; background: #fdf0ed; }
+blockquote.warning strong { color: #e17055; }
+
+/* === Checkboxes === */
+input[type="checkbox"] { margin-right: 8px; }
+
+/* === Horizontal Rule === */
+hr {
+  border: none;
+  border-top: 2px solid #dfe6e9;
+  margin: 40px 0;
+}
+
+/* === Links === */
+a { color: #0984e3; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* === Chapter Navigation === */
+.chapter-nav {
+  background: #f8f9fa;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 24px 0;
+  display: flex;
+  justify-content: space-between;
+}
+.chapter-nav a { font-weight: 600; }
+
+/* === TOC === */
+.toc { margin: 24px 0; }
+.toc-item {
+  padding: 10px 16px;
+  border-bottom: 1px solid #dfe6e9;
+  display: flex;
+  align-items: center;
+}
+.toc-item .num {
+  font-weight: 700;
+  color: #0984e3;
+  min-width: 40px;
+  font-size: 1.1em;
+}
+.toc-item .title { font-weight: 600; color: #2d3436; }
+.toc-item:hover { background: #f8f9fa; }
+
+/* === Diagrams === */
+.diagram {
+  background: #f8f9fa;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 16px 0;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* === Checklists === */
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding: 6px 0; }
+.checklist li::before { content: "\2610 "; font-size: 1.2em; }
+
+/* === Subtitle === */
+.subtitle {
+  font-size: 1.2em;
+  color: #636e72;
+  margin-top: -12px;
+  margin-bottom: 32px;
+}
+
+/* === Meta === */
+.meta {
+  color: #636e72;
+  font-size: 14px;
+  margin: 16px 0;
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  body { padding: 20px 12px; font-size: 15px; }
+  h1 { font-size: 1.8em; }
+  h2 { font-size: 1.4em; }
+  .chapter-nav { flex-direction: column; gap: 12px; }
+}
+</style>
+</head>
+<body>
+<div id="content">
+
+<h1>Глава 3. JSON как контракт</h1>
+<p class="subtitle">Почему типы данных, null, optional, enum и формат дат — не бюрократия, а критически важные детали</p>
+
+<div class="meta">
+  <strong>Цель главы:</strong> Научить аналитика читать JSON как технический контракт, понимать подводные камни типизации и не допускать двусмысленностей в спецификациях.
+</div>
+
+<!-- ============= ВВЕДЕНИЕ ============= -->
+<h2>Введение</h2>
+
+<p>Представьте, что вы пришли в госучреждение и заполняете бланк заявления. В графе «ИНН» вы пишете «не знаю», в графе «Дата рождения» — «где-то в 90-х», а в графе «Сумма» — «много». Бланк не примут. Скажут: заполните правильно, по инструкции.</p>
+
+<p>JSON — это такой же бланк, только для сервисов. Когда один микросервис отправляет запрос другому, он заполняет JSON-форму. Если типы не совпадают, поле отсутствует там, где должно быть, или дата пришла в непонятном формате — сервис ответит ошибкой. Или, что ещё хуже, — молча обработает данные неверно.</p>
+
+<p><strong>JSON (JavaScript Object Notation)</strong> — де-факто стандарт обмена данными между сервисами. Он прост, человекочитаем и поддерживается практически любым языком программирования. Но именно эта простота порождает иллюзию, что «JSON сам всё разрулит». Нет. JSON — это просто текст. А <em>смысл</em> в этот текст вкладывают люди. И вот тут начинаются проблемы.</p>
+
+<blockquote class="idea">
+<p><strong>Ключевая мысль:</strong> JSON — это язык контракта между сервисами. Как и любой юридический контракт, он не терпит двусмысленностей. Каждая запятая, каждый тип, каждое поле имеют значение.</p>
+</blockquote>
+
+<p>В этой главе мы научимся читать JSON как технический контракт. Вы поймёте, почему аналитик, который пишет «сумма — число», не сказал ровным счётом ничего, и почему разработчик, который слышит «поле может быть null», и разработчик, который слышит «поля может не быть», — делают <em>разные</em> вещи.</p>
+
+<hr />
+
+<!-- ============= 3.1 ============= -->
+<h2>3.1. Типы данных в JSON</h2>
+
+<p>В JSON есть всего <strong>шесть типов данных</strong>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Тип JSON</th>
+      <th>Пример</th>
+      <th>Примечание</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>string</code></td>
+      <td><code>"hello"</code></td>
+      <td>Строка в двойных кавычках</td>
+    </tr>
+    <tr>
+      <td><code>number</code></td>
+      <td><code>42</code>, <code>3.14</code></td>
+      <td>Целые и дробные — один тип</td>
+    </tr>
+    <tr>
+      <td><code>boolean</code></td>
+      <td><code>true</code>, <code>false</code></td>
+      <td>Только два значения (не путать со строкой <code>"false"</code>)</td>
+    </tr>
+    <tr>
+      <td><code>null</code></td>
+      <td><code>null</code></td>
+      <td>Означает «значение отсутствует»</td>
+    </tr>
+    <tr>
+      <td><code>object</code></td>
+      <td><code>{ "key": "value" }</code></td>
+      <td>Неупорядоченный набор пар ключ-значение</td>
+    </tr>
+    <tr>
+      <td><code>array</code></td>
+      <td><code>[1, 2, 3]</code></td>
+      <td>Упорядоченный список значений</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Казалось бы, всё просто. Но дьявол — в деталях.</p>
+
+<h3>Подводный камень №1: В JSON нет целых чисел</h3>
+
+<p>В JSON существует только один числовой тип — <code>number</code>. Это значит, что <code>1</code>, <code>1.0</code> и <code>1.00</code> — с точки зрения JSON это <strong>одно и то же число</strong>. Но для бизнеса разница может быть критичной.</p>
+
+<div class="diagram">Спецификация JSON (RFC 8259):
+  number = [ минус ] int [ frac ] [ exp ]
+  int    = digit1-9 *digit / digit
+  frac   = "." 1*digit
+  exp    = e [ минус / плюс ] 1*digit
+
+  То есть: number — это ВСЕГДА число с плавающей точкой.
+  Целых чисел (int, long, bigint) в JSON НЕТ.
+</div>
+
+<blockquote class="fact">
+<p><strong>Факт:</strong> В JSON нет типов <code>integer</code>, <code>decimal</code>, <code>date</code>, <code>datetime</code>. Есть только <code>string</code> и <code>number</code>. Всё остальное — договорённости между разработчиками.</p>
+</blockquote>
+
+<h3>Подводный камень №2: Нет дат и времени</h3>
+
+<p>В JSON нет типа «дата». Дата передаётся как строка. А строка может быть в любом формате: <code>"2024-01-15"</code>, <code>"15.01.2024"</code>, <code>"01/15/2024"</code>, <code>"Jan 15, 2024"</code>. И это — проблема, потому что парсер не знает, какой формат ожидать.</p>
+
+<h3>Как разработчики обходят ограничения JSON</h3>
+
+<p>Поскольку JSON слишком прост, команды договариваются о <strong>конвенциях</strong>. Эти конвенции описываются в контракте API (OpenAPI, Protobuf, GraphQL Schema). Именно контракт уточняет, что скрывается за строкой или числом:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Тип в JSON</th>
+      <th>Реальный тип</th>
+      <th>Конвенция</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>number</code></td>
+      <td><code>integer</code></td>
+      <td>Договориться, что дробной части нет</td>
+    </tr>
+    <tr>
+      <td><code>number</code></td>
+      <td><code>decimal</code></td>
+      <td>Передавать как строку <code>"123.45"</code></td>
+    </tr>
+    <tr>
+      <td><code>number</code></td>
+      <td><code>float</code></td>
+      <td>Передавать как число, но помнить о точности</td>
+    </tr>
+    <tr>
+      <td><code>string</code></td>
+      <td><code>date</code></td>
+      <td>Использовать ISO 8601: <code>"2024-01-15"</code></td>
+    </tr>
+    <tr>
+      <td><code>string</code></td>
+      <td><code>datetime</code></td>
+      <td>ISO 8601 с таймзоной: <code>"2024-01-15T14:30:00+03:00"</code></td>
+    </tr>
+    <tr>
+      <td><code>string</code></td>
+      <td><code>UUID</code></td>
+      <td><code>"550e8400-e29b-41d4-a716-446655440000"</code></td>
+    </tr>
+    <tr>
+      <td><code>string</code></td>
+      <td><code>email</code></td>
+      <td>Валидация по RFC 5322</td>
+    </tr>
+  </tbody>
+</table>
+
+<blockquote class="bank">
+<p><strong>🏦 Пример: проблема с деньгами в JSON</strong><br /><br />
+Банковская система A передаёт системе B сумму транзакции как <code>number</code>: <code>100500.50</code>. Система B на Python читает это как <code>float</code>. Проходит 10 миллионов транзакций. Из-за ошибок округления набегает расхождение в 10 000 рублей. Аудиторы находят это через год. Кто виноват? Аналитик, который написал «сумма — число» вместо «сумма — decimal, передавать как строку».</p>
+</blockquote>
+
+<hr />
+
+<!-- ============= 3.2 ============= -->
+<h2>3.2. Nullable и Optional — это РАЗНЫЕ вещи</h2>
+
+<p>Одна из самых частых ошибок аналитика — путать «поля нет» и «поле равно null». Для пользователя разницы нет, но для разработчика это <strong>две разные вселенные</strong>.</p>
+
+<h3>null: «значение отсутствует»</h3>
+
+<p>Поле есть в JSON, но его значение — <code>null</code>. Это значит: «поле применимо, мы знаем о нём, но на данный момент значения нет».</p>
+
+<pre><code>{
+  "firstName": "Иван",
+  "middleName": null,
+  "lastName": "Петров"
+}</code></pre>
+
+<p>Здесь <code>middleName</code> (отчество) равен <code>null</code>. Это осмысленно: у человека может не быть отчества (иностранец), но поле предусмотрено в контракте.</p>
+
+<h3>Optional: «поля нет»</h3>
+
+<p>Поле <strong>отсутствует</strong> в JSON-объекте. Это значит: «поле не применимо в данном контексте». Сервер, получив такой JSON, даже не пытается читать поле — его просто нет.</p>
+
+<pre><code>{
+  "firstName": "John",
+  "lastName": "Doe"
+}
+// middleName отсутствует — это ОК, поле не обязательное</code></pre>
+
+<blockquote class="antipattern">
+<p><strong>❌ Типичная ошибка аналитика:</strong> «Поле может быть null» — говорит аналитик, имея в виду «поля может не быть». Разработчик реализует <code>nullable</code>, а фронтенд падает, потому что поле не пришло и undefined поля вызвал ошибку.</p>
+</blockquote>
+
+<h3>Когда что использовать: таблица решений</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Сценарий</th>
+      <th>null</th>
+      <th>Optional (нет поля)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Отчество у пользователя</td>
+      <td>✅ null — у человека нет отчества</td>
+      <td>❌ Поле должно быть в контракте</td>
+    </tr>
+    <tr>
+      <td>Скидка на заказ</td>
+      <td>✅ <code>"discount": null</code> — скидка не применилась</td>
+      <td>❌ Поле должно быть для единообразия</td>
+    </tr>
+    <tr>
+      <td>Номер паспорта для нерезидента</td>
+      <td>✅ null — паспорта другой страны нет в системе</td>
+      <td>❌ Поле предусмотрено контрактом</td>
+    </tr>
+    <tr>
+      <td>Дополнительный атрибут товара (характеристика)</td>
+      <td>❌ Неуместно</td>
+      <td>✅ Характеристики могут отличаться для разных товаров</td>
+    </tr>
+    <tr>
+      <td>Поле в PATCH-запросе (частичное обновление)</td>
+      <td>❌ null значит «установить в null»</td>
+      <td>✅ Поле отсутствует — не обновлять</td>
+    </tr>
+    <tr>
+      <td>Опциональный фильтр в поиске</td>
+      <td>❌ Неуместно</td>
+      <td>✅ Фильтр не передан — не применяется</td>
+    </tr>
+    <tr>
+      <td>Email для рассылки (не обязателен)</td>
+      <td>❌ Лучше optional</td>
+      <td>✅ Пользователь не указал email</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Скидка null vs отсутствие поля скидка: практический пример</h3>
+
+<pre><code>// Вариант A: null
+{
+  "orderId": "ord_123",
+  "total": 5000,
+  "discount": null
+}
+// Клиент — null, скидки нет. Разработчик знает: поле есть, оно null.
+// Можно показать "Скидка: —" в интерфейсе.
+
+// Вариант B: поле отсутствует
+{
+  "orderId": "ord_456",
+  "total": 3000
+  // discount нет
+}
+// Разработчик не знает: то ли скидки не было, то ли забыли.
+
+// Вариант C: discount = 0
+{
+  "orderId": "ord_789",
+  "total": 2000,
+  "discount": 0
+}
+// Скидка 0% — это не то же самое, что "скидки нет".
+// 0 — это числовое значение, означающее "скидка 0%".
+// null — "скидка не применима / не рассчитывалась".
+// Отсутствие поля — "в данном контексте понятие скидки не предусмотрено".</code></pre>
+
+<blockquote class="senior">
+<p><strong>🧠 Как думает Senior:</strong> «На каждом уровне свой язык. Backend может хранить NULL в базе, но API должен явно указывать, приходит null или поле отсутствует. Более того, фронтенд может не уметь отличать undefined от null. Поэтому контракт должен явно прописывать: “поле обязательно, может быть null” (nullable) или “поле опционально, может отсутствовать” (optional). Это разные вещи, за которые отвечают разные слои кода.»</p>
+</blockquote>
+
+<hr />
+
+<!-- ============= 3.3 ============= -->
+<h2>3.3. Enum — строгий набор значений</h2>
+
+<p><strong>Enum (перечисление)</strong> — это тип, который может принимать только одно значение из фиксированного набора. В JSON enum реализуется как строка, но с ограничением: только определённые строки допустимы.</p>
+
+<pre><code>// Пример enum: статус заказа
+status: "paid" | "pending" | "cancelled" | "refunded"</code></pre>
+
+<h3>Почему "PAID", "paid" и "Paid" — это три разных значения</h3>
+
+<p>JavaScript (и большинство языков) сравнивает строки <strong>регистрозависимо</strong>. <code>"paid" !== "PAID"</code>. Поэтому если в контракте написано <code>paid</code>, то <code>Paid</code> или <code>PAID</code> вызовут ошибку валидации.</p>
+
+<blockquote class="error">
+<p><strong>Типичная ошибка:</strong> Аналитик пишет в спецификации «статус: paid, pending, cancelled, refunded», а в коде кто-то использует «PAID». Фронтенд не отображает статус. Бекенд не знает, что это за статус. Час дебага — найдена опечатка в регистре.</p>
+</blockquote>
+
+<p>Правило простое: <strong>значения enum должны быть точными</strong>. Регистр, подчёркивания, дефисы — всё имеет значение.</p>
+
+<h3>Почему добавление нового значения enum может сломать клиента</h3>
+
+<p>Клиент (фронтенд, мобильное приложение) часто использует <code>switch</code> или <code>if-else</code> для обработки статусов. Если сервер начал присылать новый статус, которого клиент не знает, — поведение может стать непредсказуемым.</p>
+
+<pre><code>// Клиент написан так:
+switch (order.status) {
+  case 'pending':   showSpinner(); break;
+  case 'paid':      showSuccess(); break;
+  case 'cancelled': showCancelled(); break;
+  default:          showError();    break; // ← Новый статус попадёт сюда!
+}
+// Добавили 'refunded' — все возвраты показываются как ошибка.</code></pre>
+
+<blockquote class="warning">
+<p><strong>⚠ Почему «другие» статусы — плохая идея:</strong> Если аналитик пишет «статус: может быть paid, pending, cancelled или другое» — это не enum. Это строка. Проверять «другое» невозможно. Ошибка уйдёт в прод. Либо у вас конечный набор значений — и это enum, либо вы не знаете, какие значения будут — и это строка с открытым множеством. Третьего не дано.</p>
+</blockquote>
+
+<h3>Реальный пример: статусы заказа</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Статус</th>
+      <th>Описание</th>
+      <th>Допустимые переходы</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>created</code></td>
+      <td>Заказ создан, ожидает оплаты</td>
+      <td>→ <code>pending</code></td>
+    </tr>
+    <tr>
+      <td><code>pending</code></td>
+      <td>Платёж обрабатывается</td>
+      <td>→ <code>paid</code>, → <code>cancelled</code></td>
+    </tr>
+    <tr>
+      <td><code>paid</code></td>
+      <td>Оплачен, готовится к отправке</td>
+      <td>→ <code>shipped</code>, → <code>refunded</code></td>
+    </tr>
+    <tr>
+      <td><code>shipped</code></td>
+      <td>Отправлен, в пути</td>
+      <td>→ <code>delivered</code>, → <code>refunded</code></td>
+    </tr>
+    <tr>
+      <td><code>delivered</code></td>
+      <td>Доставлен, завершён</td>
+      <td>→ <code>refunded</code></td>
+    </tr>
+    <tr>
+      <td><code>refunded</code></td>
+      <td>Возврат средств</td>
+      <td><em>конечный</em></td>
+    </tr>
+    <tr>
+      <td><code>cancelled</code></td>
+      <td>Отменён до оплаты</td>
+      <td><em>конечный</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Как документировать enum в API</h3>
+
+<p>Хорошая документация enum включает:</p>
+<ul>
+  <li><strong>Точный список значений</strong> — регистр, символы, порядок не важен</li>
+  <li><strong>Описание каждого значения</strong> — что оно значит для бизнеса</li>
+  <li><strong>Диаграмму переходов</strong> — какие значения могут сменять друг друга</li>
+  <li><strong>Дефолтное значение</strong> — какое значение при создании</li>
+  <li><strong>Оговорку</strong> — «клиент должен корректно обрабатывать неизвестные значения»</li>
+</ul>
+
+<blockquote class="best">
+<p><strong>✅ Best Practice:</strong> Если вы используете OpenAPI, enum описывается явно. Клиенты могут генерировать код из спецификации. Любое невалидное значение будет отвергнуто на этапе валидации, а не в рантайме.</p>
+</blockquote>
+
+<hr />
+
+<!-- ============= 3.4 ============= -->
+<h2>3.4. UUID — почему не ID?</h2>
+
+<p>Однажды аналитик пишет в спецификации: <code>"id": 123</code>. Разработчик кивает и делает автоинкрементный ID. Система работает год. Потом приходит пентестер и говорит: «Я подобрал id=1, id=2, id=3 и получил данные других пользователей». — Это называется <strong>IDOR (Insecure Direct Object Reference)</strong>, и это уязвимость.</p>
+
+<h3>Почему автоинкрементный ID — плохо в API</h3>
+
+<ol>
+  <li><strong>Уязвимость</strong>: id=1, id=2, id=3 — любой может перебирать ID и получать чужие данные (если нет дополнительной проверки прав доступа).</li>
+  <li><strong>Конфликты при миграции</strong>: При объединении баз данных ID могут пересекаться.</li>
+  <li><strong>Информация о бизнесе</strong>: ID=1000 подсказывает, что у вас ~1000 сущностей. Это конкурентная разведка.</li>
+  <li><strong>Кэширование</strong>: ID=1 легко угадывается, кэш можно отравить.</li>
+</ol>
+
+<h3>UUID: что это и как выглядит</h3>
+
+<p><strong>UUID (Universally Unique Identifier)</strong> — 128-битный идентификатор, который гарантированно уникален без централизованного координатора.</p>
+
+<pre><code>// Формат UUID (версия 4):
+550e8400-e29b-41d4-a716-446655440000
+|--------| |--| |--| |--| |------------|
+   32 hex символа, 5 групп, разделённых дефисами
+   Всего: 8-4-4-4-12 = 36 символов</code></pre>
+
+<p>UUID версии 4 — случайный. Шанс коллизии настолько мал, что им можно пренебречь (примерно 1 к 5.3×10³⁶ для версии 4).</p>
+
+<h3>UUID на фронтенде, Integer на бекенде — нормально?</h3>
+
+<p>Распространённая практика: фронтенд работает с UUID, а внутри базы данных используется автоинкрементный <code>INTEGER</code> или <code>BIGINT</code>. Это нормально, если:</p>
+
+<ul>
+  <li>UUID — это внешний идентификатор (public ID), который видит пользователь</li>
+  <li>Integer — это внутренний идентификатор (private ID) для связей в БД</li>
+  <li>Есть чёткое отображение: internal_id ↔ external_id</li>
+</ul>
+
+<pre><code>// Пример: публичный UUID, приватный Integer
+// В API (то, что видит клиент):
+{
+  "userId": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "Иван"
+}
+
+// В базе данных (то, что внутри):
+// users: id=42, uuid="550e8400-...", name="Иван"
+// orders: id=1, user_id=42 (FK на INTEGER, быстро)</code></pre>
+
+<blockquote class="bank">
+<p><strong>🏦 Пример: банковский счёт и важность UUID</strong><br /><br />
+Представьте интернет-банк. Каждый счёт имеет номер. Если номер счёта = 1, 2, 3 — клиент может подставить в URL <code>/api/account/3</code> и увидеть чужой счёт. UUID делает перебор бессмысленным: нужно угадать 128-битное число. Даже если перебирать по миллиарду UUID в секунду, понадобятся миллиарды лет, чтобы найти один существующий.</p>
+</blockquote>
+
+<blockquote class="error">
+<p><strong>❌ Ошибка: передача ID для DELETE без UUID</strong><br /><br />
+<code>DELETE /api/users/1</code> — любой авторизованный пользователь может попробовать удалить других пользователей, перебирая ID. Правильно: <code>DELETE /api/users/550e8400-e29b-41d4-a716-446655440000</code>. UUID не защищает от IDOR сам по себе (права доступа всё равно нужны), но он убирает возможность перебора.</p>
+</blockquote>
+
+<hr />
+
+<!-- ============= 3.5 ============= -->
+<h2>3.5. ISO 8601 — формат дат и времени</h2>
+
+<p>«Дата: 2024-01-15 14:30» — что не так с этой записью?</p>
+
+<ol>
+  <li><strong>Нет часового пояса.</strong> 14:30 в Москве — это 11:30 в Лондоне. А сервер может быть где угодно.</li>
+  <li><strong>Нет разделителя.</strong> Пробел между датой и временем — нестандартный. Парсер может не понять.</li>
+  <li><strong>Нет информации о точности.</strong> Это минуты? Секунды? Миллисекунды?</li>
+</ol>
+
+<h3>ISO 8601 — международный стандарт</h3>
+
+<p>Стандарт <strong>ISO 8601</strong> определяет единый формат представления дат и времени:</p>
+
+<pre><code>// Полный формат:
+2024-01-15T14:30:00+03:00
+YYYY-MM-DDThh:mm:ss±hh:mm
+
+// Примеры:
+2024-01-15                    // только дата
+2024-01-15T14:30:00Z          // время в UTC (Z = Zulu = UTC+0)
+2024-01-15T14:30:00+03:00     // время с часовым поясом
+2024-01-15T14:30:00.123Z      // с миллисекундами
+2024-W03-1                    // недельный формат (3-я неделя, понедельник)
+</code></pre>
+
+<h3>Timezone: UTC и все-все-все</h3>
+
+<p><strong>UTC (Coordinated Universal Time)</strong> — это всемирное координированное время, «нулевой» часовой пояс. Все серверы должны хранить время в UTC.</p>
+
+<p>Правило простое:</p>
+<ul>
+  <li><strong>Храним</strong> — всегда в UTC</li>
+  <li><strong>Передаём</strong> — с часовым поясом (offset) или всегда в UTC с указанием <code>Z</code></li>
+  <li><strong>Отображаем</strong> — в часовом поясе пользователя</li>
+</ul>
+
+<div class="diagram">   [Пользователь в Нью-Йорке]          [Сервер в Лондоне]
+         (UTC-5)                            (UTC+0)
+            |                                  |
+            |  2024-01-15T09:30:00-05:00       |
+            |  ──────────────────────────────> |
+            |                             Хранит как:
+            |                   2024-01-15T14:30:00Z
+            |                                  |
+            |  2024-01-15T14:30:00Z             |
+            |  <────────────────────────────── |
+            |                                  |
+   Показывает: 09:30 утра              
+</div>
+
+<blockquote class="error">
+<p><strong>❌ Ошибка: клиент в Нью-Йорке, сервер в Лондоне, дата одна</strong><br /><br />
+Фронтенд посылает: <code>"date": "2024-01-15T10:00:00"</code> (без timezone). Сервер в Лондоне думает, что это UTC. Пользователь в Нью-Йорке думает, что это 10:00 по его времени. Результат: встреча назначена на 10:00 по Нью-Йорку, но бекенд записал как 10:00 UTC (что соответствует 05:00 по Нью-Йорку). Мероприятие пропущено.</p>
+</blockquote>
+
+<h3>Offset vs Timezone Name</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Характеристика</th>
+      <th>Offset (UTC+3)</th>
+      <th>Timezone Name (Europe/Moscow)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Что это</td>
+      <td>Смещение относительно UTC</td>
+      <td>Идентификатор часового пояса</td>
+    </tr>
+    <tr>
+      <td>Пример</td>
+      <td><code>+03:00</code>, <code>-05:00</code></td>
+      <td><code>America/New_York</code></td>
+    </tr>
+    <tr>
+      <td>Учитывает переход на летнее время</td>
+      <td>❌ Нет (смещение фиксированное)</td>
+      <td>✅ Да</td>
+    </tr>
+    <tr>
+      <td>Где хранить</td>
+      <td>В timestamp (ISO 8601)</td>
+      <td>В отдельном поле профиля пользователя</td>
+    </tr>
+    <tr>
+      <td>Для чего</td>
+      <td>Передача момента времени</td>
+      <td>Отображение в локальном времени</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Когда какая дата нужна</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Сущность</th>
+      <th>Формат</th>
+      <th>Пример</th>
+      <th>Пояснение</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Дата рождения</td>
+      <td><code>date</code></td>
+      <td><code>"1990-05-20"</code></td>
+      <td>Без времени. Достаточно даты.</td>
+    </tr>
+    <tr>
+      <td>Дата заказа</td>
+      <td><code>datetime</code></td>
+      <td><code>"2024-01-15T14:30:00+03:00"</code></td>
+      <td>Момент совершения операции. Важен порядок.</td>
+    </tr>
+    <tr>
+      <td>Начало мероприятия</td>
+      <td><code>datetime</code> + timezone</td>
+      <td><code>"2024-06-01T19:00:00+03:00"</code></td>
+      <td>Конкретный момент в конкретном месте.</td>
+    </tr>
+    <tr>
+      <td>Дата окончания подписки</td>
+      <td><code>datetime</code></td>
+      <td><code>"2024-12-31T23:59:59Z"</code></td>
+      <td>Момент в UTC. Не зависит от часового пояса пользователя.</td>
+    </tr>
+    <tr>
+      <td>Логи / аудит</td>
+      <td><code>datetime</code></td>
+      <td><code>"2024-01-15T14:30:00.123Z"</code></td>
+      <td>С миллисекундами. UTC — всегда.</td>
+    </tr>
+    <tr>
+      <td>Расписание (звонок в 9:00 ежедневно)</td>
+      <td><code>time</code> + <code>timezone</code></td>
+      <td><code>"09:00:00"</code> + <code>"Europe/Moscow"</code></td>
+      <td>Само время отдельно, часовой пояс отдельно.</td>
+    </tr>
+    <tr>
+      <td>Период (с — по)</td>
+      <td><code>date</code> / <code>datetime</code></td>
+      <td><code>"from": "2024-01-01", "to": "2024-12-31"</code></td>
+      <td>Две даты. Оба конца включительно или исключительно — надо указывать.</td>
+    </tr>
+  </tbody>
+</table>
+
+<blockquote class="senior">
+<p><strong>🧠 Как думает Senior:</strong> «Всегда хранить в UTC. Точка. В базе данных — TIMESTAMP WITH TIME ZONE или просто Unix timestamp (int64). При передаче в API — ISO 8601 с offset. На фронтенд отдаём UTC, фронтенд конвертирует в локальное время. Никакого "сервер в Москве, поэтому храним MSK". Если сервер переедет в Лондон — данные сломаются.»</p>
+</blockquote>
+
+<hr />
+
+<!-- ============= 3.6 ============= -->
+<h2>3.6. Decimal, Float, Double — как не потерять деньги</h2>
+
+<p>Откройте консоль браузера и введите:</p>
+
+<pre><code>&gt; 0.1 + 0.2
+0.30000000000000004</code></pre>
+
+<p>Математика сломалась? Нет. Это <strong>binary floating point</strong>.</p>
+
+<h3>Почему 0.1 + 0.2 ≠ 0.3</h3>
+
+<p>Компьютеры хранят числа в двоичной системе (бинарной). Так же, как 1/3 в десятичной системе — это 0.33333..., так и 0.1 в двоичной — это бесконечная дробь. Компьютер обрезает её, и возникает ошибка округления.</p>
+
+<div class="diagram">Десятичная система:  1/3 = 0.33333...  (бесконечно)
+Двоичная система:    1/10 = 0.0001100110011...  (бесконечно)
+
+Число     Двоичное представление (приблизительно)
+0.1       0.000110011001100110011001100110011001100110011001101...
+          ↑ бесконечная периодическая дробь
+
+Когда CPU складывает 0.1 + 0.2, ошибки округления накапливаются.
+Результат: 0.30000000000000004 вместо 0.3.
+</div>
+
+<blockquote class="fact">
+<p><strong>Факт:</strong> Проблема 0.1 + 0.2 ≠ 0.3 существует во всех языках, использующих IEEE 754 (бинарная арифметика с плавающей точкой). Это: JavaScript, Python, Java, C#, C++, Go, Rust. Исключения — языки с встроенным Decimal (C# decimal, Python Decimal, Java BigDecimal).</p>
+</blockquote>
+
+<h3>Float vs Double vs Decimal</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Тип</th>
+      <th>Размер</th>
+      <th>Точность</th>
+      <th>Основание</th>
+      <th>Деньги?</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>float</code> (IEEE 754 single)</td>
+      <td>32 бита</td>
+      <td>~7 знаков</td>
+      <td>2 (двоичная)</td>
+      <td>❌ Нет</td>
+    </tr>
+    <tr>
+      <td><code>double</code> (IEEE 754 double)</td>
+      <td>64 бита</td>
+      <td>~15 знаков</td>
+      <td>2 (двоичная)</td>
+      <td>❌ Нет (но иногда терпимо для налогов с округлением)</td>
+    </tr>
+    <tr>
+      <td><code>decimal</code> / <code>DECIMAL</code></td>
+      <td>зависит (обычно 128 бит)</td>
+      <td>настраиваемая (28-38 знаков)</td>
+      <td>10 (десятичная)</td>
+      <td>✅ Да</td>
+    </tr>
+    <tr>
+      <td><code>BIGINT</code> (копейки/центы)</td>
+      <td>64 бита</td>
+      <td>целое число копеек</td>
+      <td>10 (целое)</td>
+      <td>✅ Да (альтернатива)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Где какой тип использовать</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Сценарий</th>
+      <th>Тип</th>
+      <th>Пример</th>
+      <th>Пояснение</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Цена товара</td>
+      <td><code>Decimal(10,2)</code></td>
+      <td><code>1499.99</code></td>
+      <td>Деньги — только Decimal</td>
+    </tr>
+    <tr>
+      <td>Налог 13%</td>
+      <td><code>Decimal(10,4)</code></td>
+      <td><code>194.9987</code></td>
+      <td>Проценты — Decimal (промежуточные расчёты)</td>
+    </tr>
+    <tr>
+      <td>Ставка по кредиту</td>
+      <td><code>Decimal(10,6)</code></td>
+      <td><code>12.456789</code></td>
+      <td>Финансы — максимальная точность</td>
+    </tr>
+    <tr>
+      <td>Рост человека</td>
+      <td><code>float</code></td>
+      <td><code>1.85</code></td>
+      <td>Достаточно 2-3 знаков</td>
+    </tr>
+    <tr>
+      <td>Вес</td>
+      <td><code>float</code></td>
+      <td><code>75.5</code></td>
+      <td>Накопления ошибок не критичны</td>
+    </tr>
+    <tr>
+      <td>Температура</td>
+      <td><code>float</code></td>
+      <td><code>36.6</code></td>
+      <td>Погрешность 0.0001 не имеет значения</td>
+    </tr>
+    <tr>
+      <td>Расстояние между городами</td>
+      <td><code>float</code> / <code>double</code></td>
+      <td><code>1234.5</code></td>
+      <td>Км — погрешность не критична</td>
+    </tr>
+    <tr>
+      <td>Курс валюты</td>
+      <td><code>Decimal(10,6)</code></td>
+      <td><code>91.456789</code></td>
+      <td>Финансы — Decimal</td>
+    </tr>
+    <tr>
+      <td>Координаты GPS</td>
+      <td><code>double</code></td>
+      <td><code>55.755825</code></td>
+      <td>double даёт ~1 метр точности</td>
+    </tr>
+  </tbody>
+</table>
+
+<blockquote class="bank">
+<p><strong>🏦 Пример: банк — потеря копейки на миллионе транзакций</strong><br /><br />
+Банк обрабатывает 1 миллион транзакций в день. Каждая транзакция — сумма в float. Из-за ошибки округления каждая транзакция теряет (или приобретает) в среднем 0.01 копейки. За день: 1 000 000 × 0.0001 = 100 рублей. За месяц: 3 000 рублей. За год: 36 000 рублей. А если это миллиарды транзакций? Float в финансах — это гарантированный убыток. Незаметный, но реальный.</p>
+</blockquote>
+
+<blockquote class="error">
+<p><strong>❌ Типичная ошибка аналитика:</strong> «Сумма — число» (какое число?)<br /><br />
+Фраза «сумма — число» — самая опасная фраза в спецификации. Разработчик может прочитать это как float, double, decimal, integer, bigint. Итог: деньги считаются неправильно. Правильно: «Сумма — Decimal(18,2), в JSON передаётся как string».</p>
+</blockquote>
+
+<blockquote class="best">
+<p><strong>✅ Best Practice:</strong> Деньги всегда Decimal. В JSON передаём как строку, чтобы избежать потери точности при парсинге:</p>
+</blockquote>
+
+<pre><code>// Плохо: number (потеря точности)
+{
+  "amount": 1499.99
+}
+
+// Хорошо: string (точное значение)
+{
+  "amount": "1499.99"
+}
+
+// Альтернатива: сумма в минимальных единицах (копейки/центах)
+{
+  "amountCents": 149999  // 1499.99 руб = 149999 коп
+}
+// Удобно: нет проблем с плавающей точкой, целое число.
+// Неудобно: надо помнить, что мы в копейках.</code></pre>
+
+<hr />
+
+<!-- ============= 3.7 ============= -->
+<h2>3.7. Контракт — это договор</h2>
+
+<p>В предыдущих разделах мы говорили о <em>деталях</em>: типы, null, enum, даты, числа. Теперь давайте поговорим о том, как эти детали формализовать. Инструмент для этого — <strong>контракт API</strong>.</p>
+
+<h3>OpenAPI (Swagger) — спецификация REST API</h3>
+
+<p><strong>OpenAPI Specification</strong> (ранее известный как Swagger) — это формат описания REST API. Это YAML или JSON-файл, который описывает:</p>
+<ul>
+  <li>Эндпоинты: URL, метод, параметры</li>
+  <li>Запросы: тело запроса, заголовки</li>
+  <li>Ответы: статус-коды, схема тела ответа</li>
+  <li>Типы данных: схемы объектов, enum, форматы</li>
+  <li>Аутентификация: как авторизоваться</li>
+</ul>
+
+<pre><code># Пример OpenAPI 3.0 (YAML)
+openapi: "3.0.3"
+info:
+  title: API заказов
+  version: "1.0.0"
+paths:
+  /api/orders/{orderId}:
+    get:
+      summary: Получить заказ по ID
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Заказ найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+components:
+  schemas:
+    Order:
+      type: object
+      required: [id, status, total]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [created, pending, paid, shipped, delivered, refunded, cancelled]
+        total:
+          type: string
+          description: Сумма в Decimal, передаётся строкой
+          example: "1499.99"
+        discount:
+          type: string
+          nullable: true
+          description: Скидка. null — скидки нет
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T14:30:00Z"</code></pre>
+
+<h3>Почему контракт — единственный источник правды</h3>
+
+<p>В классическом подходе документация живёт своей жизнью, код — своей, а реальность — третьей. Контракт (OpenAPI-файл) должен быть <strong>единственным источником правды (Single Source of Truth)</strong>.</p>
+
+<div class="diagram">Без контракта (хаос):
+  [Бекенд-разработчик]  → Код
+  [Фронтенд-разработчик] → Читает код бекенда / спрашивает в чате
+  [Аналитик]            → Пишет Word-документ
+  [Тестировщик]         → Догадывается, как тестировать
+  Итог: у всех разное понимание API.
+
+С контрактом (порядок):
+  [Аналитик]            → Описывает в OpenAPI
+  [OpenAPI-файл]        → Единственный источник правды
+    ├─→ [Генерация кода бекенда]  → Java/C#/Python классы
+    ├─→ [Генерация клиента]       → TypeScript/Swift/Kotlin
+    ├─→ [Документация]           → Swagger UI
+    └─→ [Тесты]                  → Contract Testing
+  Итог: все видят одно и то же.</div>
+
+<h3>Code Generation: как контракт порождает код</h3>
+
+<p>Из OpenAPI-спецификации можно <strong>автоматически генерировать</strong>:</p>
+<ul>
+  <li><strong>Серверный код</strong> — классы-модели, контроллеры, валидаторы (Java Spring, Python FastAPI, C# ASP.NET)</li>
+  <li><strong>Клиентский код</strong> — TypeScript-типы, fetch-клиенты, мобильные SDK</li>
+  <li><strong>Документацию</strong> — Swagger UI, ReDoc, Postman Collection</li>
+  <li><strong>Тесты</strong> — Contract Tests (Pact, Spring Cloud Contract)</li>
+</ul>
+
+<p>Если контракт меняется — код перегенерируется. Если контракт не совпадает с реализацией — тесты падают.</p>
+
+<blockquote class="warning">
+<p><strong>⚠ Что происходит, когда контракт не совпадает с реализацией:</strong><br /><br />
+1. Фронтенд думает, что поле <code>discount</code> — <code>number</code>, а бекенд присылает <code>string</code>. Фронтенд не суммирует скидку.<br />
+2. Фронтенд думает, что <code>status</code> — enum из 5 значений, а бекенд начал присылать 6-е. UI показывает «неизвестный статус».<br />
+3. Аналитик обновил контракт, но забыл сказать команде. Две недели разработки — впустую.<br /><br />
+<strong>Вывод:</strong> Контракт — это договор. Если одна сторона нарушает договор, система ломается.</p>
+</blockquote>
+
+<blockquote class="senior">
+<p><strong>🧠 Как думает Senior:</strong> «Сначала контракт, потом реализация (Contract First). Это как в строительстве: сначала чертёж, потом фундамент. Нельзя начать строить стену, а потом думать, где будет окно. API — то же самое. Аналитик пишет контракт. Разработчик реализует под контракт. Фронтенд генерирует клиент из контракта. Тесты проверяют соответствие контракту.»</p>
+</blockquote>
+
+<hr />
+
+<!-- ============= 3.8 ============= -->
+<h2>3.8. Версионирование контрактов</h2>
+
+<p>API живёт и меняется. Добавляются новые поля, меняются типы, устаревают старые эндпоинты. Но клиенты, которые уже используют API, не должны ломаться. Для этого существует <strong>версионирование</strong>.</p>
+
+<h3>Когда нужно менять версию API</h3>
+
+<p>Изменения бывают <strong>обратно совместимые</strong> (не ломают клиента) и <strong>ломающие (breaking changes)</strong>.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Изменение</th>
+      <th>Совместимость</th>
+      <th>Пояснение</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Добавление нового поля в ответ</td>
+      <td>✅ Обратно совместимо</td>
+      <td>Клиент игнорирует неизвестные поля</td>
+    </tr>
+    <tr>
+      <td>Добавление опционального поля в запрос</td>
+      <td>✅ Обратно совместимо</td>
+      <td>Старый клиент не шлёт — сервер использует дефолт</td>
+    </tr>
+    <tr>
+      <td>Добавление нового enum-значения</td>
+      <td>⚠️ Осторожно</td>
+      <td>Если клиент не умеет обрабатывать неизвестные значения — сломается</td>
+    </tr>
+    <tr>
+      <td>Добавление нового эндпоинта</td>
+      <td>✅ Обратно совместимо</td>
+      <td>Существующие эндпоинты не меняются</td>
+    </tr>
+    <tr>
+      <td><strong>Изменение типа поля</strong> (string → number)</td>
+      <td>❌ Ломает клиента</td>
+      <td>Клиент ожидает строку, получает число — ошибка</td>
+    </tr>
+    <tr>
+      <td><strong>Удаление поля</strong></td>
+      <td>❌ Ломает клиента</td>
+      <td>Клиент читает поле — undefined</td>
+    </tr>
+    <tr>
+      <td><strong>Переименование поля</strong></td>
+      <td>❌ Ломает клиента</td>
+      <td>Фактически: удаление + добавление</td>
+    </tr>
+    <tr>
+      <td><strong>Изменение формата</strong> (date → datetime)</td>
+      <td>❌ Ломает клиента</td>
+      <td>Парсер даты может не сработать</td>
+    </tr>
+    <tr>
+      <td><strong>Делание поля обязательным</strong></td>
+      <td>❌ Ломает клиента</td>
+      <td>Старый клиент не шлёт поле — сервер отвечает ошибкой</td>
+    </tr>
+    <tr>
+      <td><strong>Изменение URL эндпоинта</strong></td>
+      <td>❌ Ломает клиента</td>
+      <td>404</td>
+    </tr>
+    <tr>
+      <td><strong>Изменение HTTP метода</strong> (GET → POST)</td>
+      <td>❌ Ломает клиента</td>
+      <td>Другая семантика</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Стратегии версионирования</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Стратегия</th>
+      <th>Пример</th>
+      <th>Плюсы</th>
+      <th>Минусы</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>URL versioning</strong></td>
+      <td><code>/api/v1/orders</code>,<br /><code>/api/v2/orders</code></td>
+      <td>Простота, явно видно версию</td>
+      <td>Дублирование кода, URL «захламляются»</td>
+    </tr>
+    <tr>
+      <td><strong>Header versioning</strong></td>
+      <td><code>Accept: application/vnd.api+json;version=2</code></td>
+      <td>URL чистый, семантика HTTP</td>
+      <td>Сложнее тестировать, не видно в URL</td>
+    </tr>
+    <tr>
+      <td><strong>Query param versioning</strong></td>
+      <td><code>/api/orders?version=2</code></td>
+      <td>Простота</td>
+      <td>Загрязнение query params, кэширование</td>
+    </tr>
+    <tr>
+      <td><strong>Content negotiation</strong></td>
+      <td><code>Content-Type: application/vnd.api.v2+json</code></td>
+      <td>Чистый REST</td>
+      <td>Сложность, редко используется</td>
+    </tr>
+  </tbody>
+</table>
+
+<blockquote class="idea">
+<p><strong>Рекомендация:</strong> Для большинства проектов достаточно <strong>URL versioning</strong> (<code>/api/v1/...</code>). Оно простое, очевидное и не требует сложной инфраструктуры. <code>v1</code>, <code>v2</code> — целые числа, а не семантические версии (не <code>v1.2.3</code>). Версия API меняется только при breaking changes.</p>
+</blockquote>
+
+<h3>Пример: эволюция контракта</h3>
+
+<pre><code>// v1 (2023-01)
+GET /api/v1/orders/123
+Response:
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "total": "1500.00",
+  "status": "paid"
+}
+
+// v2 (2023-06) — добавили скидку, поле createdAt
+GET /api/v2/orders/123
+Response:
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "total": "1500.00",
+  "status": "paid",
+  "discount": null,
+  "createdAt": "2023-01-15T10:30:00Z"
+}
+
+// v1 продолжает работать, но считается устаревшим (deprecated).
+// Клиенты на v1 получают старый формат без скидки и даты.
+// Клиенты на v2 получают новый формат.
+// Через N месяцев v1 выключается.</code></pre>
+
+<blockquote class="remember">
+<p><strong>Запомните:</strong> Версионирование — это не про «мы обновились». Это про «мы не сломали клиентов». Старые клиенты не обязаны обновляться. Поэтому breaking changes требуют новой версии API, а не просто «мы написали в changelog».</p>
+</blockquote>
+
+<hr />
+
+<!-- ============= ИТОГИ ============= -->
+<h2>Итоги главы</h2>
+
+<p>JSON — это не просто формат данных. <strong>Это контракт</strong>. Аналитик, который понимает глубину этого контракта, перестаёт писать «сумма — число» и начинает писать «сумма — Decimal(18,2), nullable=false, передаётся как string в формате "dddd.cc"».</p>
+
+<p>Каждая деталь имеет значение:</p>
+<ul>
+  <li><strong>Тип данных</strong> — определяет, как сервер будет обрабатывать значение</li>
+  <li><strong>null vs optional</strong> — разные вещи, разная обработка</li>
+  <li><strong>Enum</strong> — строгий набор, никаких «других» значений</li>
+  <li><strong>UUID</strong> — безопасность и масштабирование</li>
+  <li><strong>ISO 8601</strong> — единый язык для дат и времени</li>
+  <li><strong>Decimal</strong> — деньги считаются точно или никак</li>
+  <li><strong>Контракт first</strong> — порядок вместо хаоса</li>
+  <li><strong>Версионирование</strong> — уважение к клиентам</li>
+</ul>
+
+<h3>🔍 Чек-лист: проверка JSON-контракта аналитиком</h3>
+
+<ul class="checklist">
+  <li>Для каждого поля указан точный тип <code>string | number | boolean | null | object | array</code></li>
+  <li>Для строк указан формат: <code>uuid | date | date-time | decimal | email | uri | byte</code></li>
+  <li>Для чисел указана точность: <code>integer | float | double | decimal(n,m)</code></li>
+  <li>Для enum указан полный список значений (регистр важен!)</li>
+  <li>Для каждого поля указано: required | optional | nullable</li>
+  <li>null и optional не путаются (см. раздел 3.2)</li>
+  <li>Даты и время строго в ISO 8601 с указанием timezone</li>
+  <li>Деньги передаются как строка (decimal), не как number</li>
+  <li>ID — UUID v4 (не автоинкрементный integer)</li>
+  <li>Нет «других» статусов — только конкретный enum</li>
+  <li>Все breaking changes вынесены в новую версию API</li>
+  <li>Контракт описан в OpenAPI 3.0+ (не в Word, не в wiki)</li>
+  <li>Есть диаграмма переходов для enum статусов</li>
+  <li>Описано поведение при неизвестных enum-значениях</li>
+  <li>Для PATCH-запросов явно указано: null = удалить, отсутствие = не менять</li>
+  <li>Контракт проверен на обратную совместимость перед публикацией</li>
+</ul>
+
+<blockquote class="senior">
+<p><strong>🧠 Что должен понять аналитик после этой главы:</strong><br /><br />
+«Я не просто пишу "поле — строка". Я <em>решаю</em>, как сервер и клиент будут общаться. Моя двусмысленность — это баг в проде. Моя точность — это стабильность системы. JSON-контракт — это моя ответственность.»</p>
+</blockquote>
+
+<h3>Вопросы для самопроверки</h3>
+
+<ol>
+  <li>Чем отличается <code>null</code> от отсутствия поля в JSON? Приведите пример, когда нужно одно, а когда — другое.</li>
+  <li>Почему <code>"100.50"</code> (строка) лучше, чем <code>100.50</code> (number), для денежных сумм?</li>
+  <li>Что такое ISO 8601 и почему формат <code>"2024-01-15 14:30"</code> не соответствует стандарту?</li>
+  <li>Клиент в Нью-Йорке (UTC-5) отправляет запрос в 10:00 по местному времени. Как он должен указать время в JSON, чтобы сервер в Лондоне (UTC+0) правильно его понял?</li>
+  <li>Какие изменения в API являются breaking changes? Приведите 5 примеров.</li>
+  <li>Почему UUID лучше автоинкрементного ID в публичном API?</li>
+  <li>Что такое Contract First подход и в чём его преимущество?</li>
+  <li>Почему добавление нового значения в enum может сломать клиента?</li>
+  <li>В чём разница между <code>PAID</code>, <code>paid</code> и <code>Paid</code> в enum?</li>
+  <li>Какая стратегия версионирования API самая простая и популярная?</li>
+  <li>Можно ли использовать <code>float</code> для хранения налоговых ставок? Почему?</li>
+  <li>Что произойдёт, если фронтенд ожидает полe <code>discount</code> как <code>number</code>, а бекенд начал присылать его как <code>string</code>?</li>
+</ol>
+
+<hr />
+
+<div class="chapter-nav">
+  <a href="chapter02.html">← Глава 2: REST API без магии</a>
+  <a href="index.html">Содержание</a>
+  <a href="chapter04.html">Глава 4: Что происходит внутри Backend →</a>
+</div>
+
+</div>
+</body>
+</html>

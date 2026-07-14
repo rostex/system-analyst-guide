@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<title>Техническое мышление аналитика — книга</title>
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #1a1a2e;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  background: #fff;
+}
+h1 { font-size: 2.4em; border-bottom: 3px solid #2d3436; padding-bottom: 12px; margin-top: 48px; color: #2d3436; text-align: center; }
+h2 { font-size: 1.6em; margin-top: 40px; padding-bottom: 8px; border-bottom: 1px solid #dfe6e9; color: #2d3436; }
+h3 { font-size: 1.3em; margin-top: 32px; color: #636e72; }
+p { margin: 16px 0; }
+ul, ol { margin: 12px 0; padding-left: 24px; }
+li { margin: 6px 0; }
+a { color: #0984e3; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 15px;
+}
+th {
+  background: #2d3436;
+  color: #fff;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+}
+td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #dfe6e9;
+}
+tr:nth-child(even) td { background: #f8f9fa; }
+tr:hover td { background: #e8f4f8; }
+
+blockquote {
+  margin: 20px 0;
+  padding: 16px 20px;
+  border-left: 5px solid;
+  border-radius: 6px;
+  font-size: 15px;
+  background: #f0edff;
+  border-color: #6c5ce7;
+}
+blockquote p { margin: 4px 0; }
+
+.subtitle {
+  font-size: 1.2em;
+  color: #636e72;
+  text-align: center;
+  margin-top: -12px;
+  margin-bottom: 32px;
+}
+
+.cover {
+  text-align: center;
+  padding: 60px 20px;
+  background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+  color: #fff;
+  border-radius: 12px;
+  margin-bottom: 40px;
+}
+.cover h1 { color: #fff; border: none; font-size: 2.8em; margin: 0 0 16px 0; }
+.cover .sub { color: #dfe6e9; font-size: 1.3em; margin: 0 0 24px 0; }
+.cover .meta { color: #b2bec3; font-size: 14px; }
+
+.toc-item {
+  padding: 14px 20px;
+  border-bottom: 1px solid #dfe6e9;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: background 0.2s;
+  border-radius: 6px;
+}
+.toc-item:hover { background: #f8f9fa; }
+.toc-item .num {
+  font-weight: 700;
+  color: #0984e3;
+  min-width: 44px;
+  font-size: 1.2em;
+  line-height: 1.7;
+}
+.toc-item .info { flex: 1; }
+.toc-item .title { font-weight: 600; color: #2d3436; font-size: 1.05em; }
+.toc-item .desc { color: #636e72; font-size: 0.9em; margin-top: 2px; }
+.toc-item .link { margin-top: 4px; }
+
+.section-title {
+  font-size: 1.4em;
+  font-weight: 700;
+  color: #2d3436;
+  margin: 48px 0 24px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #2d3436;
+}
+
+hr {
+  border: none;
+  border-top: 2px solid #dfe6e9;
+  margin: 40px 0;
+}
+
+.about-block {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 24px 0;
+}
+.about-card {
+  background: #f8f9fa;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  padding: 20px;
+}
+.about-card h3 { margin: 0 0 8px 0; color: #2d3436; }
+.about-card p { margin: 4px 0; font-size: 14px; color: #636e72; }
+
+@media (max-width: 768px) {
+  body { padding: 20px 12px; font-size: 15px; }
+  .cover { padding: 32px 16px; }
+  .cover h1 { font-size: 2em; }
+  .about-block { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>Техническое мышление аналитика</h1>
+  <p class="sub">Практическое руководство для Business Analyst и System Analyst</p>
+  <p class="meta">Как мыслить как инженер · Понимать почему, а не только что · Проектировать требования без замечаний</p>
+</div>
+
+<blockquote style="border-color: #fdcb6e; background: #fef9e7;">
+  <strong>🎯 Цель книги:</strong> Сформировать техническое мышление аналитика. После прочтения вы будете понимать не только <em>что</em> нужно делать, но и <em>почему</em> именно так принято в современной разработке. Вы начнёте задавать те же вопросы, что задаёт Senior-разработчик перед началом реализации.
+</blockquote>
+
+<h2>📚 О книге</h2>
+
+<p>Эта книга — <strong>не справочник по REST API</strong> и <strong>не учебник по SQL</strong>. Это практическое руководство, которое объясняет:</p>
+
+<ul>
+  <li>как думает разработчик и архитектор;</li>
+  <li>почему возникают архитектурные ограничения;</li>
+  <li>почему разработчики задают аналитикам десятки вопросов;</li>
+  <li>как проектировать требования так, чтобы разработчики принимали их без замечаний.</li>
+</ul>
+
+<p>Главный принцип книги — каждая тема отвечает на вопрос <strong>ПОЧЕМУ</strong>, а не только <strong>ЧТО</strong>.</p>
+
+<div class="about-block">
+  <div class="about-card">
+    <h3>👥 Для кого</h3>
+    <p>Business Analyst · System Analyst · Functional Analyst</p>
+    <p style="margin-top:8px;">Также будет полезна: Product Owner, Project Manager, Junior Backend Developer, QA Engineer</p>
+  </div>
+  <div class="about-card">
+    <h3>📖 Как читать</h3>
+    <p>Последовательно, глава за главой. Каждая глава — логически завершённый материал с примерами, ошибками, решениями и чек-листами.</p>
+  </div>
+</div>
+
+<h2>📑 Содержание</h2>
+
+<div class="toc-item">
+  <div class="num">01</div>
+  <div class="info">
+    <div class="title"><a href="chapter01.html">Как думает разработчик</a></div>
+    <div class="desc">Внутренняя кухня разработчика. Почему "просто добавить поле" может занять 3 дня. Как разработчик оценивает сроки. Что такое технический долг.</div>
+  </div>
+</div>
+
+<div class="toc-item">
+  <div class="num">02</div>
+  <div class="info">
+    <div class="title"><a href="chapter02.html">REST API без магии</a></div>
+    <div class="desc">Как устроен REST API. HTTP-методы, статус-коды, URL-дизайн. Идемпотентность, пагинация, фильтрация. Как должен выглядеть контракт API в документации.</div>
+  </div>
+</div>
+
+<div class="toc-item">
+  <div class="num">03</div>
+  <div class="info">
+    <div class="title"><a href="chapter03.html">JSON как контракт</a></div>
+    <div class="desc">Типы данных в JSON. Nullable vs Optional. Enum, UUID, ISO 8601. Decimal, Float, Double — почему одни теряют деньги, а другие нет. OpenAPI и версионирование.</div>
+  </div>
+</div>
+
+<div class="toc-item">
+  <div class="num">04</div>
+  <div class="info">
+    <div class="title"><a href="chapter04.html">Что происходит внутри Backend</a></div>
+    <div class="desc">Путь запроса от клиента до БД. Controller, DTO, Service, Repository. Транзакции и ACID. Обработка ошибок. Почему валидация нужна на каждом уровне.</div>
+  </div>
+</div>
+
+<div class="toc-item">
+  <div class="num">05</div>
+  <div class="info">
+    <div class="title"><a href="chapter05.html">Frontend глазами аналитика</a></div>
+    <div class="desc">Как работает браузер, API между фронтом и бэком, состояния UI, UX как часть требований.</div>
+  </div>
+</div>
+
+<div class="toc-item">
+  <div class="num">06</div>
+  <div class="info">
+    <div class="title"><a href="chapter06.html">Проектирование базы данных</a></div>
+    <div class="desc">Первичные и внешние ключи. Типы данных, NOT NULL vs NULL, UNIQUE. Индексы, Constraints. Soft Delete, аудит. JSON в БД — удобно, но опасно.</div>
+  </div>
+</div>
+
+<div class="toc-item">
+  <div class="num">07</div>
+  <div class="info">
+    <div class="title"><a href="chapter07.html">Нормализация данных</a></div>
+    <div class="desc">Три нормальные формы на реальных примерах. Когда нормализация — зло. Денормализация для производительности. Баланс между консистентностью и скоростью.</div>
+  </div>
+</div>
+
+<div class="toc-item">
+  <div class="num">08</div>
+  <div class="info">
+    <div class="title"><a href="chapter08.html">Производительность</a></div>
+    <div class="desc">N+1 проблема, индексы, JOIN, пагинация. Кэширование. Batch Processing. Как требования аналитика влияют на производительность системы.</div>
+  </div>
+</div>
+
+<div class="toc-item">
+  <div class="num">09</div>
+  <div class="info">
+    <div class="title"><a href="chapter09.html">Микросервисы</a></div>
+    <div class="desc">Монолит vs микросервисы. Kafka и очереди сообщений. Event Driven архитектура. Владельцы данных. Saga pattern. Когда микросервисы — плохое решение.</div>
+  </div>
+</div>
+
+<div class="toc-item">
+  <div class="num">10</div>
+  <div class="info">
+    <div class="title"><a href="chapter10.html">Интеграции</a></div>
+    <div class="desc">Синхронные и асинхронные интеграции. REST vs gRPC vs GraphQL. Обработка ошибок, таймауты, retry. Eventual consistency. Идемпотентность.</div>
+  </div>
+</div>
+
+<div class="toc-item">
+  <div class="num">11</div>
+  <div class="info">
+    <div class="title"><a href="chapter11.html">Как писать хорошие требования</a></div>
+    <div class="desc">Business vs Technical requirements. Структура хорошего требования. Явные и неявные требования. User Stories. Граничные случаи. Чек-лист проверки.</div>
+  </div>
+</div>
+
+<div class="toc-item">
+  <div class="num">12</div>
+  <div class="info">
+    <div class="title"><a href="chapter12.html">Антипаттерны аналитиков</a></div>
+    <div class="desc">10 самых частых ошибок: "это же просто добавить поле", "сделайте как в старом интерфейсе", "это временное решение" и другие. Разбор каждой с последствиями.</div>
+  </div>
+</div>
+
+<div class="toc-item">
+  <div class="num">13</div>
+  <div class="info">
+    <div class="title"><a href="chapter13.html">Чек-листы Senior аналитика</a></div>
+    <div class="desc">Готовые инструменты для ежедневной работы. Чек-листы проверки требований, API-контрактов, интеграций. Roadmap от Junior до Senior аналитика.</div>
+  </div>
+</div>
+
+<hr />
+
+<h2>🧠 Что вы узнаете</h2>
+
+<table>
+  <tr><th>Тема</th><th>Ключевой вопрос</th></tr>
+  <tr><td>REST API</td><td>Почему endpoint — это существительное, а не глагол?</td></tr>
+  <tr><td>Типы данных</td><td>Почему Double приводит к ошибкам при работе с деньгами?</td></tr>
+  <tr><td>Nullable</td><td>Почему NULL — это "неизвестно", а не "пусто"?</td></tr>
+  <tr><td>БД</td><td>Почему отсутствие индексов убивает производительность?</td></tr>
+  <tr><td>Микросервисы</td><td>Почему микросервисы — это всегда компромисс?</td></tr>
+  <tr><td>Интеграции</td><td>Почему timeout — это требование, а не техническая деталь?</td></tr>
+  <tr><td>Контракты</td><td>Почему нельзя менять API после публикации?</td></tr>
+  <tr><td>Требования</td><td>Почему "сделать как в старом интерфейсе" — самое дорогое требование?</td></tr>
+</table>
+
+<blockquote style="border-color: #00b894; background: #e6faf4;">
+  <strong>✅ Главная идея книги:</strong> Аналитик с инженерным мышлением — самый ценный член команды. После каждой главы вы будете смотреть на систему глазами разработчика и задавать правильные вопросы до того, как начнётся реализация.
+</blockquote>
+
+<p style="text-align:center; color:#636e72; font-size:14px; margin-top:48px;">
+  Техническое мышление аналитика © 2026
+</p>
+
+</body>
+</html>
