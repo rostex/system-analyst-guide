@@ -1,0 +1,893 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ac="http://atlassian.com/content"
+      xmlns:ri="http://atlassian.com/resource">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Глава 1. Как думает разработчик</title>
+</head>
+<body>
+
+    <h1>Глава 1. Как думает разработчик</h1>
+
+    <p style="font-size: 1.2em; color: #636e72; margin-bottom: 32px;">Почему "просто добавить поле" занимает три дня, и как аналитику научиться предвидеть вопросы разработчика</p>
+
+    <p style="color: #636e72; font-size: 14px;"><strong>Цель главы:</strong> Показать аналитику внутреннюю кухню разработчика — какие вопросы он задаёт себе, почему он их задаёт, как принимает решения и оценивает сроки.</p>
+
+    <h2>Содержание главы</h2>
+
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr><td style="padding: 8px 16px; border-bottom: 1px solid #dfe6e9; color: #0984e3; font-weight: 700; width: 40px;">1.1</td><td style="padding: 8px 16px; border-bottom: 1px solid #dfe6e9;">Разработчик — это инженер, а не кодер</td></tr>
+        <tr><td style="padding: 8px 16px; border-bottom: 1px solid #dfe6e9; color: #0984e3; font-weight: 700; width: 40px;">1.2</td><td style="padding: 8px 16px; border-bottom: 1px solid #dfe6e9;">Главный вопрос разработчика: "А что, если?"</td></tr>
+        <tr><td style="padding: 8px 16px; border-bottom: 1px solid #dfe6e9; color: #0984e3; font-weight: 700; width: 40px;">1.3</td><td style="padding: 8px 16px; border-bottom: 1px solid #dfe6e9;">Откуда берутся архитектурные ограничения</td></tr>
+        <tr><td style="padding: 8px 16px; border-bottom: 1px solid #dfe6e9; color: #0984e3; font-weight: 700; width: 40px;">1.4</td><td style="padding: 8px 16px; border-bottom: 1px solid #dfe6e9;">Что разработчик видит, когда читает требование</td></tr>
+        <tr><td style="padding: 8px 16px; border-bottom: 1px solid #dfe6e9; color: #0984e3; font-weight: 700; width: 40px;">1.5</td><td style="padding: 8px 16px; border-bottom: 1px solid #dfe6e9;">Почему разработчики задают "глупые вопросы"</td></tr>
+        <tr><td style="padding: 8px 16px; border-bottom: 1px solid #dfe6e9; color: #0984e3; font-weight: 700; width: 40px;">1.6</td><td style="padding: 8px 16px; border-bottom: 1px solid #dfe6e9;">Как разработчик оценивает сроки</td></tr>
+        <tr><td style="padding: 8px 16px; border-bottom: 1px solid #dfe6e9; color: #0984e3; font-weight: 700; width: 40px;">1.7</td><td style="padding: 8px 16px; border-bottom: 1px solid #dfe6e9;">Ментальная модель разработчика</td></tr>
+        <tr><td style="padding: 8px 16px; border-bottom: 1px solid #dfe6e9; color: #0984e3; font-weight: 700; width: 40px;">1.8</td><td style="padding: 8px 16px; border-bottom: 1px solid #dfe6e9;">Что аналитик должен знать о техническом долге</td></tr>
+        <tr><td style="padding: 8px 16px; border-bottom: 1px solid #dfe6e9; color: #0984e3; font-weight: 700; width: 40px;">—</td><td style="padding: 8px 16px; border-bottom: 1px solid #dfe6e9;">Итоги главы</td></tr>
+    </table>
+
+    <!-- ВВЕДЕНИЕ -->
+
+    <h2>Введение</h2>
+
+    <p>Представьте, что вы — архитектор. Вы нарисовали план дома: где будут окна, двери, розетки. Вы передаёте чертёж прорабу и ждёте результат. Но прораб вместо того, чтобы строить, начинает задавать вопросы: "А какой бетон? А какая арматура? А какова нагрузка на перекрытие? А что, если земля окажется болотистой?"</p>
+
+    <p>Разработчик — это не "кодер", который механически переводит требования в строчки кода. Это инженер, который ежедневно принимает сотни решений. Каждое из них влияет на то, будет ли система работать завтра, через месяц и через пять лет.</p>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#a29bfe</ac:parameter>
+        <ac:parameter ac:name="bgColor">#f5f3ff</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Факт:</strong> Исследование Stripe (2024) показало, что разработчик тратит только <strong>30% времени</strong> на написание кода. Остальное — анализ требований, обсуждение архитектуры, отладка, тестирование, код-ревью и коммуникация.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#6c5ce7</ac:parameter>
+        <ac:parameter ac:name="bgColor">#f0edff</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Идея:</strong> Аналитик, который понимает, как мыслит разработчик, перестаёт быть "передатчиком требований" и становится настоящим партнёром. Он предвидит вопросы, формулирует требования так, чтобы их не нужно было переписывать, и экономит команде дни, а иногда и недели работы.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <p>Эта глава — <strong>не учебник по программированию</strong>. Вы не научитесь писать код. Но вы научитесь смотреть на задачу глазами разработчика. А это стоит дороже любого языка программирования.</p>
+
+    <!-- 1.1 -->
+
+    <h2>1.1. Разработчик — это инженер, а не кодер</h2>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#fdcb6e</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fef9e7</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Как думает Senior:</strong> "Любой дурак может написать код, который поймёт машина. Хороший программист пишет код, который поймёт человек. А отличный программист проектирует систему так, чтобы её не пришлось переписывать через полгода." — Martin Fowler</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Чем отличается написание кода от проектирования решения</h3>
+
+    <p>Когда junior-разработчик получает задачу, он сразу открывает редактор и начинает писать. Senior — достаёт ручку, блокнот и задаёт десять вопросов. Почему?</p>
+
+    <p>Потому что написать код — это последний этап. До него нужно:</p>
+
+    <ol>
+        <li><strong>Понять, что на самом деле нужно</strong> — часто бизнес просит одно, а нужно другое.</li>
+        <li><strong>Оценить влияние на существующую систему</strong> — не сломает ли изменение соседний модуль.</li>
+        <li><strong>Спроектировать так, чтобы не сломать обратную совместимость</strong> — старые версии API не должны перестать работать.</li>
+        <li><strong>Продумать сценарии ошибок</strong> — что будет, если база недоступна, если сеть упала, если пришёл некорректный запрос.</li>
+        <li><strong>Решить, как тестировать</strong> — юнит-тесты, интеграционные, e2e, регресс.</li>
+        <li><strong>Оценить риски деплоя</strong> — можно ли выкатить без даунтайма, нужна ли миграция данных.</li>
+    </ol>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#00b894</ac:parameter>
+        <ac:parameter ac:name="bgColor">#e6faf4</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Правильное решение:</strong> Аналитик, который понимает эту цепочку, не пишет в задаче просто "добавить поле phone пользователю". Он пишет контекст: для чего поле, какие значения допустимы, как быть с уже существующими пользователями, нужно ли показывать поле в истории заказов, влияет ли оно на отчёты.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Почему "просто добавить поле" может занять 3 дня</h3>
+
+    <p>Это самый частый вопрос от аналитиков: "Ну там же одно поле! Что там делать три дня?"</p>
+
+    <p>Давайте разберём, что на самом деле стоит за "просто добавить поле <code>phone</code> в форму регистрации":</p>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Шаг</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Что делает разработчик</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Время</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">1</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Анализ влияния: в каких модулях используется форма регистрации</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">30 мин</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">2</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Создание миграции БД (ALTER TABLE + обратная совместимость)</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">1 час</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">3</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Изменение DTO (Data Transfer Object) — модели данных</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">20 мин</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">4</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Изменение репозитория — слоя работы с БД</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">30 мин</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">5</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Изменение сервиса — бизнес-логики (валидация, форматирование)</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">1 час</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">6</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Изменение контроллера / API-слоя</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">30 мин</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">7</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Изменение фронтенда (если fullstack) + валидация на клиенте</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">1 час</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">8</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Написание тестов (юнит + интеграционные)</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">1 час</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">9</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Обработка ошибок: что если телефон уже существует</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">30 мин</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">10</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Код-ревью + исправление замечаний</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">1 час</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">11</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Деплой + мониторинг + откат при проблемах</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">1 час</td></tr>
+        <tr style="background-color: #f8f9fa; font-weight: bold;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Итого</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">~8 часов</td></tr>
+    </table>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#0984e3</ac:parameter>
+        <ac:parameter ac:name="bgColor">#e8f4fd</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Пример из банка:</strong> "Добавить поле "ИНН" в анкету клиента". Разработчик менял 4 микросервиса, 2 очереди сообщений, миграцию данных на 2 млн записей, интеграционный тест с внешним сервисом ФНС, и документацию для техподдержки. Итог: 5 дней. Без учёта код-ревью и QA.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Аналогия: строительство дома vs рисование на стене</h3>
+
+    <p>Когда вы говорите "просто добавьте поле", разработчик слышит не "нарисовать цветочек на обоях". Он слышит "прорубить новое окно в несущей стене, провести туда электричество, утеплить откосы, поставить подоконник, проверить герметичность и убедиться, что дом не рухнул".</p>
+
+    <p>Разница между написанием кода и проектированием решения — это разница между тем, чтобы повесить полку, и тем, чтобы достроить комнату. С виду похоже, но объём работы отличается на порядок.</p>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#2d3436</ac:parameter>
+        <ac:parameter ac:name="bgColor">#f1f2f6</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Запомните:</strong> Если разработчик говорит, что задача на "один день", а вам кажется, что на "час" — скорее всего, вы просто не видите той работы, которая идёт "под капотом". Это не значит, что разработчик тянет время. Это значит, что он видит всю систему, а вы — только верхушку айсберга.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <!-- 1.2 -->
+
+    <h2>1.2. Главный вопрос разработчика: "А что, если?"</h2>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#fdcb6e</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fef9e7</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Как думает Senior:</strong> "Требование — это не спецификация. Это гипотеза о том, как система должна работать в идеальном мире. Моя работа — проверить эту гипотезу на прочность."</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Как разработчик мыслит сценариями</h3>
+
+    <p>Разработчик никогда не думает только одним сценарием. Он видит дерево возможных путей выполнения программы:</p>
+
+    <ac:structured-macro ac:name="code">
+        <ac:parameter ac:name="language">text</ac:parameter>
+        <ac:plain-text-body><![CDATA[                   +--- Сценарий A: всё штатно ------+
+                   |                                  |
+     +---------+    +--- Сценарий B: ошибка валидации --+
+     | Запрос  |----+                                  |
+     +---------+    +--- Сценарий C: сервис недоступен -+
+                   |                                  |
+                   +--- Сценарий D: граничный случай -+
+                               (null, пусто, 0, -1,
+                                переполнение, SQL-инъекция)]]></ac:plain-text-body>
+    </ac:structured-macro>
+
+    <p>Для разработчика не существует "одного правильного сценария". Есть <strong>happy path</strong> (всё хорошо), <strong>error path</strong> (что-то пошло не так) и <strong>edge case</strong> (граничный случай). Если аналитик описал только happy path — разработчик всё равно реализует все три. Но без требований на error path он будет реализовывать их "на глаз", и это почти всегда приводит к багам.</p>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#d63031</ac:parameter>
+        <ac:parameter ac:name="bgColor">#ffeef0</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Ошибка:</strong> Требование: "При регистрации пользователь вводит email и пароль". Разработчик реализовал. Через неделю баг: пользователь ввёл email длиной 300 символов — сервер упал. Ещё через неделю: пользователь ввёл email с символом "#" — запись в БД не сохранилась. Аналитик не описал граничные значения, и разработчик не знал, какие ограничения ставить.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#00b894</ac:parameter>
+        <ac:parameter ac:name="bgColor">#e6faf4</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Правильное решение:</strong> В требовании указывать не только "что должно быть", но и "что должно произойти, если данные некорректны". Например: "Email — строка от 5 до 254 символов, соответствует RFC 5322. При неверном формате показывать сообщение: 'Введите корректный email'. При длине более 254 символов — 'Email слишком длинный'.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Почему он спрашивает "а что будет, если придёт null?"</h3>
+
+    <p>Null — это корень зла в программировании. Его придумал Тони Хоар в 1965 году, и позже он назвал это "своей ошибкой на миллиард долларов". Когда разработчик спрашивает про null, он не придирается. Он пытается предотвратить одну из самых частых причин падения сервера.</p>
+
+    <p>В современной разработке есть принцип: <strong>"Make invalid state unrepresentable"</strong> — сделай так, чтобы некорректное состояние было невозможно в принципе. Если поле <code>name</code> обязательно — оно не должно иметь возможности стать null на уровне базы данных, на уровне API и на уровне интерфейса.</p>
+
+    <p>Поэтому цепочка вопросов выглядит так:</p>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Вопрос разработчика</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Что на самом деле стоит за вопросом</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">"Может ли имя быть null?"</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Нужно ли мне писать проверку на null в коде или БД сама защитит?</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">"Может ли сумма быть 0?"</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Это валидная сумма или признак того, что что-то сломалось?</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">"Может ли массив быть пустым?"</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Падать с ошибкой или возвращать пустой список?</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">"Бывает ли пользователь без имени?"</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Ставить заглушку "Пользователь" или показывать ошибку?</td></tr>
+    </table>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#0984e3</ac:parameter>
+        <ac:parameter ac:name="bgColor">#e8f4fd</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Пример из финтеха:</strong> В платёжной системе разработчик спросил: "А может ли сумма перевода быть отрицательной?" Аналитик: "Ну, это же перевод, конечно нет". Через месяц эксплуатации обнаружили, что из-за бага в мобильном приложении при снятии средств отправлялась отрицательная сумма, и система <strong>пополняла</strong> счёт вместо списания. Если бы разработчик не поставил защиту на уровне API — убытки могли составить миллионы.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Почему он спрашивает "а что, если сервис упадёт?"</h3>
+
+    <p>Современные системы — это распределённые системы. Десятки микросервисов, очереди сообщений, базы данных, кеши, внешние API. Любой компонент может упасть в любой момент.</p>
+
+    <p>Когда разработчик спрашивает "а что, если сервис упадёт?", он продумывает:</p>
+    <ul>
+        <li><strong>Graceful degradation</strong> — отключится вся система или только одна функция?</li>
+        <li><strong>Retry policy</strong> — сколько раз и с какой задержкой повторять запрос?</li>
+        <li><strong>Circuit breaker</strong> — как защитить систему от каскадного отказа?</li>
+        <li><strong>Failover</strong> — куда перенаправить трафик, если сервис лежит?</li>
+        <li><strong>Data consistency</strong> — не потеряются ли данные при откате?</li>
+    </ul>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#a29bfe</ac:parameter>
+        <ac:parameter ac:name="bgColor">#f5f3ff</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Факт:</strong> По данным AWS (2025), в распределённых системах 92% всех серьёзных инцидентов происходят не из-за сбоя оборудования, а из-за неправильной обработки состояний при частичных отказах. Каждый второй инцидент — это ситуация, где разработчик не учёл сценарий "один из компонентов недоступен".</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Пример: форма регистрации — 1 требование, 20 вопросов</h3>
+
+    <p>Исходное требование — "Добавить форму регистрации с email и паролем". Разработчик идёт к аналитику с таким списком:</p>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">№</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Вопрос разработчика</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">1</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Email желательно уникальный? Что если уже зарегистрирован?</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">2</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Есть ли ограничение на длину email?</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">3</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Какие символы допустимы в пароле? А какие запрещены?</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">4</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Можно ли зарегистрироваться без подтверждения email?</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">5</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Что если письмо с подтверждением не дошло? Сколько ждать?</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">6</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Есть ли капча?</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">7</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Нужно ли логировать попытки регистрации?</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">8</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Что если пользователь нажал "Отправить" дважды?</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">9</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Какая политика хранения паролей? Хэшировать с солью?</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">10</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Какой таймаут отправки email?</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">11</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Нужно ли записывать UTM-метки при регистрации?</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">12</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Что делать в случае, если сервис email временно недоступен?</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">13</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">А если пользователь — робот?</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">14</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Нужна ли поддержка OAuth / соцсетей сейчас или в будущем?</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">15</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Какая должна быть ошибка при слишком коротком пароле?</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">16</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Должна ли быть возможность удалить аккаунт?</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">17</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Как быть с GDPR / 152-ФЗ: нужно ли согласие на обработку?</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">18</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Если пользователь не подтвердил email — считается ли он зарегистрированным?</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">19</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Какой лимит попыток ввода пароля?</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">20</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Нужна ли двухфакторная аутентификация?</td></tr>
+    </table>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#2d3436</ac:parameter>
+        <ac:parameter ac:name="bgColor">#f1f2f6</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Запомните:</strong> Разработчик не задаёт вопросы, чтобы "завалить" аналитика или потянуть время. Он задаёт вопросы, потому что знает: если не спросить сейчас — баг уйдёт в прод и его будет ловить вся команда.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <!-- 1.3 -->
+
+    <h2>1.3. Откуда берутся архитектурные ограничения</h2>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#fdcb6e</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fef9e7</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Как думает Senior:</strong> "В хорошей архитектуре каждое решение стоит дорого, но каждое изменение — дёшево. В плохой — наоборот."</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Почему нельзя "просто добавить поле" в микросервисной архитектуре</h3>
+
+    <p>В монолитном приложении добавить поле — действительно проще. Открыл файл, добавил колонку в DTO, изменил SQL-запрос, готово. Но в микросервисной архитектуре каждое поле — это контракт между сервисами.</p>
+
+    <p>Схема взаимодействия сервисов при добавлении поля:</p>
+
+    <ac:structured-macro ac:name="code">
+        <ac:parameter ac:name="language">text</ac:parameter>
+        <ac:plain-text-body><![CDATA[  +--------------+      +--------------+      +--------------+
+  |  API Gateway  |------> Auth Service  |------>   CRM DB    |
+  +--------------+      +--------------+      +--------------+
+         |                      |
+         |                      |  RabbitMQ / Kafka
+         v                      v
+  +--------------+      +--------------+      +--------------+
+  | Order Service |<-----> Notification  |      | Analytics    |
+  +--------------+      |   Service    |      |   Service    |
+                        +--------------+      +--------------+]]></ac:plain-text-body>
+    </ac:structured-macro>
+
+    <p>Допустим, вам нужно добавить поле <code>phone</code> в профиль пользователя. В монолите — 1-2 часа. В микросервисах:</p>
+
+    <ol>
+        <li>Добавить поле в <strong>Auth Service</strong> — миграция БД, DTO, API.</li>
+        <li>Добавить поле в <strong>API Gateway</strong> — он должен передавать новое поле между сервисами.</li>
+        <li>Добавить поле в <strong>Order Service</strong> — если в заказе теперь показывается телефон.</li>
+        <li>Добавить поле в <strong>Notification Service</strong> — если SMS теперь должна уходить на этот номер.</li>
+        <li>Добавить поле в <strong>Analytics Service</strong> — если телефон участвует в отчётах.</li>
+        <li>Обновить <strong>схемы Kafka/RabbitMQ</strong> — сообщения между сервисами.</li>
+        <li>Проверить <strong>обратную совместимость</strong> — старые версии сервисов не должны упасть.</li>
+    </ol>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#e17055</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fdf0ed</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Важно:</strong> В микросервисной архитектуре каждый сервис — это отдельная команда и отдельный цикл релиза. Синхронизировать 5-6 команд для добавления одного поля — это задача на спринт, а не на день.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Почему обратная совместимость — это боль</h3>
+
+    <p>Обратная совместимость — это когда новая версия сервиса работает с клиентами старой версии. Звучит просто, но на практике:</p>
+
+    <ul>
+        <li><strong>API-версионирование:</strong> Нельзя просто изменить JSON-ответ. Нужно поддерживать <code>/v1/user</code> и <code>/v2/user</code> одновременно.</li>
+        <li><strong>Поле может отсутствовать</strong> в старом ответе — клиент должен быть готов к тому, что поле <code>phone</code> приходит не всегда.</li>
+        <li><strong>Нельзя удалять поля</strong>, которые кто-то использует — даже если "все уже обновились".</li>
+    </ul>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#0984e3</ac:parameter>
+        <ac:parameter ac:name="bgColor">#e8f4fd</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Пример из интернет-магазина:</strong> Аналитик попросил "переименовать поле <code>product_name</code> в <code>product_title</code> в ответе API, потому что так логичнее". Разработчик объяснил, что это сломает: мобильное приложение (2 версии), витрину на React, партнёрский API (ещё 3 компании), систему аналитики и скрипты выгрузки. Пришлось добавить поле <code>product_title</code>, оставить <code>product_name</code> как deprecated на 6 месяцев, написать миграцию для всех потребителей. Итог: 2 недели работы вместо 10 минут.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Почему удаление данных — это проблема (а не "просто DELETE")</h3>
+
+    <p>Аналитик часто говорит: "Эти данные больше не нужны, удалите их". В теории: <code>DELETE FROM users WHERE id = 123</code>. На практике:</p>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Проблема</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Описание</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Каскадное удаление</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Удалили пользователя — удалились его заказы, а с ними — записи в бухгалтерии и налоговой отчётности</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Ссылочная целостность</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Заказы ссылаются на пользователя — без него они "висят в воздухе"</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Аудит</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">По закону некоторые данные нельзя удалять в течение N лет</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Исторические данные</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Удалили пользователя — сломалась статистика за прошлый год</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Репликация</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Данные уже могли уйти в аналитическое хранилище, кеш, поисковый индекс</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Внешние интеграции</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Платежный шлюз может ссылаться на удалённого пользователя</td></tr>
+    </table>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#00b894</ac:parameter>
+        <ac:parameter ac:name="bgColor">#e6faf4</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Правильное решение:</strong> Вместо физического удаления использовать <strong>soft delete</strong> (логическое удаление) — проставлять флаг <code>deleted_at</code>, а данные физически не трогать. Если данные правда нужно удалить — делать это в несколько этапов: сначала скрыть из интерфейса, потом удалить через N дней, потом — очистить из бекапов через N месяцев.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#e17055</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fdf0ed</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Антипаттерн:</strong> "Давай просто поставим <code>ON DELETE CASCADE</code> в базе и забудем". Это самый быстрый способ получить каскадный сбой в проде. Одно удаление — и "случайно" стёрлась половина базы.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Реальный пример: изменение статуса заказа в интернет-магазине</h3>
+
+    <p>Требование аналитика: "Добавить статус 'Отменён менеджером' в список статусов заказа".</p>
+
+    <p>Разработчик задаёт вопросы:</p>
+    <ul>
+        <li>Из каких статусов можно перейти в "Отменён менеджером"? Только из "Новый" или из любого?</li>
+        <li>Можно ли отменить заказ, который уже оплачен? Если да — нужен ли возврат денег?</li>
+        <li>Можно ли отменить заказ, который уже в доставке? А если курьер уже выехал?</li>
+        <li>Должен ли покупатель получить уведомление? Какое?</li>
+        <li>Нужно ли возвращать заказ на склад? Обновлять остатки?</li>
+        <li>Что если заказ уже частично отгружен?</li>
+        <li>Есть ли временные ограничения — например, отменить можно только в течение часа?</li>
+    </ul>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#e17055</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fdf0ed</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Антипаттерн:</strong> Хранить статус как <code>VARCHAR(255)</code> с текстовым значением. "Новый", "В обработке", "Оплачен", "Отменён менеджером". Это приводит к тому, что любой статус можно поменять на любой, и в коде появляются десятки <code>if (status.equals("..."))</code>. Через полгода никто не помнит, какие статусы возможны.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#00b894</ac:parameter>
+        <ac:parameter ac:name="bgColor">#e6faf4</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Правильное решение:</strong> Определить <strong>статусную модель</strong> — конечный автомат (finite state machine) с явно заданными переходами:</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <ac:structured-macro ac:name="code">
+        <ac:parameter ac:name="language">text</ac:parameter>
+        <ac:plain-text-body><![CDATA[    +--------------+
+    |    Новый     |
+    +------+-------+
+           |
+           v
+    +--------------+          +------------------+
+    | В обработке  |----------> Отменён клиентом  |
+    +------+-------+          +------------------+
+           |
+           v
+    +--------------+          +----------------------+
+    |   Оплачен    |---------->  Отменён менеджером  |
+    +------+-------+          +----------------------+
+           |
+           v
+    +--------------+
+    |  Отгружен    |
+    +------+-------+
+           |
+           v
+    +--------------+
+    |   Доставлен  |
+    +--------------+
+
+    Возможные переходы:
+    Новый          -> В обработке
+    В обработке    -> Оплачен | Отменён клиентом | Отменён менеджером
+    Оплачен        -> Отгружен | Отменён менеджером
+    Отгружен       -> Доставлен]]></ac:plain-text-body>
+    </ac:structured-macro>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#2d3436</ac:parameter>
+        <ac:parameter ac:name="bgColor">#f1f2f6</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Запомните:</strong> То, что аналитику кажется "очевидным" (например, какие переходы между статусами возможны), для разработчика — источник потенциальных багов. Чем точнее определена модель, тем меньше времени уходит на реализацию и тестирование.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <!-- 1.4 -->
+
+    <h2>1.4. Что разработчик видит, когда читает требование</h2>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#fdcb6e</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fef9e7</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Как думает Senior:</strong> "Когда я читаю требование, я не вижу одну задачу. Я вижу граф изменений, которые нужно внести в 10-15 файлов, и пытаюсь понять, какие из них я забыл учесть."</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Как требование превращается в DTO, Repository, Service, Controller, Migration</h3>
+
+    <p>Любое изменение данных в современном backend-приложении проходит через несколько слоёв. Разработчик видит требование и сразу раскладывает его по полочкам:</p>
+
+    <ac:structured-macro ac:name="code">
+        <ac:parameter ac:name="language">text</ac:parameter>
+        <ac:plain-text-body><![CDATA[    +----------------------------------------------------------+
+    |                   Внешний мир                             |
+    |  HTTP-запрос / JSON / HTML-форма / Мобильное приложение  |
+    +----------------------------+-----------------------------+
+                                 |
+                                 v
+    +----------------------------------------------------------+
+    |  Controller / API Layer   <- принимает запрос            |
+    |  * Валидация входных данных                              |
+    |  * Маппинг JSON -> DTO                                   |
+    +----------------------------+-----------------------------+
+                                 |
+                                 v
+    +----------------------------------------------------------+
+    |  Service Layer             <- бизнес-логика              |
+    |  * Проверка прав доступа                                 |
+    |  * Бизнес-правила                                        |
+    |  * Координация вызовов                                   |
+    +----------------------------+-----------------------------+
+                                 |
+                                 v
+    +----------------------------------------------------------+
+    |  Repository / DAO Layer    <- работа с данными           |
+    |  * SQL-запросы                                           |
+    |  * ORM-маппинг                                           |
+    +----------------------------+-----------------------------+
+                                 |
+                                 v
+    +----------------------------------------------------------+
+    |  Database / Migration      <- схема данных               |
+    |  * ALTER TABLE / CREATE TABLE                            |
+    |  * Индексы, ограничения                                  |
+    +----------------------------------------------------------+]]></ac:plain-text-body>
+    </ac:structured-macro>
+
+    <p>Каждый слой добавляет свою "прослойку" работы:</p>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Слой</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Что меняет разработчик</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Пример для поля phone</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>DTO</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Модель данных для передачи</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Добавить <code>phone: string</code> в UserDto</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>Controller</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Обработчик HTTP-запроса</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Добавить валидацию формата телефона на входе</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>Service</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Бизнес-логика</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Проверить уникальность телефона, отформатировать</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>Repository</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Запросы к БД</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Добавить <code>findByPhone()</code>, обновить save()</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>Entity</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">ORM-сущность для таблицы</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Добавить поле <code>phone</code> в UserEntity</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>Migration</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Изменение схемы БД</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>ALTER TABLE users ADD phone VARCHAR(20)</code></td></tr>
+    </table>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#a29bfe</ac:parameter>
+        <ac:parameter ac:name="bgColor">#f5f3ff</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Факт:</strong> В типовом Spring Boot приложении изменение одного поля затрагивает от 6 до 12 файлов. В PHP/Laravel — от 5 до 8. В Go — от 4 до 7. Каждый файл — это потенциальная точка отказа.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Почему разработчик сразу видит 10 мест, которые нужно изменить</h3>
+
+    <p>Опытный разработчик не просто меняет код. Он ищет все <strong>связи</strong>:</p>
+    <ul>
+        <li>Где ещё используется эта сущность? В каких API, отчётах, выгрузках?</li>
+        <li>Какие сервисы зависят от этого типа данных?</li>
+        <li>Есть ли кеш, который нужно инвалидировать?</li>
+        <li>Есть ли поисковый индекс (Elasticsearch), который нужно обновить?</li>
+        <li>Нужно ли менять события, которые отправляются в очереди?</li>
+        <li>Повлияет ли изменение на аналитику или дашборды?</li>
+        <li>Есть ли документация для API, которую нужно обновить?</li>
+        <li>Есть ли тесты, которые нужно переписать?</li>
+        <li>Есть ли старые версии API, которые ещё поддерживаются?</li>
+    </ul>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#0984e3</ac:parameter>
+        <ac:parameter ac:name="bgColor">#e8f4fd</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Пример из CRM:</strong> Аналитик попросил "добавить дату рождения в карточку клиента". Разработчик нашёл 14 мест, которые нужно изменить: 3 микросервиса, 2 миграции БД, 1 поисковый индекс, 1 очередь сообщений, 2 API (v1 и v2), 4 тестовых файла, 1 скрипт выгрузки в Excel.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Аналогия: одно изменение — как замена детали в работающем двигателе</h3>
+
+    <p>Представьте, что вы механик. К вам приходит клиент и говорит: "Замените свечу зажигания". Вы открываете капот — а там V8. Чтобы добраться до свечи, нужно снять впускной коллектор, отключить топливную рампу, отсоединить высоковольтные провода, снять катушки зажигания... А потом собрать обратно, проверить зазоры, продиагностировать, убедиться, что двигатель работает ровно.</p>
+
+    <p>Клиент видит: "свеча за 5 долларов". Механик видит: 2 часа работы, риски повредить соседние детали, необходимость проверить всю систему.</p>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#2d3436</ac:parameter>
+        <ac:parameter ac:name="bgColor">#f1f2f6</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Запомните:</strong> Если разработчик говорит "здесь нужно поменять 10 мест" — он не преувеличивает. Он буквально видит эти 10 мест у себя в голове, потому что каждый день работает с этой системой.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <!-- 1.5 -->
+
+    <h2>1.5. Почему разработчики задают "глупые вопросы"</h2>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#fdcb6e</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fef9e7</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Как думает Senior:</strong> "Глупых вопросов не бывает. Бывают требования, которые сформулированы так, будто система работает в вакууме."</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>На самом деле вопросы не глупые</h3>
+
+    <p>Аналитик часто раздражается: "Ну очевидно же, что пользователь не может быть без имени! Зачем ты спрашиваешь?"</p>
+
+    <p>Но разработчик знает то, чего не знает аналитик: <strong>база данных может быть в неконсистентном состоянии</strong>. Старые записи могли сохраниться без имени из-за бага. Пользователь мог прийти из LDAP-каталога, где имени нет. Тестовые данные могли быть сгенерированы скриптом, который не заполнил поле.</p>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#d63031</ac:parameter>
+        <ac:parameter ac:name="bgColor">#ffeef0</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Ошибка:</strong> Аналитик не ответил на вопрос "Может ли пользователь быть без имени?". Разработчик добавил <code>NOT NULL</code> в базу данных. В первый же день прод упал — пришёл пользователь из внешней системы, у которого не было имени. ALTER TABLE не дал вставить запись. Всё посыпалось.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Разница между бизнес-логикой и технической реализацией</h3>
+
+    <p>Аналитик оперирует бизнес-понятиями: "пользователь", "заказ", "платёж". Разработчик оперирует техническими: "null", "0", "пустая строка", "исключение", "таймаут". Граница между ними — источник большинства "глупых вопросов".</p>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Что говорит аналитик</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Что слышит разработчик</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">"У пользователя может не быть номера телефона"</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Поле <code>phone</code> — nullable. В коде — проверка на null при каждом обращении</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">"Сумма не может быть отрицательной"</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Поставить <code>CHECK (amount &gt;= 0)</code> в БД + валидацию в API</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">"Товар должен быть в наличии"</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Проверять остаток в реальном времени, блокировать параллельные заказы</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">"Скидка применяется автоматически"</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Нужна логика расчёта скидки с учётом стекающихся промоакций</td></tr>
+    </table>
+
+    <h3>Пример: "А может ли сумма быть отрицательной?"</h3>
+
+    <p>Вопрос кажется абсурдным: какая же сумма может быть отрицательной? Но есть масса сценариев:</p>
+    <ul>
+        <li><strong>Возврат платежа</strong> — сумма возврата идёт со знаком минус?</li>
+        <li><strong>Корректировка заказа</strong> — можно ли уменьшить сумму, а не заменить?</li>
+        <li><strong>Кредитные ноты</strong> — отрицательная сумма в счёте?</li>
+        <li><strong>Баг на фронтенде</strong> — если с фронта пришло -100, как реагировать?</li>
+        <li><strong>Атака</strong> — вредоносный запрос с отрицательной суммой для обхода проверок?</li>
+    </ul>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#0984e3</ac:parameter>
+        <ac:parameter ac:name="bgColor">#e8f4fd</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Пример из платёжной системы:</strong> Разработчик спросил: "Может ли комиссия быть больше суммы перевода?". Аналитик удивился, но ответил: "Нет, комиссия не может превышать сумму". Разработчик добавил проверку. Через месяц выяснилось, что при переводе на международный счёт с конвертацией валют комиссия могла быть выше суммы из-за курсовых разниц. Проверку пришлось снимать.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Пример: "А может ли пользователь быть без имени?"</h3>
+
+    <p>Казалось бы, имя — обязательное поле. Но:</p>
+    <ul>
+        <li>Пользователь мог зарегистрироваться через OAuth (Google, VK) — имя может быть пустым, если оно не пришло от провайдера.</li>
+        <li>Пользователь мог быть создан через API для робота — у робота нет имени.</li>
+        <li>Пользователь мог быть импортирован из старой системы, где имя не хранилось.</li>
+        <li>Администратор мог удалить имя через баг в интерфейсе — и запись уже в БД.</li>
+    </ul>
+
+    <!-- 1.6 -->
+
+    <h2>1.6. Как разработчик оценивает сроки</h2>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#fdcb6e</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fef9e7</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Как думает Senior:</strong> "Оценка — это не обещание. Это прогноз, основанный на опыте, с учётом всех известных и неизвестных рисков."</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Что входит в оценку</h3>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Этап</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Доля</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Что входит</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Анализ</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">15%</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Прочитать требование, уточнить детали, оценить влияние</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Проектирование</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">10%</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Выбрать подход, набросать схему, определить точки изменений</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Реализация</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">30%</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Написать код, миграции, конфигурацию</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Тестирование</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">20%</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Юнит-тесты, интеграционные, ручное тестирование</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Код-ревью</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">5%</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Создать PR, ждать ревью, править замечания</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Документирование</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">5%</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Документация API, README, changelog</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Деплой</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">10%</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">CI/CD, миграции, мониторинг после деплоя</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Буфер</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">5%</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Непредвиденные сложности, баги, коммуникация</td></tr>
+    </table>
+
+    <h3>Реальная таблица: что стоит за одной задачей</h3>
+
+    <p>Возьмём реальный пример из интернет-магазина. Задача: "Добавить поле 'Номер телефона' в карточку товара".</p>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Деятельность</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Время</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Комментарий</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Чтение требования</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">0.5 ч</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Телефон чей? Продавца или магазина? Показывать всем?</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Миграция БД</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">1 ч</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>ALTER TABLE products ADD phone VARCHAR(20)</code></td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Изменение Entity</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">0.5 ч</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Добавить <code>phone</code> в ProductEntity</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Изменение DTO</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">0.5 ч</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">ProductDto.Request, ProductDto.Response</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Изменение сервиса</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">1 ч</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Валидация формата телефона, нормализация</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Изменение контроллера</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">0.5 ч</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Добавить поле в DTO, валидацию</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Поисковый индекс</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">1 ч</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Elasticsearch — новый mapping, реиндексация</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Тесты</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">2 ч</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Юнит + интеграционные</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Код-ревью</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">0.5 ч</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">PR, ожидание, исправление</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Документация</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">0.5 ч</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">OpenAPI, changelog</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Деплой в staging</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">0.5 ч</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Миграции, проверка</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">QA / приёмка</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">1 ч</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Ожидание проверки тестировщиком</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Деплой в prod</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">1 ч</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Релизное окно, мониторинг</td></tr>
+        <tr style="background-color: #f8f9fa; font-weight: bold;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Итого</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">~12 ч</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"></td></tr>
+    </table>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#a29bfe</ac:parameter>
+        <ac:parameter ac:name="bgColor">#f5f3ff</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Факт:</strong> Исследование McKinsey (2025) показало, что в среднем по IT-проектам <strong>40% времени</strong> тратится на исправление ошибок из-за неточных требований. Каждый час аналитика на уточнение требований экономит 3-4 часа разработки.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <!-- 1.7 -->
+
+    <h2>1.7. Ментальная модель разработчика</h2>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#fdcb6e</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fef9e7</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Как думает Senior:</strong> "Хорошая система — это та, в которой, меняя А, ты не ломаешь Б, если А и Б не должны быть связаны."</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Как разработчик держит в голове всю систему</h3>
+
+    <ac:structured-macro ac:name="code">
+        <ac:parameter ac:name="language">text</ac:parameter>
+        <ac:plain-text-body><![CDATA[    +------------------+
+    |   API Gateway    |
+    +--+----+----+-----+
+       |    |    |
+       v    v    v
+  +------+ +------+ +------+
+  | Auth | |Order | |Catalog|
+  | API  | | API  | |  API  |
+  +--+---+ +--+---+ +--+---+
+     |        |        |
+     v        v        v
+  +------+ +------+ +------+    +--------+
+  |Users | |Orders| |Products|-->|Search |
+  |  DB  | |  DB  | |   DB   |   | (ES)  |
+  +------+ +------+ +------+    +--------+
+                        |
+                        v
+                   +--------+    +----------+
+                   |Analytics|-->|  Queue   |
+                   |    DB   |   | (Kafka)  |
+                   +--------+    +----------+]]></ac:plain-text-body>
+    </ac:structured-macro>
+
+    <p>Когда в задаче говорится про изменение "пользователя", разработчик сразу видит всю цепочку: API -&gt; Auth Service -&gt; User DB -&gt; Analytics -&gt; Queue.</p>
+
+    <!-- 1.8 -->
+
+    <h2>1.8. Что аналитик должен знать о техническом долге</h2>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#fdcb6e</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fef9e7</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Как думает Senior:</strong> "Технический долг — это как кредит в банке. Хочешь взять — убедись, что сможешь выплатить с процентами."</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <p>Технический долг — это метафора. Представьте, что вы ремонтируете квартиру. Можно сразу проложить проводку как положено — в штробы, с гофрой, с запасом. А можно пустить провода по плинтусу "времянкой" — работает же?</p>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#e17055</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fdf0ed</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Антипаттерн:</strong> "Нам очень нужно это поле — давайте добавим прямо сейчас, а валидацию доделаем потом". "Потом" не наступает никогда.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#0b84e3</ac:parameter>
+        <ac:parameter ac:name="bgColor">#e8f4fd</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Пример из финтеха:</strong> 5 лет назад разработчик сказал: "Давайте пока хранить историю операций в MongoDB — это временно, потом переедем на нормальную БД". Временное решение прожило 5 лет. Когда встал вопрос о масштабировании, оказалось, что в MongoDB хранится 12 ТБ данных, миграция займёт 6 месяцев. "Временная" архитектура стала якорем для всей платформы.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <!-- ИТОГИ ГЛАВЫ -->
+
+    <h2>Итоги главы</h2>
+
+    <h3>Чек-лист: 10 вопросов перед передачей требований разработчику</h3>
+
+    <ol>
+        <li><strong>Все ли сценарии описаны?</strong> — happy path, error path, edge cases.</li>
+        <li><strong>Определены ли граничные значения?</strong> — минимальная/максимальная длина, формат.</li>
+        <li><strong>Понятна ли бизнес-логика?</strong> — не просто "что", а "почему" и "как в сложных случаях".</li>
+        <li><strong>Какие сценарии null / пустых значений?</strong> — какие поля обязательны?</li>
+        <li><strong>Есть ли влияние на другие модули?</strong> — кого затронет изменение?</li>
+        <li><strong>Продумана ли обратная совместимость?</strong> — не сломается ли старая версия?</li>
+        <li><strong>Что с данными, которые уже есть в системе?</strong> — миграция нужна?</li>
+        <li><strong>Какие нефункциональные требования?</strong> — производительность, безопасность, аудит.</li>
+        <li><strong>Готов ли я к вопросам?</strong> — лучше ответить сейчас, чем разработчик додумает сам.</li>
+        <li><strong>Не создаю ли я технический долг?</strong> — может, сделать правильно — дешевле в долгосроке?</li>
+    </ol>
+
+    <h3>Что должен понять аналитик после этой главы</h3>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Было</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Стало</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">"Почему разработчики всё усложняют?"</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">"Я понимаю, почему они задают эти вопросы"</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">"Это же просто добавить поле!"</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">"Я знаю, что стоит за одним полем"</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">"Разработчик тянет время"</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">"Разработчик страхует систему от багов"</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">"Сделайте быстро, потом переделаем"</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">"Я понимаю, что такое техдолг"</td></tr>
+    </table>
+
+    <h3>Вопросы для самопроверки</h3>
+
+    <ol>
+        <li>Почему "добавить одно поле" может занимать 3 дня?</li>
+        <li>Какие три сценария разработчик всегда держит в голове?</li>
+        <li>Почему в микросервисной архитектуре добавить поле сложнее?</li>
+        <li>Почему null — "ошибка на миллиард долларов"?</li>
+        <li>Какие 6 слоёв проходит изменение данных в backend?</li>
+        <li>Почему разработчик спрашивает "а может ли сумма быть отрицательной"?</li>
+        <li>Какие этапы включает оценка задачи разработчиком?</li>
+        <li>Почему "временное решение" почти всегда становится постоянным?</li>
+    </ol>
+
+    <hr/>
+
+    <!-- NAVIGATION -->
+    <table style="width: 100%; border-collapse: collapse; background-color: #f8f9fa; border: 1px solid #dfe6e9; border-radius: 6px;">
+        <tr>
+            <td style="padding: 16px; border: none; text-align: left; width: 33%; color: #636e72;">← Начало книги</td>
+            <td style="padding: 16px; border: none; text-align: center; width: 34%;"><a href="index.html" style="color: #0984e3; font-weight: 600;">Содержание</a></td>
+            <td style="padding: 16px; border: none; text-align: right; width: 33%;"><a href="chapter02.html" style="color: #0984e3; font-weight: 600; text-decoration: none;">Глава 2: REST API без магии →</a></td>
+        </tr>
+    </table>
+
+</body>
+</html>
