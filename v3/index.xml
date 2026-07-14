@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ac="http://atlassian.com/content"
+      xmlns:ri="http://atlassian.com/resource">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Техническое мышление аналитика — книга</title>
+</head>
+<body>
+
+    <!-- ==================== COVER ==================== -->
+    <ac:structured-macro ac:name="info">
+        <ac:parameter ac:name="title">Техническое мышление аналитика</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Практическое руководство для Business Analyst и System Analyst</strong></p>
+            <p>Как мыслить как инженер · Понимать почему, а не только что · Проектировать требования без замечаний</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <!-- ==================== ЦЕЛЬ КНИГИ ==================== -->
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#fdcb6e</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fef9e7</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>🎯 Цель книги:</strong> Сформировать техническое мышление аналитика. После прочтения вы будете понимать не только <em>что</em> нужно делать, но и <em>почему</em> именно так принято в современной разработке. Вы начнёте задавать те же вопросы, что задаёт Senior-разработчик перед началом реализации.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <!-- ==================== О КНИГЕ ==================== -->
+    <h2>📚 О книге</h2>
+
+    <p>Эта книга — <strong>не справочник по REST API</strong> и <strong>не учебник по SQL</strong>. Это практическое руководство, которое объясняет:</p>
+
+    <ul>
+        <li>как думает разработчик и архитектор;</li>
+        <li>почему возникают архитектурные ограничения;</li>
+        <li>почему разработчики задают аналитикам десятки вопросов;</li>
+        <li>как проектировать требования так, чтобы разработчики принимали их без замечаний.</li>
+    </ul>
+
+    <p>Главный принцип книги — каждая тема отвечает на вопрос <strong>ПОЧЕМУ</strong>, а не только <strong>ЧТО</strong>.</p>
+
+    <!-- ==================== ДЛЯ КОГО / КАК ЧИТАТЬ ==================== -->
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="width: 50%; vertical-align: top; border: 1px solid #dfe6e9; background-color: #f8f9fa; padding: 16px;">
+                <h3 style="color: #2d3436; margin-top: 0;">👥 Для кого</h3>
+                <p style="font-size: 14px; color: #636e72;">Business Analyst · System Analyst · Functional Analyst</p>
+                <p style="font-size: 14px; color: #636e72; margin-top: 8px;">Также будет полезна: Product Owner, Project Manager, Junior Backend Developer, QA Engineer</p>
+            </td>
+            <td style="width: 50%; vertical-align: top; border: 1px solid #dfe6e9; background-color: #f8f9fa; padding: 16px;">
+                <h3 style="color: #2d3436; margin-top: 0;">📖 Как читать</h3>
+                <p style="font-size: 14px; color: #636e72;">Последовательно, глава за главой. Каждая глава — логически завершённый материал с примерами, ошибками, решениями и чек-листами.</p>
+            </td>
+        </tr>
+    </table>
+
+    <!-- ==================== СОДЕРЖАНИЕ ==================== -->
+    <h2>📑 Содержание</h2>
+
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px; width: 48px; font-weight: 700; color: #0984e3; font-size: 1.2em;">01</td>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px;">
+                <ac:link><ri:page ri:content-title="Глава 1. Как думает разработчик" /></ac:link>
+                <p style="color: #636e72; font-size: 14px; margin: 2px 0 0 0;">Внутренняя кухня разработчика. Почему "просто добавить поле" может занять 3 дня. Как разработчик оценивает сроки. Что такое технический долг.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px; width: 48px; font-weight: 700; color: #0984e3; font-size: 1.2em;">02</td>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px;">
+                <ac:link><ri:page ri:content-title="Глава 2. REST API без магии" /></ac:link>
+                <p style="color: #636e72; font-size: 14px; margin: 2px 0 0 0;">Как устроен REST API. HTTP-методы, статус-коды, URL-дизайн. Идемпотентность, пагинация, фильтрация. Как должен выглядеть контракт API.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px; width: 48px; font-weight: 700; color: #0984e3; font-size: 1.2em;">03</td>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px;">
+                <ac:link><ri:page ri:content-title="Глава 3. JSON как контракт" /></ac:link>
+                <p style="color: #636e72; font-size: 14px; margin: 2px 0 0 0;">Типы данных в JSON. Nullable vs Optional. Enum, UUID, ISO 8601. Decimal, Float, Double — почему одни теряют деньги, а другие нет.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px; width: 48px; font-weight: 700; color: #0984e3; font-size: 1.2em;">04</td>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px;">
+                <ac:link><ri:page ri:content-title="Глава 4. Что происходит внутри Backend" /></ac:link>
+                <p style="color: #636e72; font-size: 14px; margin: 2px 0 0 0;">Путь запроса от клиента до БД. Controller, DTO, Service, Repository. Транзакции и ACID. Обработка ошибок.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px; width: 48px; font-weight: 700; color: #0984e3; font-size: 1.2em;">05</td>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px;">
+                <ac:link><ri:page ri:content-title="Глава 5. Frontend глазами аналитика" /></ac:link>
+                <p style="color: #636e72; font-size: 14px; margin: 2px 0 0 0;">Как работает браузер, API между фронтом и бэком, состояния UI, UX как часть требований.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px; width: 48px; font-weight: 700; color: #0984e3; font-size: 1.2em;">06</td>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px;">
+                <ac:link><ri:page ri:content-title="Глава 6. Проектирование базы данных" /></ac:link>
+                <p style="color: #636e72; font-size: 14px; margin: 2px 0 0 0;">Первичные и внешние ключи. Типы данных, NOT NULL vs NULL, UNIQUE. Индексы, Constraints. Soft Delete, аудит.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px; width: 48px; font-weight: 700; color: #0984e3; font-size: 1.2em;">07</td>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px;">
+                <ac:link><ri:page ri:content-title="Глава 7. Нормализация данных" /></ac:link>
+                <p style="color: #636e72; font-size: 14px; margin: 2px 0 0 0;">Три нормальные формы на реальных примерах. Когда нормализация — зло. Баланс между консистентностью и скоростью.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px; width: 48px; font-weight: 700; color: #0984e3; font-size: 1.2em;">08</td>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px;">
+                <ac:link><ri:page ri:content-title="Глава 8. Производительность" /></ac:link>
+                <p style="color: #636e72; font-size: 14px; margin: 2px 0 0 0;">N+1 проблема, индексы, JOIN, пагинация. Кэширование. Как требования аналитика влияют на производительность.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px; width: 48px; font-weight: 700; color: #0984e3; font-size: 1.2em;">09</td>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px;">
+                <ac:link><ri:page ri:content-title="Глава 9. Микросервисы" /></ac:link>
+                <p style="color: #636e72; font-size: 14px; margin: 2px 0 0 0;">Монолит vs микросервисы. Kafka и очереди. Event Driven архитектура. Владельцы данных. Saga pattern.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px; width: 48px; font-weight: 700; color: #0984e3; font-size: 1.2em;">10</td>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px;">
+                <ac:link><ri:page ri:content-title="Глава 10. Интеграции" /></ac:link>
+                <p style="color: #636e72; font-size: 14px; margin: 2px 0 0 0;">Синхронные и асинхронные интеграции. REST vs gRPC vs GraphQL. Обработка ошибок, таймауты, retry.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px; width: 48px; font-weight: 700; color: #0984e3; font-size: 1.2em;">11</td>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px;">
+                <ac:link><ri:page ri:content-title="Глава 11. Как писать хорошие требования" /></ac:link>
+                <p style="color: #636e72; font-size: 14px; margin: 2px 0 0 0;">Business vs Technical requirements. User Stories. Граничные случаи. Чек-лист проверки требований.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px; width: 48px; font-weight: 700; color: #0984e3; font-size: 1.2em;">12</td>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px;">
+                <ac:link><ri:page ri:content-title="Глава 12. Антипаттерны аналитиков" /></ac:link>
+                <p style="color: #636e72; font-size: 14px; margin: 2px 0 0 0;">10 самых частых ошибок аналитиков. Разбор каждой с техническими последствиями и решениями.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px; width: 48px; font-weight: 700; color: #0984e3; font-size: 1.2em;">13</td>
+            <td style="vertical-align: top; border-bottom: 1px solid #dfe6e9; padding: 12px 16px;">
+                <ac:link><ri:page ri:content-title="Глава 13. Чек-листы Senior аналитика" /></ac:link>
+                <p style="color: #636e72; font-size: 14px; margin: 2px 0 0 0;">Готовые инструменты для ежедневной работы. Roadmap от Junior до Senior аналитика.</p>
+            </td>
+        </tr>
+    </table>
+
+    <hr />
+
+    <!-- ==================== ЧТО ВЫ УЗНАЕТЕ ==================== -->
+    <h2>🧠 Что вы узнаете</h2>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Тема</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Ключевой вопрос</th>
+        </tr>
+        <tr>
+            <td style="padding: 10px 16px; border: 1px solid #dfe6e9;">REST API</td>
+            <td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Почему endpoint — это существительное, а не глагол?</td>
+        </tr>
+        <tr style="background-color: #f8f9fa;">
+            <td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Типы данных</td>
+            <td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Почему Double приводит к ошибкам при работе с деньгами?</td>
+        </tr>
+        <tr>
+            <td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Nullable</td>
+            <td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Почему NULL — это "неизвестно", а не "пусто"?</td>
+        </tr>
+        <tr style="background-color: #f8f9fa;">
+            <td style="padding: 10px 16px; border: 1px solid #dfe6e9;">БД</td>
+            <td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Почему отсутствие индексов убивает производительность?</td>
+        </tr>
+        <tr>
+            <td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Микросервисы</td>
+            <td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Почему микросервисы — это всегда компромисс?</td>
+        </tr>
+        <tr style="background-color: #f8f9fa;">
+            <td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Интеграции</td>
+            <td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Почему timeout — это требование, а не техническая деталь?</td>
+        </tr>
+        <tr>
+            <td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Контракты</td>
+            <td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Почему нельзя менять API после публикации?</td>
+        </tr>
+        <tr style="background-color: #f8f9fa;">
+            <td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Требования</td>
+            <td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Почему "сделать как в старом интерфейсе" — самое дорогое требование?</td>
+        </tr>
+    </table>
+
+    <!-- ==================== ИТОГ ==================== -->
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#00b894</ac:parameter>
+        <ac:parameter ac:name="bgColor">#e6faf4</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>✅ Главная идея книги:</strong> Аналитик с инженерным мышлением — самый ценный член команды. После каждой главы вы будете смотреть на систему глазами разработчика и задавать правильные вопросы до того, как начнётся реализация.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <p style="text-align: center; color: #636e72; font-size: 14px;">Техническое мышление аналитика © 2026</p>
+
+</body>
+</html>
