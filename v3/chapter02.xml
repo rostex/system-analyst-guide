@@ -1,0 +1,888 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ac="http://atlassian.com/content"
+      xmlns:ri="http://atlassian.com/resource">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Глава 2 — REST API без магии</title>
+</head>
+<body>
+
+    <h1>Глава 2. REST API без магии</h1>
+
+    <p style="font-size: 1.2em; color: #636e72; margin-bottom: 32px;">Как перестать бояться эндпоинтов и начать проектировать API, которые не ломаются</p>
+
+    <!-- ========== ВВЕДЕНИЕ ========== -->
+
+    <h2>Введение</h2>
+
+    <p>Представьте, что вы заходите в большой отель. Вы подходите к стойке регистрации и говорите: «Я хочу заселиться в номер 404, бронирование на имя Иванова». Портье проверяет систему, находит запись, выдаёт ключ-карту — и вы идёте в номер. Вы не видите, что происходит за стойкой: какая база данных хранит брони, как система проверки оплаты связана с модулем расчёта налогов, как служба горничных узнаёт, что номер готов. Для вас есть только стойка регистрации — единая точка входа.</p>
+
+    <p><strong>REST API — это и есть такая стойка регистрации.</strong> Клиент (фронтенд, мобильное приложение, сторонний сервис) приходит с запросом, сервер обрабатывает его и возвращает результат. За стойкой может быть вся сложность мира, но для клиента есть только чётко определённый интерфейс.</p>
+
+    <p>Цель этой главы — не просто перечислить методы HTTP или правила именования эндпоинтов. Вы должны научиться <em>чувствовать</em> REST API: понимать, почему он устроен именно так, какие решения принимает разработчик и — главное — как самому спроектировать API так, чтобы его не хотелось переписать через месяц.</p>
+
+    <p>Эта глава написана для аналитика, которому предстоит:</p>
+    <ul>
+        <li>описывать контракты API в документации;</li>
+        <li>задавать правильные вопросы разработчикам;</li>
+        <li>принимать решения о дизайне новых эндпоинтов;</li>
+        <li>понимать, почему "вдруг всё сломалось" после изменения API.</li>
+    </ul>
+
+    <!-- ========== 2.1 ========== -->
+
+    <h2>2.1. Что такое REST API на самом деле</h2>
+
+    <h3>Аналогия с библиотекой</h3>
+
+    <p>Представьте библиотеку. В библиотеке есть <strong>книги</strong> — это <strong>ресурсы</strong>. Есть <strong>каталог</strong>, по которому можно найти книгу, — это <strong>эндпоинты</strong>. И есть <strong>библиотекарь</strong>, который достаёт книгу, проверяет ваш читательский билет и фиксирует выдачу — это <strong>сервер</strong>.</p>
+
+    <p>Вы не кричите библиотекарю: «Эй, найди мне книгу!» Вы обращаетесь к каталогу: «Дайте мне книгу с ISBN 978-5-699-12345-6». Библиотекарь идёт, проверяет, есть ли книга, и возвращает вам её (или сообщает, что книги нет на месте).</p>
+
+    <p>REST (Representational State Transfer) — это архитектурный стиль, который описывает правила такого взаимодействия. Ключевая идея: <strong>в центре внимания — ресурсы, а не действия</strong>.</p>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#a29bfe</ac:parameter>
+        <ac:parameter ac:name="bgColor">#f5f3ff</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Факт.</strong> Термин REST предложил Рой Филдинг в своей докторской диссертации в 2000 году. Он же был одним из создателей протокола HTTP/1.1. Так что REST и HTTP — не случайные соседи, они рождались вместе.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Ресурс — центральное понятие</h3>
+
+    <p>В REST всё строится вокруг <strong>ресурса</strong>. Ресурс — это некая сущность, к которой можно обратиться по уникальному адресу (URI). Что может быть ресурсом:</p>
+
+    <ul>
+        <li><strong>Заказ</strong> — /api/orders/12345</li>
+        <li><strong>Пользователь</strong> — /api/users/42</li>
+        <li><strong>Товар</strong> — /api/products/sku-77812</li>
+        <li><strong>Платёж</strong> — /api/payments/txn-abc-001</li>
+        <li><strong>Корзина покупателя</strong> — /api/carts/user-42</li>
+        <li><strong>Отчёт по продажам</strong> — /api/reports/daily-sales</li>
+    </ul>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#00b894</ac:parameter>
+        <ac:parameter ac:name="bgColor">#e6faf4</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Важно.</strong> Ресурс — это <em>существительное</em>. Не "создать заказ" (глагол), а "заказы" (существительное). REST — это архитектура существительных, а не глаголов.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Почему REST — это не про глаголы?</h3>
+
+    <p>Когда вы проектируете API, вам хочется назвать эндпоинты логично: <code>/createOrder</code>, <code>/getUserList</code>, <code>/deleteItem</code>. Это кажется естественным — мы же описываем действия. Но проблема в том, что действий десятки, а глаголов в языке — сотни. Каждый разработчик назовёт их по-своему: <code>/getOrders</code>, <code>/fetchOrders</code>, <code>/retrieveOrders</code>, <code>/listOrders</code>. Хаос.</p>
+
+    <p>REST предлагает другой подход: <strong>ресурсов ограниченное количество, а действия над ними описываются HTTP-методами</strong>. Вместо <code>/createOrder</code> — POST /api/orders. Вместо <code>/deleteOrder</code> — DELETE /api/orders/{id}.</p>
+
+    <ac:structured-macro ac:name="code">
+        <ac:parameter ac:name="language">text</ac:parameter>
+        <ac:plain-text-body><![CDATA[HTTP-методы + Ресурсы = REST API
+
+Ресурс:         /api/orders
+
+GET     /api/orders      → Получить список заказов
+POST    /api/orders      → Создать новый заказ
+GET     /api/orders/1    → Получить заказ №1
+PUT     /api/orders/1    → Полностью заменить заказ №1
+PATCH   /api/orders/1    → Частично обновить заказ №1
+DELETE  /api/orders/1    → Удалить заказ №1]]></ac:plain-text-body>
+    </ac:structured-macro>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#2d3436</ac:parameter>
+        <ac:parameter ac:name="bgColor">#f1f2f6</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Запомните.</strong> Если в URL эндпоинта есть глагол — что-то пошло не так. Правильный URL состоит из существительных (ресурсов) и их идентификаторов.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <!-- ========== 2.2 ========== -->
+
+    <h2>2.2. HTTP-методы — не просто GET и POST</h2>
+
+    <p>Большинство людей, далёких от бэкенда, знают два метода: GET — "получить данные", POST — "отправить данные". В реальности их пять основных, и каждый несёт строго определённый смысл. Аналитик обязан их различать.</p>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Метод</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Действие</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Идемпотентность</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Безопасность</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Тело запроса</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Пример</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>GET</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Получить ресурс(ы)</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Да</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Да</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Нет</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">GET /api/users/1</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>POST</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Создать ресурс</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Нет</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Нет</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Да</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">POST /api/users</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>PUT</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Полностью заменить</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Да</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Нет</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Да</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">PUT /api/users/1</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>PATCH</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Частично обновить</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Нет*</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Нет</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Да</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">PATCH /api/users/1</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>DELETE</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Удалить ресурс</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Да</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Нет</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Нет**</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">DELETE /api/users/1</td></tr>
+    </table>
+
+    <p style="color: #636e72; font-size: 14px;">* PATCH может быть идемпотентным, если операция замены задана абсолютно, но спецификация не гарантирует этого.<br/>** Тело у DELETE технически допустимо, но лучшие практики запрещают его использовать.</p>
+
+    <h3>Разбираем каждый метод</h3>
+
+    <h4>GET — получить (безопасно и идемпотентно)</h4>
+
+    <p>GET используется только для чтения данных. Он <strong>безопасен</strong> — то есть не меняет состояние сервера. Его можно вызывать сколько угодно раз — результат будет одинаковым (идемпотентность). Именно поэтому GET-запросы кешируются, индексируются поисковиками и не требуют подтверждения.</p>
+
+    <p><strong>Правило:</strong> если эндпоинт что-то меняет (списывает деньги, создаёт запись, отправляет письмо) — это не GET.</p>
+
+    <h4>POST — создать (не идемпотентно)</h4>
+
+    <p>POST — единственный метод, который не является идемпотентным по определению. Отправляя один и тот же POST-запрос дважды, вы рискуете получить два разных результата (например, два заказа).</p>
+
+    <p><strong>Важно для аналитика:</strong> если вы проектируете платёжный эндпоинт, POST без защиты от дубликатов — это путь к двойным списаниям. Об этом мы поговорим в разделе 2.7.</p>
+
+    <h4>PUT — полностью заменить (идемпотентно)</h4>
+
+    <p>PUT заменяет <em>весь</em> ресурс новой версией. Если вы отправите один и тот же PUT-запрос дважды — результат будет одинаковым. PUT идемпотентен, потому что он закрепляет конкретное состояние ресурса.</p>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#e17055</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fdf0ed</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Антипаттерн.</strong> Использовать PUT для частичного обновления (<code>PUT /api/users/1</code> с телом <code>{"name": "Новое имя"}</code>, ожидая, что остальные поля не изменятся). Это ломает идемпотентность: повторный PUT может неожиданно перезаписать данные, которых не было в первом запросе. Для частичного обновления есть PATCH.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h4>PATCH — частично обновить</h4>
+
+    <p>PATCH появился в HTTP позже остальных, но быстро стал незаменимым. Он обновляет только те поля, которые переданы в теле запроса. Остальные поля остаются без изменений.</p>
+
+    <h4>DELETE — удалить</h4>
+
+    <p>DELETE удаляет ресурс. Идемпотентен: повторный DELETE вернёт 404 (ресурса уже нет), но это нормально — сервер не сломается.</p>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#d63031</ac:parameter>
+        <ac:parameter ac:name="bgColor">#ffeef0</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Типичная ошибка.</strong> DELETE с телом запроса. DELETE не должен иметь тела. Если вам нужно передать причину удаления или другие параметры — используйте заголовки или query-параметры. Например: <code>DELETE /api/orders/1?reason=duplicate</code> (хотя лучше POST /api/orders/1/cancel).</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Почему это важно для аналитика</h3>
+
+    <p>Выбирая метод, вы задаёте <strong>семантику</strong> эндпоинта. Клиент (фронтенд, другой сервис) полагается на эту семантику. Если вы повесите удаление на GET — кеширующий прокси решит, что это безопасный запрос, и закеширует результат. Если вы используете POST для получения данных — потеряете кеширование и идемпотентность. Метод — это контракт.</p>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#0984e3</ac:parameter>
+        <ac:parameter ac:name="bgColor">#e8f4fd</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Реальный пример: API банковского перевода.</strong></p>
+            <p>Предположим, мы проектируем эндпоинт для перевода средств между счетами.</p>
+            <ul>
+                <li><strong>Неправильно:</strong> <code>GET /api/transfer?from=123&amp;to=456&amp;amount=1000</code> — GET безопасный, его может выполнить поисковый робот или браузер при prefetch'е. Деньги уйдут просто от того, что кто-то перешёл по ссылке.</li>
+                <li><strong>Неправильно:</strong> <code>POST /api/transfer</code> — если клиент потеряет соединение и повторит запрос, перевод выполнится дважды.</li>
+                <li><strong>Правильно:</strong> <code>POST /api/transfers</code> с заголовком <code>Idempotency-Key: uuid</code>. Сервер проверяет ключ: если такой перевод уже был — возвращает сохранённый результат, не выполняя повторного списания.</li>
+            </ul>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <!-- ========== 2.3 ========== -->
+
+    <h2>2.3. Endpoint — это существительное, не глагол</h2>
+
+    <p>Это настолько важное правило, что оно стоит отдельного раздела. URL в REST API — это <strong>путь к ресурсу</strong>, а не описание действия.</p>
+
+    <h3>Правильно vs Неправильно</h3>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Неправильно (глагол)</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Правильно (существительное)</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Метод</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/getOrders</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/orders</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">GET</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/createOrder</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/orders</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">POST</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/updateOrder</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/orders/1</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">PATCH</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/deleteOrder</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/orders/1</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">DELETE</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/getUserOrders?id=1</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/users/1/orders</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">GET</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/changePassword</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/users/1/password</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">PATCH</td></tr>
+    </table>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#6c5ce7</ac:parameter>
+        <ac:parameter ac:name="bgColor">#f0edff</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Аналогия.</strong> Представьте шкаф с папками. Каждая папка подписана: "Заказы 2024", "Клиенты", "Счета". Вы не пишете на папке "Положить сюда новый заказ" или "Взять отсюда заказ". Вы просто подходите к папке "Заказы" и делаете то, что нужно: кладёте новый бланк (POST), вынимаете старый (GET), заменяете содержимое (PUT) или выбрасываете папку (DELETE). URL — это имя папки, а не инструкция.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Почему это важно</h3>
+
+    <ol>
+        <li><strong>Единообразие.</strong> Все эндпоинты следуют одному шаблону. Не нужно гадать, как называется эндпоинт для обновления — метод меняется, а путь остаётся тем же.</li>
+        <li><strong>Предсказуемость.</strong> Зная структуру API, клиент может угадать эндпоинт для нового ресурса. Если есть <code>/api/users</code> и <code>/api/orders</code>, то будет и <code>/api/products</code>.</li>
+        <li><strong>Масштабирование.</strong> Добавление нового метода (например, PATCH) не ломает существующие эндпоинты. Путь не меняется — меняется только HTTP-метод.</li>
+        <li><strong>Инструментальная поддержка.</strong> Swagger, OpenAPI, клиентские генераторы — все они рассчитывают на существительные.</li>
+    </ol>
+
+    <h3>RESTful naming conventions</h3>
+
+    <p>Несколько правил именования, которые помогут сделать API читаемым:</p>
+    <ul>
+        <li><strong>Множественное число для коллекций:</strong> <code>/api/users</code>, <code>/api/orders</code> (а не <code>/api/user</code>).</li>
+        <li><strong>Вложенность для связанных ресурсов:</strong> <code>/api/users/1/orders/5/items</code>.</li>
+        <li><strong>kebab-case для составных имён:</strong> <code>/api/shipping-addresses</code> (а не <code>/api/shippingAddresses</code> или <code>/api/shipping_addresses</code>).</li>
+        <li><strong>Без глаголов:</strong> никаких <code>/api/getAllUsers</code>.</li>
+        <li><strong>Без точек и расширений:</strong> <code>/api/users/1</code>, а не <code>/api/users/1.json</code>.</li>
+        <li><strong>Параметры — в query, не в path:</strong> <code>/api/orders?status=paid</code>, а не <code>/api/orders/status/paid</code>.</li>
+    </ul>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#00b894</ac:parameter>
+        <ac:parameter ac:name="bgColor">#e6faf4</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Лучшая практика.</strong> Если вам кажется, что без глагола не обойтись — подумайте, не создаёте ли вы новый ресурс. Например, <code>POST /api/orders/1/cancel</code> можно заменить на <code>POST /api/orders/1/cancellations</code>, где "отмена" — это самостоятельный ресурс.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <!-- ========== 2.4 ========== -->
+
+    <h2>2.4. HTTP Status Codes — язык без слов</h2>
+
+    <p>Код ответа HTTP — это первое, что видит клиент после запроса. Он говорит: "Всё хорошо" или "Что-то пошло не так". Аналитик должен знать коды не хуже разработчика, потому что именно аналитик описывает в документации, что и когда возвращается.</p>
+
+    <h3>Категории статусов</h3>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Диапазон</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Категория</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Смысл</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">1xx</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Informational</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Запрос получен, продолжается обработка</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">2xx</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Success</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Запрос успешно обработан</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">3xx</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Redirection</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Клиенту нужно выполнить дополнительное действие</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">4xx</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Client Error</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Ошибка на стороне клиента</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">5xx</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Server Error</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Ошибка на стороне сервера</td></tr>
+    </table>
+
+    <h3>Самые важные коды (которые нужно знать наизусть)</h3>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Код</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Название</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Когда использовать</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>200</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">OK</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Запрос выполнен успешно. Для GET — тело содержит запрошенные данные. Для POST — тело содержит результат операции.</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>201</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Created</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Ресурс успешно создан (POST). В ответе — созданный ресурс и заголовок Location с URL нового ресурса.</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>204</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">No Content</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Запрос выполнен успешно, но тело ответа пусто. Используется для DELETE, иногда для PUT/PATCH, когда обновление не требует возврата данных.</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>301</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Moved Permanently</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Ресурс перемещён навсегда. Клиент должен обновить URL.</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>304</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Not Modified</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Клиент может использовать кешированную версию.</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>400</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Bad Request</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Сервер не может обработать запрос из-за ошибки клиента: невалидный JSON, неверный формат, пропущенные поля.</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>401</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Unauthorized</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Клиент не предоставил учётные данные (или они неверны). Нужен токен / логин-пароль.</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>403</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Forbidden</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Клиент аутентифицирован, но не имеет прав на выполнение операции.</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>404</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Not Found</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Ресурс не найден. Может означать как отсутствие конкретной записи, так и неверный URL.</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>409</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Conflict</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Конфликт с текущим состоянием ресурса. Например, попытка создать дубликат или удалить объект, на который есть ссылки.</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>422</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Unprocessable Entity</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Запрос синтаксически верен (JSON валидный), но семантически некорректен: отрицательная цена, дата рождения в будущем.</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>429</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Too Many Requests</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Превышен лимит запросов (rate limiting).</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>500</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Internal Server Error</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Внутренняя ошибка сервера. Клиент не виноват, сервер сломался.</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>502</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Bad Gateway</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Сервер (обычно прокси) получил некорректный ответ от вышестоящего сервера.</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>503</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Service Unavailable</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Сервер временно недоступен (перегрузка, техническое обслуживание).</td></tr>
+    </table>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#fdcb6e</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fef9e7</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Как думает Senior.</strong> Аналитик, который различает 401 и 403, сразу вызывает уважение разработчиков. 401 — "кто ты?" (нужна аутентификация). 403 — "ты кто, но тебе нельзя" (не хватает прав). Путать их — значит путать идентификацию с авторизацией. Разные сценарии, разная логика обработки на клиенте. При 401 клиент показывает форму логина. При 403 — сообщение "доступ запрещён".</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#e17055</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fdf0ed</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Антипаттерн: 200 на ошибку.</strong> Некоторые разработчики возвращают 200 OK всегда, а результат помещают в тело: <code>{"success": false, "error": "Недостаточно средств"}</code>. Проблема в том, что HTTP-статус теряет смысл. Кеширующие прокси не узнают об ошибке. Клиент должен разбирать тело ответа, чтобы понять, что пошло не так. Это путь к хаосу. Если произошла ошибка — верните соответствующий 4xx или 5xx код.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Таблица: какой статус и когда использовать</h3>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Сценарий</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Метод</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Статус</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Получение списка заказов</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">GET</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">200 OK</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Создание заказа</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">POST</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">201 Created</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Удаление заказа</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">DELETE</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">204 No Content</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Обновление заказа</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">PATCH</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">200 OK</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Частичное обновление без возврата</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">PATCH</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">204 No Content</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Невалидный JSON в теле запроса</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">POST</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">400 Bad Request</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Токен не предоставлен</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">GET</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">401 Unauthorized</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Токен есть, но нет прав на удаление</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">DELETE</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">403 Forbidden</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Заказ не найден</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">GET</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">404 Not Found</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Попытка создать дубликат заказа</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">POST</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">409 Conflict</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Некорректная сумма заказа (≤ 0)</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">POST</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">422 Unprocessable Entity</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Превышение лимита запросов</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">GET</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">429 Too Many Requests</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">База данных упала</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">GET</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">500 Internal Server Error</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">API gateway не может достучаться до сервиса заказов</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">GET</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">502 Bad Gateway</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Сервис заказов на техническом перерыве</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">GET</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">503 Service Unavailable</td></tr>
+    </table>
+
+    <!-- ========== 2.5 ========== -->
+
+    <h2>2.5. URL-дизайн: структура и иерархия</h2>
+
+    <p>Хороший URL читается как путь к файлу. Плохой URL — как строка с секретным кодом.</p>
+
+    <h3>Ресурсы и подресурсы</h3>
+
+    <p>Связанные ресурсы вкладываются друг в друга. Это отражает их иерархию в предметной области:</p>
+
+    <ac:structured-macro ac:name="code">
+        <ac:parameter ac:name="language">text</ac:parameter>
+        <ac:plain-text-body><![CDATA[/api/users/{userId}/orders/{orderId}/items/{itemId}]]></ac:plain-text-body>
+    </ac:structured-macro>
+
+    <p>Читается как: "у пользователя №42 есть заказ №5, а в нём — позиция №1". Каждый уровень сужает контекст.</p>
+
+    <p><strong>Глубина вложенности.</strong> Не увлекайтесь. Три уровня — предел. Если нужно глубже — используйте query-параметры или плоскую структуру.</p>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#00b894</ac:parameter>
+        <ac:parameter ac:name="bgColor">#e6faf4</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Лучшая практика.</strong> Плоская структура с фильтрацией часто предпочтительнее глубокой вложенности. Вместо <code>/api/users/1/orders/5/items/3/attachments/7</code> — <code>/api/attachments?orderItemId=3</code>.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Path vs Query: что куда</h3>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Идёт в URL (path)</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Идёт в query-параметры</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Идентификатор ресурса (userId, orderId)</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Фильтры (status, dateFrom, category)</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Имя ресурса (users, orders, products)</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Пагинация (page, size, offset)</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Действие в виде подресурса (cancel, activate)</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Сортировка (sort, order)</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Версия API (/api/v1/)</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Поиск (q, search, query)</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Локализация (/en/, /ru/)</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Формат ответа (?format=json) — хотя лучше через заголовки Accept</td></tr>
+    </table>
+
+    <h3>Версионирование</h3>
+
+    <p>API меняется, и клиенты должны к этому адаптироваться. Версионирование через URL — самый простой и понятный способ:</p>
+
+    <ac:structured-macro ac:name="code">
+        <ac:parameter ac:name="language">text</ac:parameter>
+        <ac:plain-text-body><![CDATA[/api/v1/orders
+/api/v2/orders]]></ac:plain-text-body>
+    </ac:structured-macro>
+
+    <p>Когда вы выпускаете v2, v1 продолжает работать для старых клиентов. Да, это значит, что вы поддерживаете две версии. Но это лучше, чем ломать работающие интеграции.</p>
+
+    <p>Альтернативы: версионирование через заголовки (<code>Accept: application/vnd.api+json;version=2</code>) или query-параметры (<code>?version=2</code>). Но URL-версия — самый прозрачный вариант.</p>
+
+    <h3>Примеры правильных и неправильных URL</h3>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Неправильно</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Правильно</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/getAllOrders?userId=42</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/users/42/orders</code></td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/orders?delete=true&amp;id=5</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>DELETE /api/orders/5</code></td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/order/create</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>POST /api/orders</code></td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/UpdateStatusOfOrder</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>PATCH /api/orders/123/status</code></td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/users/listOrders?userId=1</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/users/1/orders</code></td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/products/sortByPrice</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/products?sort=price,asc</code></td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/items/byCategory?cat=books</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/categories/books/items</code></td></tr>
+    </table>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#0984e3</ac:parameter>
+        <ac:parameter ac:name="bgColor">#e8f4fd</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Реальный пример: API интернет-магазина.</strong></p>
+            <p>Спроектируем фрагмент API для интернет-магазина:</p>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+                <tr style="background-color: #2d3436;">
+                    <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Описание</th>
+                    <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Метод и URL</th>
+                </tr>
+                <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Список товаров с фильтром по категории</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>GET /api/v1/products?categoryId=5&amp;page=1&amp;size=20</code></td></tr>
+                <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Карточка товара</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>GET /api/v1/products/sku-001</code></td></tr>
+                <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Добавление товара в корзину</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>POST /api/v1/cart/items</code> с телом: {productId, quantity}</td></tr>
+                <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Оформление заказа из корзины</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>POST /api/v1/orders</code> (сервер переносит товары из корзины в заказ)</td></tr>
+                <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Получение статуса заказа</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>GET /api/v1/orders/ORD-12345</code></td></tr>
+                <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Оплата заказа</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>POST /api/v1/orders/ORD-12345/payments</code> с <code>Idempotency-Key</code></td></tr>
+                <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Отмена заказа</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>POST /api/v1/orders/ORD-12345/cancellations</code></td></tr>
+                <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">История заказов пользователя</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>GET /api/v1/users/42/orders?sort=date,desc</code></td></tr>
+                <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Получение отзыва на товар</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>GET /api/v1/products/sku-001/reviews</code></td></tr>
+            </table>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <!-- ========== 2.6 ========== -->
+
+    <h2>2.6. Контракты API — почему их нельзя менять</h2>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#6c5ce7</ac:parameter>
+        <ac:parameter ac:name="bgColor">#f0edff</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Аналогия.</strong> API — это электрическая розетка. Форма розетки не менялась десятилетиями, хотя за стенами электростанции могут модернизироваться хоть каждый день. Клиент (вилка) должен подходить к розетке (API) без напильника.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <p><strong>Контракт API</strong> — это соглашение между клиентом и сервером. Клиент обещает отправлять запросы определённого формата. Сервер обещает возвращать ответы определённого формата. Изменение контракта без предупреждения — это нарушение доверия.</p>
+
+    <h3>Обратная совместимость</h3>
+
+    <p>Изменение считается обратно совместимым (не ломающим), если старые клиенты продолжают работать без изменений. Что можно делать:</p>
+    <ul>
+        <li>Добавлять новые поля в ответ (клиенты, которые не читают эти поля, не сломаются).</li>
+        <li>Добавлять новые эндпоинты.</li>
+        <li>Добавлять новые опциональные параметры запроса.</li>
+        <li>Расширять диапазон допустимых значений (например, увеличить лимит пагинации).</li>
+    </ul>
+
+    <h3>Breaking changes — что ломает клиентов</h3>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Изменение</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Почему ломает</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Степень</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Удаление поля из ответа</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Клиент ожидает поле, получает undefined — падает</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Критично</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Переименование поля (name → fullName)</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Клиент ищет name, не находит</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Критично</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Изменение типа поля (string → number)</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Клиент ожидает строку, получает число</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Критично</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Изменение URL эндпоинта</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Клиент шлёт запрос на старый URL</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Критично</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Изменение HTTP-метода (был GET, стал POST)</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Клиент использует GET</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Критично</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Изменение статус-кода (был 200, стал 201)</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Клиент проверяет === 200</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Средне</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Добавление обязательного поля в запрос</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Старые клиенты его не шлют</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Критично</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Изменение формата даты (DD.MM → ISO 8601)</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Клиент парсит по старому формату</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Критично</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Добавление нового поля в ответ</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Клиент игнорирует неизвестные поля</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Безопасно</td></tr>
+    </table>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#fdcb6e</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fef9e7</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Как думает Senior.</strong> "Кажется, что переименовать поле — мелочь. Но за каждым полем в ответе стоит клиентский код: парсинг, отображение на UI, валидация, расчёты. Клиент не узнает о переименовании — он просто упадёт. Если очень нужно переименовать — добавьте новое поле, а старое пометьте deprecated. Через полгода можно удалить, предупредив всех клиентов."</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Как добавлять новые поля без боли</h3>
+
+    <ol>
+        <li><strong>Расширяйте, а не изменяйте.</strong> Новое поле — новый ключ в JSON. Старые поля остаются без изменений.</li>
+        <li><strong>Используйте дефолтные значения.</strong> Если поле опционально — укажите значение по умолчанию в документации.</li>
+        <li><strong>Помечайте deprecated.</strong> Устаревшие поля документируйте с пометкой <code>deprecated</code> и указывайте, чем их заменить.</li>
+        <li><strong>Дайте миграционный период.</strong> Удаляйте поля не раньше, чем через N месяцев после объявления deprecation.</li>
+        <li><strong>Документируйте.</strong> Любое изменение должно быть отражено в changelog API.</li>
+    </ol>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#d63031</ac:parameter>
+        <ac:parameter ac:name="bgColor">#ffeef0</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Типичная ошибка.</strong> "Мы удалим поле <code>user_name</code>, потому что оно нигде не используется на фронтенде". Но оно может использоваться мобильным приложением, которое обновляется раз в месяц, или сторонним партнёром, о котором вы забыли. <strong>Правило:</strong> если вы не знаете всех клиентов API — вы не можете просто удалить поле.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <!-- ========== 2.7 ========== -->
+
+    <h2>2.7. Идемпотентность — важное понятие</h2>
+
+    <p>Идемпотентность звучит страшно, но объясняется просто: <strong>сколько раз ни повторяй запрос — результат будет одинаковым</strong>.</p>
+
+    <p>Представьте кнопку лифта. Если нажать один раз — лифт приедет. Если нажать пять раз — лифт всё равно приедет один раз. Кнопка лифта идемпотентна. А кнопка дверного звонка — нет: нажали один раз — звонок прозвенел один раз, нажали пять раз — прозвенел пять раз.</p>
+
+    <h3>Почему это важно</h3>
+
+    <p>В мире API сети ненадёжны. Клиент отправил запрос, но ответ не пришёл (таймаут, обрыв соединения). Что делать клиенту? Повторить запрос. Но если запрос не идемпотентен — повторное выполнение может создать дубликат: второй заказ, второе списание денег, вторую регистрацию.</p>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Метод</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Идемпотентен?</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Комментарий</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">GET</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Да</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Просто читает данные</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">PUT</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Да</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Заменяет ресурс целиком. Повтор — то же состояние.</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">DELETE</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Да</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Первый раз удаляет, второй раз — 404, но это нормально.</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">PATCH</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Нет*</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Зависит от реализации. Если патч "прибавить 10 к balance" — не идемпотентен.</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">POST</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Нет</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Создаёт новый ресурс. Повтор — ещё один ресурс.</td></tr>
+    </table>
+
+    <h3>Идемпотентность в платежах</h3>
+
+    <p>Платежи — критическая область, где отсутствие идемпотентности ведёт к финансовым потерям. Рассмотрим сценарий:</p>
+
+    <ac:structured-macro ac:name="code">
+        <ac:parameter ac:name="language">text</ac:parameter>
+        <ac:plain-text-body><![CDATA[Клиент → POST /api/payments  →  Сервер списывает деньги
+         ← [ТАЙМАУТ]          ← Клиент не получил ответ
+Клиент → POST /api/payments  →  Сервер списывает деньги снова
+         ← 200 OK             ← Два списания!]]></ac:plain-text-body>
+    </ac:structured-macro>
+
+    <p>Решение — <strong>Idempotency-Key</strong>:</p>
+
+    <ac:structured-macro ac:name="code">
+        <ac:parameter ac:name="language">text</ac:parameter>
+        <ac:plain-text-body><![CDATA[Клиент → POST /api/payments
+         Headers: { Idempotency-Key: "uuid-123" }
+         → Сервер: проверяет, был ли ключ "uuid-123"
+           → Нет: списывает деньги, сохраняет результат под ключом
+           → Да: возвращает сохранённый результат, НЕ списывая повторно
+
+Повторный запрос с тем же ключом → сервер возвращает тот же ответ.
+Результат: деньги списаны один раз.]]></ac:plain-text-body>
+    </ac:structured-macro>
+
+    <pre>// Первый запрос — создаём платёж с уникальным ключом
+POST /api/payments
+Idempotency-Key: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+
+{
+  "from": "account-123",
+  "to": "account-456",
+  "amount": 1000,
+  "currency": "USD"
+}
+
+// Ответ: 201 Created
+{
+  "paymentId": "pay-001",
+  "status": "completed",
+  "amount": 1000
+}
+
+// Клиент не получил ответ, повторяет с тем же ключом
+POST /api/payments
+Idempotency-Key: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+
+// Тело запроса то же самое
+
+// Ответ: 200 OK (не 201 — потому что ресурс уже существует)
+// Но деньги НЕ списываются повторно!
+{
+  "paymentId": "pay-001",
+  "status": "completed",
+  "amount": 1000
+}</pre>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#fdcb6e</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fef9e7</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Как думает Senior.</strong> "Idempotency-Key — это спасательный круг для надёжности. Он превращает неидемпотентный POST в идемпотентную операцию. Все операции, которые меняют финансовое состояние, должны поддерживать этот механизм. Срок хранения ключа — минимум 24 часа, чтобы клиент успел повторить запрос при любых сетевых проблемах."</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <!-- ========== 2.8 ========== -->
+
+    <h2>2.8. Пагинация, сортировка, фильтрация — стандарты</h2>
+
+    <p>Редкий API обходится без списков данных. А если данных много — их нужно разбивать на страницы, сортировать и фильтровать. У аналитика должен быть готовый шаблон для этого.</p>
+
+    <h3>Page-based vs Cursor-based пагинация</h3>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Характеристика</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Page-based</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Cursor-based</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Как работает</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>?page=1&amp;size=20</code> — указываете номер страницы</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>?cursor=abc123&amp;size=20</code> — указываете последний элемент</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Стабильность</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">При добавлении новых записей страницы "съезжают"</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Новые записи не влияют на текущий курсор</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Переход к странице N</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Просто: <code>?page=N</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Только последовательно: next / prev</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Производительность на больших данных</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">OFFSET замедляется на больших значениях</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Стабильна, зависит от индекса по полю курсора</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Когда использовать</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Небольшие наборы (&lt;10K), UI с номерами страниц</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Ленты, бесконечный скролл, большие объёмы, реальное время</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Пример</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Админка, список пользователей</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Лента новостей, история операций</td></tr>
+    </table>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#e17055</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fdf0ed</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Антипаттерн: offset-based пагинация в ленте.</strong> Представьте ленту новостей. Вы открываете страницу 1 — видите 20 постов. Пока вы читаете, приходит 5 новых постов. Вы нажимаете "страница 2" — и видите те же посты, что и на странице 1, потому что они "съехали" на 5 позиций. Пользователь думает, что сошёл с ума. Cursor-based пагинация решает эту проблему: курсор — это ID последнего поста, который вы видели. Новые посты добавляются сверху, но курсор остаётся на месте.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Стандартные параметры</h3>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Параметр</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Описание</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Пример</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>page</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Номер страницы (1-based)</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>?page=1</code></td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>size</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Количество элементов на странице</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>?size=20</code></td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>offset</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Смещение от начала (альтернатива page)</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>?offset=0&amp;limit=20</code></td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>sort</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Поле и направление сортировки</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>?sort=date,desc</code></td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>filter</code> или <code>status</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Фильтрация по полю</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>?status=paid</code></td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>q</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Полнотекстовый поиск</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>?q=iphone</code></td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>cursor</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Идентификатор для cursor-based пагинации</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>?cursor=eyJsYXN0SWQiOjEwMH0=</code></td></tr>
+    </table>
+
+    <h3>Стандартный формат ответа с пагинацией</h3>
+
+    <pre>GET /api/v1/orders?page=1&amp;size=20&amp;sort=date,desc&amp;filter=status:paid
+
+{
+  "data": [
+    { "id": 1, "status": "paid", "total": 1500, "date": "2026-07-10T14:30:00Z" },
+    { "id": 2, "status": "paid", "total": 2300, "date": "2026-07-09T10:15:00Z" }
+  ],
+  "pagination": {
+    "page": 1,
+    "size": 20,
+    "totalItems": 58,
+    "totalPages": 3,
+    "hasNext": true,
+    "hasPrev": false
+  }
+}</pre>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#fdcb6e</ac:parameter>
+        <ac:parameter ac:name="bgColor">#fef9e7</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Как думает Senior: выбор стратегии пагинации.</strong></p>
+            <p>"Для админки интернет-магазина (сотни заказов в день) — page-based пагинация идеальна. Пользователи хотят перейти к странице 5, администратору нужны точные номера страниц. Cursor-based здесь избыточен.</p>
+            <p>Для ленты операций в банковском приложении (миллионы транзакций) — только cursor-based. Номера страниц не нужны, а стабильность важна: между запросами могут пройти часы, за которые появятся тысячи новых операций.</p>
+            <p>Всегда устанавливайте лимит на size. Если клиент запросит size=100000 — верните ошибку 422 или обрежьте до разумного максимума (например, 100). Иначе один неаккуратный клиент положит базу данных."</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Пример комплексного запроса</h3>
+
+    <pre># Запрос: заказы со статусом "paid" за последний месяц,
+# отсортированные по сумме (по убыванию), страница 2, 50 записей
+
+GET /api/v1/orders?status=paid&amp;dateFrom=2026-06-14&amp;dateTo=2026-07-14
+     &amp;sort=total,desc&amp;page=2&amp;size=50</pre>
+
+    <!-- ========== 2.9 ========== -->
+
+    <h2>2.9. REST API в Confluence — как должен выглядеть контракт</h2>
+
+    <p>Аналитик — не разработчик и не инженер документации. Но именно аналитик чаще всего описывает API в Confluence или другом инструменте. Вот минимальный набор информации, который должен быть у каждого эндпоинта.</p>
+
+    <h3>Шаблон описания эндпоинта</h3>
+
+    <p>Для каждого эндпоинта документация должна содержать:</p>
+
+    <ol>
+        <li><strong>URL и метод</strong> — однозначная идентификация.</li>
+        <li><strong>Назначение</strong> — что делает эндпоинт на языке бизнеса.</li>
+        <li><strong>Параметры запроса</strong> — path, query, headers, body.</li>
+        <li><strong>Пример запроса</strong> — curl или JSON.</li>
+        <li><strong>Пример ответа</strong> — успешный сценарий.</li>
+        <li><strong>Возможные статус-коды</strong> — все, не только 200.</li>
+        <li><strong>Возможные ошибки</strong> — описание ошибок для каждого статуса.</li>
+        <li><strong>Ограничения</strong> — rate limit, максимальный размер, пагинация.</li>
+    </ol>
+
+    <h3>Пример готового описания эндпоинта</h3>
+
+    <h4>Создание заказа</h4>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9; font-weight: 700; width: 200px;">Метод</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>POST</code></td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9; font-weight: 700;">URL</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>/api/v1/orders</code></td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9; font-weight: 700;">Назначение</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Создание нового заказа. Заказ создаётся из товаров, добавленных в корзину пользователя. После создания корзина очищается.</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9; font-weight: 700;">Аутентификация</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Требуется Bearer token (заголовок <code>Authorization</code>)</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9; font-weight: 700;">Idempotency-Key</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Обязателен в заголовке. Повторный запрос с тем же ключом не создаёт дубликат.</td></tr>
+    </table>
+
+    <h4>Request Body</h4>
+
+    <pre>{
+  "cartId": "cart-42",            // string, required — ID корзины пользователя
+  "shippingAddressId": "addr-7",  // string, required — ID адреса доставки
+  "promoCode": "SALE2026",        // string, optional — промокод
+  "comment": "Позвонить перед доставкой", // string, optional — комментарий к заказу
+  "deliveryDate": "2026-07-20"    // string (date), optional — желаемая дата доставки
+}</pre>
+
+    <h4>Response (успех)</h4>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Код</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Тело ответа</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><strong>201 Created</strong></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Объект созданного заказа</td></tr>
+    </table>
+
+    <pre>{
+  "orderId": "ORD-20260714-001",
+  "status": "created",
+  "items": [
+    { "productId": "sku-001", "name": "iPhone 16", "quantity": 1, "price": 99900 },
+    { "productId": "sku-042", "name": "Чехол", "quantity": 2, "price": 2990 }
+  ],
+  "total": 105880,
+  "currency": "RUB",
+  "createdAt": "2026-07-14T12:00:00Z",
+  "estimatedDelivery": "2026-07-20"
+}</pre>
+
+    <h4>Возможные ошибки</h4>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Код</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Тело ошибки</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Когда возникает</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">400 Bad Request</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>{"error": "validation_error", "details": [{"field": "cartId", "message": "cartId is required"}]}</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Не указан cartId, невалидный JSON</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">401 Unauthorized</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>{"error": "unauthorized", "message": "Missing or invalid token"}</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Токен не предоставлен или истёк</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">404 Not Found</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>{"error": "not_found", "message": "Cart cart-42 not found"}</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Корзина или адрес не найдены</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">409 Conflict</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>{"error": "conflict", "message": "Idempotency-Key already used"}</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Повторный запрос с тем же Idempotency-Key, но другим телом</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">422 Unprocessable Entity</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>{"error": "business_error", "message": "Cart is empty"}</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Корзина пуста, товара нет в наличии, сумма меньше минимальной</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">429 Too Many Requests</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>{"error": "rate_limit", "message": "Too many requests. Try again in 30 seconds"}</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Превышен лимит запросов (100 запросов в минуту)</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">500 Internal Server Error</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;"><code>{"error": "internal_error", "message": "Something went wrong"}</code></td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Внутренняя ошибка сервера</td></tr>
+    </table>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#00b894</ac:parameter>
+        <ac:parameter ac:name="bgColor">#e6faf4</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Лучшая практика.</strong> Добавьте в документацию раздел с примерами ошибок. Разработчики клиентской стороны (фронтенд, мобильное приложение) будут вам благодарны: они увидят не только код, но и формат тела ошибки, что позволяет правильно обработать каждый сценарий.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Что аналитик обязательно должен указать в документации API</h3>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dfe6e9;">
+        <tr style="background-color: #2d3436;">
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Раздел</th>
+            <th style="color: #fff; padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid #2d3436;">Что включить</th>
+        </tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Общая информация</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Base URL, версия API, формат данных, аутентификация</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Эндпоинты</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Для каждого: метод, URL, описание, параметры, тело запроса/ответа</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Статус-коды</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Таблица всех возможных кодов для каждого эндпоинта</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Ошибки</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Формат ошибки, примеры для каждого статуса</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Пагинация</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Стандартные параметры, формат ответа, лимиты</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Rate limiting</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Лимиты, заголовки (X-RateLimit-*), реакция на 429</td></tr>
+        <tr><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Идемпотентность</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Какие методы требуют Idempotency-Key, срок хранения ключей</td></tr>
+        <tr style="background-color: #f8f9fa;"><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">Changelog</td><td style="padding: 10px 16px; border: 1px solid #dfe6e9;">История изменений API с датами и описанием breaking changes</td></tr>
+    </table>
+
+    <!-- ========== ИТОГИ ========== -->
+
+    <h2>Итоги главы</h2>
+
+    <h3>Чек-лист: 10 вопросов, которые аналитик должен задать при проектировании API</h3>
+
+    <ol>
+        <li><strong>Какой ресурс?</strong> Какая сущность предметной области лежит в основе эндпоинта?</li>
+        <li><strong>Какой HTTP-метод?</strong> GET, POST, PUT, PATCH или DELETE — и почему?</li>
+        <li><strong>Какой URL?</strong> Это существительное во множественном числе? Нет ли глагола в пути?</li>
+        <li><strong>Какие статус-коды?</strong> Каждый возможный исход операции имеет свой код?</li>
+        <li><strong>Нужна ли идемпотентность?</strong> Может ли запрос быть повторён? Есть ли Idempotency-Key?</li>
+        <li><strong>Какая пагинация?</strong> Page-based или cursor-based? Какие параметры?</li>
+        <li><strong>Какая фильтрация и сортировка?</strong> Какие поля можно фильтровать? Какой формат sort?</li>
+        <li><strong>Что с обратной совместимостью?</strong> Не ломает ли новое поле существующих клиентов?</li>
+        <li><strong>Какие ошибки?</strong> Описан ли формат ошибки для каждого статус-кода?</li>
+        <li><strong>Как документируется?</strong> Есть ли пример запроса и ответа для каждого сценария?</li>
+    </ol>
+
+    <h3>Что должен понять аналитик</h3>
+
+    <ul>
+        <li>REST API — это не магия, а строгие соглашения о том, как клиент и сервер общаются.</li>
+        <li><strong>Ресурсы</strong> (существительные) — основа REST. <strong>Методы</strong> (глаголы) — способ манипуляции ресурсами.</li>
+        <li>URL должен быть читаемым, предсказуемым и единообразным.</li>
+        <li>Статус-коды — это язык, который клиент понимает без разбора тела ответа.</li>
+        <li>Контракт API менять нельзя без миграционного периода.</li>
+        <li>Идемпотентность — база надёжных финансовых операций.</li>
+        <li>Документация API — это не "для галочки", а инструмент, который экономит часы переписки с разработчиками.</li>
+    </ul>
+
+    <ac:structured-macro ac:name="panel">
+        <ac:parameter ac:name="borderColor">#2d3436</ac:parameter>
+        <ac:parameter ac:name="bgColor">#f1f2f6</ac:parameter>
+        <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+        <ac:parameter ac:name="borderWidth">5</ac:parameter>
+        <ac:rich-text-body>
+            <p><strong>Золотое правило.</strong> Хороший API — это API, который не заставляет клиента читать документацию, чтобы понять, как им пользоваться. А если документация всё-таки нужна — она должна быть настолько полной, чтобы клиент ни разу не задал вопрос разработчику.</p>
+        </ac:rich-text-body>
+    </ac:structured-macro>
+
+    <h3>Вопросы для самопроверки</h3>
+
+    <ol>
+        <li>Чем отличается PUT от PATCH? Приведите пример, когда использовать каждый.</li>
+        <li>Почему <code>/api/getOrders</code> — плохой URL? Как его исправить?</li>
+        <li>В чём разница между 401 и 403? Приведите сценарии для каждого.</li>
+        <li>Что такое идемпотентность и как её обеспечить для POST-запроса?</li>
+        <li>Когда следует использовать cursor-based пагинацию вместо page-based?</li>
+        <li>Какие изменения в API считаются breaking changes? Приведите три примера.</li>
+        <li>Почему возвращать 200 OK с телом <code>{"success": false}</code> — антипаттерн?</li>
+        <li>Как правильно добавить новое поле в ответ API, не ломая старых клиентов?</li>
+        <li>Спроектируйте эндпоинты для системы бронирования отелей: поиск номеров, бронирование, отмена, история броней.</li>
+        <li>Что должен содержать раздел документации для одного эндпоинта?</li>
+    </ol>
+
+    <hr/>
+
+    <!-- NAVIGATION -->
+    <table style="width: 100%; border-collapse: collapse; background-color: #f8f9fa; border: 1px solid #dfe6e9; border-radius: 6px;">
+        <tr>
+            <td style="padding: 16px; border: none; text-align: left; width: 33%;"><a href="chapter01.html" style="color: #0984e3; font-weight: 600; text-decoration: none;">← Глава 1: Как думает разработчик</a></td>
+            <td style="padding: 16px; border: none; text-align: center; width: 34%;"><a href="index.html" style="color: #0984e3; font-weight: 600;">Содержание</a></td>
+            <td style="padding: 16px; border: none; text-align: right; width: 33%;"><a href="chapter03.html" style="color: #0984e3; font-weight: 600; text-decoration: none;">Глава 3: JSON как контракт →</a></td>
+        </tr>
+    </table>
+
+</body>
+</html>
