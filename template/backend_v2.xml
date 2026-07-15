@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:ac="ac" xmlns:ri="ri">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<style>
+th { background: #2d3436 !important; color: #fff !important; padding: 12px 16px !important; text-align: left !important; font-weight: 600 !important; }
+td { padding: 10px 16px !important; border-bottom: 1px solid #dfe6e9 !important; }
+tr:nth-child(even) td { background: #f8f9fa !important; }
+</style>
+</head>
+<body>
+
+<h1>[METHOD] /api/v1/[resource] — Технические требования</h1>
+
+<ac:structured-macro ac:name="details">
+<ac:parameter ac:name="title">Мета-информация</ac:parameter>
+<ac:rich-text-body>
+<table>
+<thead>
+<tr><th style="width:240px">Параметр</th><th>Значение</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Микросервис</strong></td><td>[e.g. payment-service]</td></tr>
+<tr><td><strong>Метод / Endpoint</strong></td><td><code>GET|POST|PUT|PATCH|DELETE /api/v1/[resource]</code></td></tr>
+<tr><td><strong>Статус документа</strong></td><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Grey</ac:parameter><ac:parameter ac:name="title">Draft</ac:parameter></ac:structured-macro> <ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">Review</ac:parameter></ac:structured-macro> <ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Approved</ac:parameter></ac:structured-macro></td></tr>
+<tr><td><strong>Автор(ы)</strong></td><td>[ФИО]</td></tr>
+<tr><td><strong>Версия</strong></td><td>1.0</td></tr>
+<tr><td><strong>Дата</strong></td><td>[YYYY-MM-DD]</td></tr>
+</tbody>
+</table>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="details">
+<ac:parameter ac:name="title">Связанные задачи</ac:parameter>
+<ac:rich-text-body>
+<ul>
+<li>[SSP-XXXX] — [Краткое описание задачи]</li>
+<li>[SSP-XXXX] — [Краткое описание задачи]</li>
+</ul>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="details">
+<ac:parameter ac:name="title">История изменений</ac:parameter>
+<ac:rich-text-body>
+<table>
+<thead>
+<tr><th>Версия</th><th>Дата</th><th>Автор</th><th>Изменение</th></tr>
+</thead>
+<tbody>
+<tr><td>1.0</td><td>[YYYY-MM-DD]</td><td>[ФИО]</td><td>Начальная версия</td></tr>
+</tbody>
+</table>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<!-- ============================================================ -->
+<!-- 1. TRANSPORT -->
+<!-- ============================================================ -->
+<h2>1. Транспорт</h2>
+
+<table>
+<thead>
+<tr><th style="width:240px">Параметр</th><th>Значение</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Тип взаимодействия</strong></td><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">REST</ac:parameter></ac:structured-macro> <ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Purple</ac:parameter><ac:parameter ac:name="title">gRPC</ac:parameter></ac:structured-macro> <ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">Async (Broker)</ac:parameter></ac:structured-macro></td></tr>
+<tr><td><strong>Протокол</strong></td><td>HTTP/1.1 | HTTP/2 | AMQP 0-9-1 | Kafka Protocol</td></tr>
+</tbody>
+</table>
+
+<h3>1.1 Синхронный вызов (REST/gRPC)</h3>
+<table>
+<thead>
+<tr><th>Параметр</th><th>Значение</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Base URL</strong></td><td><code>https://[service].[env].internal/api/v1</code></td></tr>
+<tr><td><strong>HTTP метод</strong></td><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">GET</ac:parameter></ac:structured-macro> <ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">POST</ac:parameter></ac:structured-macro> <ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">PUT</ac:parameter></ac:structured-macro> <ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Orange</ac:parameter><ac:parameter ac:name="title">PATCH</ac:parameter></ac:structured-macro> <ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">DELETE</ac:parameter></ac:structured-macro></td></tr>
+<tr><td><strong>Auth</strong></td><td>Bearer JWT | Basic Auth | mTLS | Public</td></tr>
+<tr><td><strong>Timeout</strong></td><td>[мс] — на чтение / на запись / общий</td></tr>
+<tr><td><strong>Idempotency</strong></td><td>Да / Нет — если да: Header <code>Idempotency-Key: UUIDv4</code></td></tr>
+<tr><td><strong>Content-Type</strong></td><td><code>application/json</code> | <code>application/protobuf</code> | <code>application/xml</code></td></tr>
+</tbody>
+</table>
+
+<h3>1.2 Асинхронный (Message Broker)</h3>
+<table>
+<thead>
+<tr><th>Параметр</th><th>Значение</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Тип брокера</strong></td><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">RabbitMQ</ac:parameter></ac:structured-macro> <ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Purple</ac:parameter><ac:parameter ac:name="title">Kafka</ac:parameter></ac:structured-macro></td></tr>
+<tr><td><strong>Exchange / Topic</strong></td><td><code>[exchange_name]</code> / <code>[topic_name]</code></td></tr>
+<tr><td><strong>Routing Key</strong></td><td><code>[routing.pattern]</code> — если RabbitMQ</td></tr>
+<tr><td><strong>Consumer Group</strong></td><td><code>[group_id]</code> — если Kafka</td></tr>
+<tr><td><strong>Тип Exchange</strong></td><td>direct | topic | fanout | headers (только RabbitMQ)</td></tr>
+<tr><td><strong>Durable</strong></td><td>Да / Нет — очередь переживает рестарт брокера</td></tr>
+<tr><td><strong>Dead Letter Queue</strong></td><td><code>[dlq_name]</code> — куда падают необработанные сообщения</td></tr>
+<tr><td><strong>Формат сообщения</strong></td><td>JSON | Avro | Protobuf — schema registry если применимо</td></tr>
+<tr><td><strong>Delivery гарантии</strong></td><td>at-most-once | at-least-once | exactly-once</td></tr>
+<tr><td><strong>Max retries</strong></td><td>[N] — количество повторных попыток перед DLQ</td></tr>
+<tr><td><strong>Retry policy</strong></td><td>exponential-backoff | fixed-interval — параметры</td></tr>
+</tbody>
+</table>
+
+<!-- ============================================================ -->
+<!-- 2. INPUT -->
+<!-- ============================================================ -->
+<h2>2. Входные параметры</h2>
+
+<h3>2.1 Path / Query параметры</h3>
+<table>
+<thead>
+<tr><th>Параметр</th><th>Тип</th><th>Обязат.</th><th>Расположение</th><th>Формат / Пример</th><th>Ограничения</th></tr>
+</thead>
+<tbody>
+<tr><td><code>[param]</code></td><td>string | integer | boolean | uuid</td><td>Да / Нет</td><td>path | query</td><td>[e.g. UUIDv4, int64]</td><td>required, min, max, pattern</td></tr>
+</tbody>
+</table>
+
+<h3>2.2 Headers</h3>
+<table>
+<thead>
+<tr><th>Header</th><th>Тип</th><th>Обязат.</th><th>Описание</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Authorization</code></td><td>string</td><td>Да / Нет</td><td>Bearer-токен. Пропускать, если endpoint public</td></tr>
+<tr><td><code>Idempotency-Key</code></td><td>UUIDv4</td><td>Да / Нет</td><td>Обязателен для POST/PATCH, если идемпотентность требуется</td></tr>
+<tr><td><code>X-Request-Id</code></td><td>UUIDv4</td><td>Рекомендуется</td><td>Для сквозной трассировки (correlationId)</td></tr>
+<tr><td><code>Accept-Language</code></td><td>string</td><td>Нет</td><td>Локализация сообщений об ошибках: ru, en, kk</td></tr>
+</tbody>
+</table>
+
+<h3>2.3 Request Body</h3>
+<table>
+<thead>
+<tr><th>Поле</th><th>Тип</th><th>Обязат.</th><th>Формат / Пример</th><th>Ограничения</th></tr>
+</thead>
+<tbody>
+<tr><td><code>[field]</code></td><td>string | number | integer | boolean | object | array[type] | null</td><td>Да / Нет / Условно</td><td>[e.g. ISO 8601, BASE64, UUID, email, phone]</td><td>minLength, maxLength, minimum, maximum, pattern, enum[Value1, Value2], nullable</td></tr>
+</tbody>
+</table>
+
+<ac:structured-macro ac:name="code">
+<ac:parameter ac:name="language">json</ac:parameter>
+<ac:plain-text-body><![CDATA[{
+  "[field]": "[value]"
+}]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<!-- ============================================================ -->
+<!-- 3. ВНЕШНИЕ СИСТЕМЫ -->
+<!-- ============================================================ -->
+<h2>3. Интеграции с внешними системами</h2>
+
+<h3>3.1 [Название внешней системы]</h3>
+
+<h4>3.1.1 Запрос (что отправляем мы)</h4>
+<table>
+<thead>
+<tr><th>Параметр</th><th>Значение</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Цель вызова</strong></td><td>[для чего обращаемся к этой системе]</td></tr>
+<tr><td><strong>Протокол</strong></td><td>REST / gRPC / Kafka / RabbitMQ / JDBC / SFTP</td></tr>
+<tr><td><strong>Endpoint / Топик</strong></td><td><code>[url/topic]</code></td></tr>
+<tr><td><strong>HTTP метод</strong></td><td>GET / POST / PUT / PATCH / DELETE</td></tr>
+<tr><td><strong>Timeout</strong></td><td>[мс]</td></tr>
+</tbody>
+</table>
+
+<table>
+<thead>
+<tr><th>Поле запроса</th><th>Тип</th><th>Обязат.</th><th>Формат</th><th>Описание</th></tr>
+</thead>
+<tbody>
+<tr><td><code>[field]</code></td><td>[type]</td><td>Да / Нет</td><td>[format]</td><td>[description]</td></tr>
+</tbody>
+</table>
+
+<ac:structured-macro ac:name="code">
+<ac:parameter ac:name="language">json</ac:parameter>
+<ac:plain-text-body><![CDATA[{
+  "method": "GET|POST",
+  "url": "[endpoint]",
+  "headers": {
+    "Authorization": "Bearer [token]",
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "[field]": "[value]"
+  }
+}]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<h4>3.1.2 Ответ (что возвращает внешняя система)</h4>
+<table>
+<thead>
+<tr><th>Поле ответа</th><th>Тип</th><th>Формат</th><th>Описание</th></tr>
+</thead>
+<tbody>
+<tr><td><code>[field]</code></td><td>[type]</td><td>[format]</td><td>[description]</td></tr>
+</tbody>
+</table>
+
+<ac:structured-macro ac:name="code">
+<ac:parameter ac:name="language">json</ac:parameter>
+<ac:plain-text-body><![CDATA[// Успешный ответ внешней системы
+{
+  "[field]": "[value]"
+}
+
+// Ошибка внешней системы
+{
+  "code": "[error_code]",
+  "message": "[error_message]"
+}]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<h4>3.1.3 Обработка ошибок внешней системы</h4>
+<table>
+<thead>
+<tr><th>HTTP статус внешней системы</th><th>Действие нашего сервиса</th><th>Retry</th><th>Fallback</th></tr>
+</thead>
+<tbody>
+<tr><td>4xx</td><td>[пробрасываем ошибку / трансформируем]</td><td>Нет</td><td>[альтернативное поведение]</td></tr>
+<tr><td>5xx</td><td>[логируем, retry, circuit breaker]</td><td>Да — [N] попыток</td><td>[кеш / заглушка / ошибка пользователю]</td></tr>
+<tr><td>Таймаут</td><td>[логируем, retry]</td><td>Да — exponential backoff</td><td>[что возвращаем клиенту]</td></tr>
+</tbody>
+</table>
+
+<h3>3.2 [Название внешней системы — если их несколько]</h3>
+<p><em>Повторить структуру 3.1 для каждой внешней системы.</em></p>
+
+<!-- ============================================================ -->
+<!-- 4. ALGORITHM -->
+<!-- ============================================================ -->
+<h2>4. Алгоритм работы</h2>
+
+<h3>4.1 Основной сценарий (Happy Path)</h3>
+<ol>
+<li><strong>Валидация входящих данных</strong> — проверка обязательных полей, форматов, ограничений. При невалидных данных → <strong>E1</strong>.</li>
+<li><strong>Проверка предусловий</strong> — [что проверяется, e.g. существование ресурса, статус, права доступа]. При нарушении → <strong>E2–E4</strong>.</li>
+<li><strong>Блокировка / оптимистичная блокировка</strong> — [если нужна защита от конкурентного доступа].</li>
+<li><strong>Основная бизнес-операция</strong> — [описание операции: таблица, поля, значения. Например: INSERT INTO orders (status) VALUES ('new')].</li>
+<li><strong>Публикация события</strong> — [какое событие, в какой топик, с каким payload].</li>
+<li><strong>Формирование ответа</strong> — [структура ответа].</li>
+</ol>
+
+<h3>4.2 Альтернативные сценарии</h3>
+<table>
+<thead>
+<tr><th style="width:80px">#</th><th>Условие</th><th>Отклонение от основного сценария</th></tr>
+</thead>
+<tbody>
+<tr><td>AF1</td><td>[условие, при котором сценарий меняется]</td><td>[описание изменённого поведения]</td></tr>
+<tr><td>AF2</td><td>[условие]</td><td>[описание]</td></tr>
+</tbody>
+</table>
+
+<!-- ============================================================ -->
+<!-- 5. OUTPUT -->
+<!-- ============================================================ -->
+<h2>5. Выходные данные</h2>
+
+<h3>5.1 Успешный ответ</h3>
+<table>
+<thead>
+<tr><th>Параметр</th><th>Значение</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>HTTP статус</strong></td><td>200 OK | 201 Created | 204 No Content | 202 Accepted</td></tr>
+<tr><td><strong>Content-Type</strong></td><td><code>application/json</code></td></tr>
+</tbody>
+</table>
+
+<table>
+<thead>
+<tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+</thead>
+<tbody>
+<tr><td><code>[field]</code></td><td>[type]</td><td>[description]</td></tr>
+</tbody>
+</table>
+
+<ac:structured-macro ac:name="code">
+<ac:parameter ac:name="language">json</ac:parameter>
+<ac:plain-text-body><![CDATA[{
+  "[field]": "[value]"
+}]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<h3>5.2 Событие (если async)</h3>
+<table>
+<thead>
+<tr><th>Параметр</th><th>Значение</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Топик / Exchange</strong></td><td><code>[topic]</code></td></tr>
+<tr><td><strong>Routing Key</strong></td><td><code>[routing.key]</code></td></tr>
+<tr><td><strong>Тип события</strong></td><td><code>[event.type.name]</code> — например: <code>order.created</code></td></tr>
+<tr><td><strong>Формат</strong></td><td><code>application/json</code></td></tr>
+<tr><td><strong>Схема</strong></td><td>[link to schema / inline]</td></tr>
+</tbody>
+</table>
+
+<ac:structured-macro ac:name="code">
+<ac:parameter ac:name="language">json</ac:parameter>
+<ac:plain-text-body><![CDATA[{
+  "eventType": "[event.type.name]",
+  "eventId": "UUIDv4",
+  "timestamp": "2026-07-15T12:00:00Z",
+  "payload": {
+    "[field]": "[value]"
+  }
+}]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<!-- ============================================================ -->
+<!-- 6. ERRORS -->
+<!-- ============================================================ -->
+<h2>6. Обработка ошибок</h2>
+
+<table>
+<thead>
+<tr><th>#</th><th>Сценарий</th><th>HTTP</th><th>Код</th><th>Сообщение</th><th>Retry</th></tr>
+</thead>
+<tbody>
+<tr><td>E1</td><td>Невалидные входные данные</td><td>400</td><td><code>VALIDATION_ERROR</code></td><td>Поле [field]: [причина]</td><td>Нет — исправить запрос</td></tr>
+<tr><td>E2</td><td>Ресурс не найден</td><td>404</td><td><code>NOT_FOUND</code></td><td>Ресурс с ID [id] не найден</td><td>Нет</td></tr>
+<tr><td>E3</td><td>Недостаточно прав</td><td>403</td><td><code>FORBIDDEN</code></td><td>Недостаточно прав для выполнения операции</td><td>Нет</td></tr>
+<tr><td>E4</td><td>Конфликт / недопустимый статус</td><td>409</td><td><code>CONFLICT</code></td><td>Операция невозможна в текущем статусе [status]</td><td>Нет</td></tr>
+<tr><td>E5</td><td>[описание]</td><td>4xx</td><td><code>[CODE]</code></td><td>[message]</td><td>Да / Нет</td></tr>
+<tr><td>E6</td><td>Таймаут внешнего сервиса</td><td>504</td><td><code>GATEWAY_TIMEOUT</code></td><td>Сервис [name] не ответил за отведённое время</td><td>Да — retry fallback</td></tr>
+<tr><td>E7</td><td>Внутренняя ошибка сервера</td><td>500</td><td><code>INTERNAL_ERROR</code></td><td>Внутренняя ошибка. Повторите попытку позже.</td><td>Да — retry-safe</td></tr>
+</tbody>
+</table>
+
+<!-- ============================================================ -->
+<!-- 7. DATA -->
+<!-- ============================================================ -->
+<h2>7. Модель данных</h2>
+
+<table>
+<thead>
+<tr><th>Таблица</th><th>Операция</th><th>Поля</th><th>Индексы</th><th>FK</th></tr>
+</thead>
+<tbody>
+<tr><td><code>[table]</code></td><td>INSERT | UPDATE | SELECT | DELETE</td><td>[field1, field2]</td><td><code>idx_[table]_[col]</code> ON ([col])</td><td><code>[col]</code> → <code>[ref_table].[ref_col]</code></td></tr>
+</tbody>
+</table>
+
+<ac:structured-macro ac:name="code">
+<ac:parameter ac:name="language">sql</ac:parameter>
+<ac:plain-text-body><![CDATA[-- DDL (если новая таблица)
+CREATE TABLE [table] (
+    id         BIGSERIAL PRIMARY KEY,
+    [field]    [type] [constraints],
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- DML (пример запроса из алгоритма)
+INSERT INTO [table] ([fields]) VALUES ([values])
+RETURNING id;]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<!-- ============================================================ -->
+<!-- 8. LOGGING -->
+<!-- ============================================================ -->
+<h2>8. Логирование и мониторинг</h2>
+
+<table>
+<thead>
+<tr><th>Событие</th><th>Уровень</th><th>Что логируем</th><th>Куда</th></tr>
+</thead>
+<tbody>
+<tr><td>Входящий запрос</td><td>INFO</td><td>method, path, X-Request-Id, userId, duration_ms</td><td>ELK / Splunk / CloudWatch</td></tr>
+<tr><td>Успешный ответ</td><td>INFO</td><td>HTTP статус, duration_ms, размер ответа</td><td>—//—</td></tr>
+<tr><td>Ошибка валидации</td><td>WARN</td><td>code, field, значение, ip, user-agent</td><td>—//—</td></tr>
+<tr><td>Бизнес-ошибка</td><td>ERROR</td><td>code, message, stack trace (если exception), userId, resourceId</td><td>—//—</td></tr>
+<tr><td>Таймаут внешнего вызова</td><td>ERROR</td><td>target service, timeout_ms, retry_number</td><td>—//—</td></tr>
+<tr><td>Публикация события</td><td>INFO</td><td>topic, eventId, eventType, partition, offset</td><td>—//—</td></tr>
+</tbody>
+</table>
+
+<h3>Метрики (Prometheus / Micrometer)</h3>
+<table>
+<thead>
+<tr><th>Метрика</th><th>Тип</th><th>Теги (labels)</th><th>Описание</th></tr>
+</thead>
+<tbody>
+<tr><td><code>api_requests_total</code></td><td>Counter</td><td>method, path, status</td><td>Общее количество запросов</td></tr>
+<tr><td><code>api_request_duration_ms</code></td><td>Histogram</td><td>method, path</td><td>Распределение времени ответа (p50/p95/p99)</td></tr>
+<tr><td><code>api_errors_total</code></td><td>Counter</td><td>method, path, code</td><td>Количество ошибок по типам</td></tr>
+</tbody>
+</table>
+
+<!-- ============================================================ -->
+<!-- 9. NON-FUNCTIONAL -->
+<!-- ============================================================ -->
+<h2>9. Нефункциональные требования</h2>
+
+<table>
+<thead>
+<tr><th>Категория</th><th>Требование</th><th>Целевое значение</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Производительность</strong></td><td>Время ответа (P95)</td><td>&lt; [200] мс</td></tr>
+<tr><td><strong>Производительность</strong></td><td>Время ответа (P99)</td><td>&lt; [500] мс</td></tr>
+<tr><td><strong>Производительность</strong></td><td>Пропускная способность</td><td>[N] RPS</td></tr>
+<tr><td><strong>Доступность</strong></td><td>SLA</td><td>99.[9]%</td></tr>
+<tr><td><strong>Надёжность</strong></td><td>Идемпотентность</td><td>Повторный запрос с тем же Idempotency-Key не меняет состояние</td></tr>
+<tr><td><strong>Надёжность</strong></td><td>Retry policy (внешние вызовы)</td><td>max [3] попытки, exponential backoff, initial [100] ms</td></tr>
+<tr><td><strong>Надёжность</strong></td><td>Circuit breaker</td><td>Размыкать при [N]% ошибок за [60] сек, пробовать через [30] сек</td></tr>
+<tr><td><strong>Безопасность</strong></td><td>Аутентификация</td><td>JWT Bearer, роли: [admin, user, service]</td></tr>
+<tr><td><strong>Безопасность</strong></td><td>Rate limiting</td><td>[N] запросов в минуту на userId / IP</td></tr>
+<tr><td><strong>Безопасность</strong></td><td>Input sanitization</td><td>Все строковые поля экранируются от XSS/SQL injection</td></tr>
+</tbody>
+</table>
+
+</body>
+</html>
