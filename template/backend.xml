@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:ac="ac" xmlns:ri="ri">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<style>
+th { background: #2d3436 !important; color: #fff !important; padding: 12px 16px !important; text-align: left !important; font-weight: 600 !important; }
+td { padding: 10px 16px !important; border-bottom: 1px solid #dfe6e9 !important; }
+tr:nth-child(even) td { background: #f8f9fa !important; }
+</style>
+</head>
+<body>
+
+<h1>[METHOD] /api/v1/[resource] — Спецификация эндпоинта</h1>
+
+<table>
+<thead>
+<tr><th style="width:200px">Параметр</th><th>Значение</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Метод</strong></td><td>GET / POST / PUT / PATCH / DELETE</td></tr>
+<tr><td><strong>URL</strong></td><td><code>/api/v1/[resource]{?query}</code></td></tr>
+<tr><td><strong>Сервис</strong></td><td>[Название микросервиса]</td></tr>
+<tr><td><strong>Версия документа</strong></td><td>1.0</td></tr>
+<tr><td><strong>Автор</strong></td><td>[ФИО аналитика]</td></tr>
+<tr><td><strong>Дата</strong></td><td>[Дата]</td></tr>
+<tr><td><strong>Статус</strong></td><td>Draft / Review / Approved</td></tr>
+</tbody>
+</table>
+
+<!-- ============================================================ -->
+<!-- 1. BUSINESS CONTEXT -->
+<!-- ============================================================ -->
+<h2>1. Бизнес-контекст</h2>
+
+<ac:structured-macro ac:name="panel">
+<ac:parameter ac:name="borderColor">#6c5ce7</ac:parameter>
+<ac:parameter ac:name="bgColor">#f0edff</ac:parameter>
+<ac:rich-text-body>
+<p><strong>💡 Зачем:</strong> Разработчик, понимающий бизнес-ценность, примет лучшее техническое решение. "Requirement is a story, not a task." (Глава 11)</p>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<h3>User Story</h3>
+<ac:structured-macro ac:name="code">
+<ac:parameter ac:name="language">text</ac:parameter>
+<ac:plain-text-body><![CDATA[Как [роль],
+я хочу [действие],
+чтобы [ценность].]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<h3>Бизнес-ценность</h3>
+<p>[Одним абзацем: какую проблему решает этот эндпоинт, кому и зачем это нужно.]</p>
+
+<!-- ============================================================ -->
+<!-- 2. PRECONDITIONS -->
+<!-- ============================================================ -->
+<h2>2. Предусловия (Preconditions)</h2>
+
+<ac:structured-macro ac:name="panel">
+<ac:parameter ac:name="borderColor">#e17055</ac:parameter>
+<ac:parameter ac:name="bgColor">#fdf0ed</ac:parameter>
+<ac:rich-text-body>
+<p><strong>❌ Ошибка:</strong> Не указывать предусловия. Разработчик не обязан догадываться, что "пользователь должен быть авторизован" или "заказ должен существовать". Если precondition не выполнен — вернуть конкретную ошибку. (Глава 11 — Структура требования)</p>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<ul>
+<li>[Условие 1] — Например: "Пользователь авторизован (JWT-токен валиден)"</li>
+<li>[Условие 2] — Например: "Заказ с указанным ID существует и принадлежит пользователю"</li>
+<li>[Условие 3] — Например: "Статус заказа = 'new' или 'pending_payment'"</li>
+</ul>
+
+<!-- ============================================================ -->
+<!-- 3. ENDPOINT SPEC -->
+<!-- ============================================================ -->
+<h2>3. Спецификация запроса</h2>
+
+<ac:structured-macro ac:name="panel">
+<ac:parameter ac:name="borderColor">#fdcb6e</ac:parameter>
+<ac:parameter ac:name="bgColor">#fef9e7</ac:parameter>
+<ac:rich-text-body>
+<p><strong>🧠 Senior:</strong> Спецификация — это контракт. Каждое поле должно содержать: тип, обязательность, формат и ограничения. Не пишите «данные пользователя». Пишите: «email — string, обязательный, формат email, макс. 254 символа». (Глава 2 — REST API, Глава 3 — JSON как контракт)</p>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<h3>3.1 Headers</h3>
+<table>
+<thead>
+<tr><th>Header</th><th>Тип</th><th>Обязат.</th><th>Описание</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Authorization</code></td><td>string</td><td>Да</td><td>Bearer-токен, полученный при логине</td></tr>
+<tr><td><code>Idempotency-Key</code></td><td>UUIDv4</td><td>Да (для POST/PATCH)</td><td>Ключ идемпотентности. Повторный запрос с тем же ключом не создаёт новый ресурс</td></tr>
+<tr><td><code>Content-Type</code></td><td>string</td><td>Да</td><td><code>application/json</code></td></tr>
+</tbody>
+</table>
+
+<ac:structured-macro ac:name="panel">
+<ac:parameter ac:name="borderColor">#0984e3</ac:parameter>
+<ac:parameter ac:name="bgColor">#e8f4fd</ac:parameter>
+<ac:rich-text-body>
+<p><strong>🏦 Идемпотентность:</strong> Для POST/PATCH обязателен Idempotency-Key. Без него двойной клик пользователя = двойной платёж. Ключ хранится N минут, повторный запрос возвращает результат первого. (Глава 5 — Асинхронность, защита от двойного нажатия)</p>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<h3>3.2 Path / Query параметры</h3>
+<table>
+<thead>
+<tr><th>Параметр</th><th>Тип</th><th>Обязат.</th><th>Формат</th><th>Описание</th></tr>
+</thead>
+<tbody>
+<tr><td><code>[параметр]</code></td><td>string / integer</td><td>Да / Нет</td><td>[UUID / int64 / ...]</td><td>[описание]</td></tr>
+</tbody>
+</table>
+
+<h3>3.3 Request Body</h3>
+<table>
+<thead>
+<tr><th>Поле</th><th>Тип</th><th>Обязат.</th><th>Формат / Пример</th><th>Ограничения</th></tr>
+</thead>
+<tbody>
+<tr><td><code>[поле]</code></td><td>string | number | boolean | object | array</td><td>Да / Нет</td><td>[формат или пример]</td><td>minLength, maxLength, minimum, maximum, pattern, enum</td></tr>
+</tbody>
+</table>
+
+<ac:structured-macro ac:name="code">
+<ac:parameter ac:name="language">json</ac:parameter>
+<ac:plain-text-body><![CDATA[{
+  "[поле]": "[значение]"
+}]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<!-- ============================================================ -->
+<!-- 4. SUCCESS RESPONSE -->
+<!-- ============================================================ -->
+<h2>4. Успешный ответ (Success Response)</h2>
+
+<table>
+<thead>
+<tr><th>Параметр</th><th>Значение</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>HTTP статус</strong></td><td>200 / 201 / 204</td></tr>
+<tr><td><strong>Content-Type</strong></td><td><code>application/json</code></td></tr>
+</tbody>
+</table>
+
+<table>
+<thead>
+<tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+</thead>
+<tbody>
+<tr><td><code>[поле]</code></td><td>[тип]</td><td>[описание]</td></tr>
+</tbody>
+</table>
+
+<ac:structured-macro ac:name="code">
+<ac:parameter ac:name="language">json</ac:parameter>
+<ac:plain-text-body><![CDATA[{
+  "[поле]": "[значение]"
+}]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<!-- ============================================================ -->
+<!-- 5. BUSINESS LOGIC -->
+<!-- ============================================================ -->
+<h2>5. Бизнес-логика (Happy Path)</h2>
+
+<ac:structured-macro ac:name="panel">
+<ac:parameter ac:name="borderColor">#a29bfe</ac:parameter>
+<ac:parameter ac:name="bgColor">#f5f3ff</ac:parameter>
+<ac:rich-text-body>
+<p><strong>💡 Правило:</strong> Каждый шаг должен быть однозначным. Если шаг содержит "система проверяет" — укажите, ЧТО именно проверяется и ЧТО происходит при каждом исходе проверки. (Глава 11 — Flow)</p>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<ol>
+<li>[Шаг 1] — Система проверяет [что]. Если [условие] → переход к шагу 2, иначе → ошибка [код].</li>
+<li>[Шаг 2] — Система [действие, например: создаёт запись в таблице orders со статусом 'new'].</li>
+<li>[Шаг 3] — Система отправляет асинхронное событие в Kafka/топик [название].</li>
+<li>[Шаг 4] — Система возвращает ответ.</li>
+</ol>
+
+<h3>Постусловия (Postconditions)</h3>
+<ac:structured-macro ac:name="panel">
+<ac:parameter ac:name="borderColor">#2d3436</ac:parameter>
+<ac:parameter ac:name="bgColor">#f1f2f6</ac:parameter>
+<ac:rich-text-body>
+<p><strong>📌 Важно:</strong> Постусловие — это не «всё хорошо». Это конкретное состояние системы: какие записи созданы/изменены, какие события отправлены, какие данные возвращены. (Глава 11 — Postcondition)</p>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<ul>
+<li>[Состояние 1] — В БД создана запись в таблице [table] с полями [поля].</li>
+<li>[Состояние 2] — В очередь [топик] отправлено событие [тип события].</li>
+<li>[Состояние 3] — Пользователю возвращён ответ [тело ответа].</li>
+</ul>
+
+<!-- ============================================================ -->
+<!-- 6. ERRORS -->
+<!-- ============================================================ -->
+<h2>6. Ошибки (Exceptions)</h2>
+
+<ac:structured-macro ac:name="panel">
+<ac:parameter ac:name="borderColor">#d63031</ac:parameter>
+<ac:parameter ac:name="bgColor">#ffeef0</ac:parameter>
+<ac:rich-text-body>
+<p><strong>⚠️ Чего нельзя делать:</strong> «Просто вернуть ошибку» — недостаточно. Для каждой ошибки опишите: HTTP-статус, код, сообщение пользователю, что писать в лог, может ли пользователь повторить. Ошибки без пользовательского UX = неполное требование. (Глава 5 — Загрузка и индикаторы, Глава 11 — Exceptions)</p>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<table>
+<thead>
+<tr><th>#</th><th>Сценарий</th><th>HTTP</th><th>Код ошибки</th><th>Сообщение пользователю</th><th>Повтор?</th><th>Лог</th></tr>
+</thead>
+<tbody>
+<tr><td>E1</td><td>[Описание ситуации]</td><td>4xx</td><td><code>ERROR_CODE</code></td><td>[Что видит пользователь]</td><td>Да/Нет</td><td>[Уровень: что пишем]</td></tr>
+</tbody>
+</table>
+
+<ac:structured-macro ac:name="panel">
+<ac:parameter ac:name="borderColor">#0984e3</ac:parameter>
+<ac:parameter ac:name="bgColor">#e8f4fd</ac:parameter>
+<ac:rich-text-body>
+<p><strong>🏦 Единый формат ошибок:</strong> Все ошибки возвращаются в едином формате — это контракт. Клиент всегда парсит <code>code</code> для логики, <code>message</code> для показа пользователю. <code>details</code> — для валидационных ошибок (какое поле не прошло). (Глава 3 — JSON как контракт)</p>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="code">
+<ac:parameter ac:name="language">json</ac:parameter>
+<ac:plain-text-body><![CDATA[{
+  "code": "ERROR_CODE",
+  "message": "Понятное сообщение пользователю",
+  "details": [
+    { "field": "[поле]", "message": "[что не так]", "code": "[код]" }
+  ]
+}]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<!-- ============================================================ -->
+<!-- 7. EDGE CASES -->
+<!-- ============================================================ -->
+<h2>7. Граничные случаи (Edge Cases)</h2>
+
+<ac:structured-macro ac:name="panel">
+<ac:parameter ac:name="borderColor">#e17055</ac:parameter>
+<ac:parameter ac:name="bgColor">#fdf0ed</ac:parameter>
+<ac:rich-text-body>
+<p><strong>❌ Ошибка:</strong> 80% багов в проде — на граничных случаях, которые «никто не предусмотрел». Если не описать edge case — разработчик или забудет, или реализует на своё усмотрение. (Глава 11 — Edge Cases)</p>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<ul>
+<li><strong>Пустое значение:</strong> [что происходит, если поле не передано / передана пустая строка]</li>
+<li><strong>Null:</strong> [допустим ли null, как интерпретируется]</li>
+<li><strong>Дубликат:</strong> [что при повторном запросе с теми же данными]</li>
+<li><strong>Лимиты:</strong> [поведение при превышении maxLength / maximum]</li>
+<li><strong>Спецсимволы:</strong> [экранирование, XSS-защита]</li>
+<li><strong>Конкуренция:</strong> [два запроса одновременно на один ресурс]</li>
+<li><strong>Несуществующий ресурс:</strong> [передан ID несуществующей записи]</li>
+<li><strong>Таймаут внешнего сервиса:</strong> [что если зависимый сервис не ответил за N мс]</li>
+</ul>
+
+<!-- ============================================================ -->
+<!-- 8. DATA CHANGES -->
+<!-- ============================================================ -->
+<h2>8. Изменения в данных</h2>
+
+<ac:structured-macro ac:name="panel">
+<ac:parameter ac:name="borderColor">#2d3436</ac:parameter>
+<ac:parameter ac:name="bgColor">#f1f2f6</ac:parameter>
+<ac:rich-text-body>
+<p><strong>📌 Запомните:</strong> Аналитик, который понимает БД, — аналитик, которому доверяют разработчики. Указывайте, какие именно таблицы и поля затрагивает этот эндпоинт. Если создаётся новая таблица — полный DDL. (Глава 6 — Проектирование БД)</p>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<table>
+<thead>
+<tr><th>Таблица</th><th>Операция</th><th>Поля</th><th>Примечание</th></tr>
+</thead>
+<tbody>
+<tr><td><code>[table]</code></td><td>INSERT / UPDATE / SELECT</td><td>[список полей]</td><td>[индексы, constraints]</td></tr>
+</tbody>
+</table>
+
+<h3>SQL</h3>
+<ac:structured-macro ac:name="code">
+<ac:parameter ac:name="language">sql</ac:parameter>
+<ac:plain-text-body><![CDATA[-- Пример: вставка новой записи
+INSERT INTO [table] ([fields]) VALUES ([values]);
+
+-- Пример: обновление статуса
+UPDATE [table] SET status = 'new', updated_at = NOW() WHERE id = :id;]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<!-- ============================================================ -->
+<!-- 9. VALIDATION RULES -->
+<!-- ============================================================ -->
+<h2>9. Правила валидации</h2>
+
+<ac:structured-macro ac:name="panel">
+<ac:parameter ac:name="borderColor">#00b894</ac:parameter>
+<ac:parameter ac:name="bgColor">#e6faf4</ac:parameter>
+<ac:rich-text-body>
+<p><strong>✅ Помните:</strong> Фронт валидирует для удобства. Бэк — для безопасности. БД (constraints) — последняя линия обороны. (Глава 5 — Формы, Глава 6 — Constraints)</p>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<table>
+<thead>
+<tr><th>Поле</th><th>Правило</th><th>Уровень</th><th>Код ошибки</th><th>Сообщение</th></tr>
+</thead>
+<tbody>
+<tr><td><code>[поле]</code></td><td>required / format / range / unique</td><td>Бэк (+ БД если constraint)</td><td><code>VALIDATION_[FIELD]</code></td><td>[сообщение пользователю]</td></tr>
+</tbody>
+</table>
+
+<!-- ============================================================ -->
+<!-- 10. ACCEPTANCE CRITERIA -->
+<!-- ============================================================ -->
+<h2>10. Критерии приёмки</h2>
+
+<ac:structured-macro ac:name="panel">
+<ac:parameter ac:name="borderColor">#00b894</ac:parameter>
+<ac:parameter ac:name="bgColor">#e6faf4</ac:parameter>
+<ac:rich-text-body>
+<p><strong>✅ Best Practice:</strong> Каждый критерий должен быть проверяем. Если тестировщик не может однозначно сказать, прошёл тест или нет — критерий плохой. Формат Given/When/Then. (Глава 11 — Acceptance Criteria)</p>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="code">
+<ac:parameter ac:name="language">text</ac:parameter>
+<ac:plain-text-body><![CDATA[@positive
+Scenario: Успешное [действие]
+  Given: [контекст: пользователь авторизован, ресурс существует]
+  When: [запрос: METHOD /api/v1/resource с телом {...}]
+  Then: [ответ: HTTP 200/201, тело {...}]
+    And: [БД: в таблице X создана запись с полями Y]
+    And: [событие: в топик Z отправлено событие типа W]
+
+@negative
+Scenario: [Ошибка — название]
+  Given: [контекст]
+  When: [запрос]
+  Then: [ответ: HTTP 4xx, код ошибки CODE, сообщение "..."]
+
+@edge
+Scenario: [Edge case — название]
+  Given: [контекст]
+  When: [запрос с граничным значением]
+  Then: [ожидаемое поведение]]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<!-- ============================================================ -->
+<!-- 11. CHECKLIST -->
+<!-- ============================================================ -->
+<h2>11. Чек-лист самопроверки</h2>
+
+<ac:structured-macro ac:name="panel">
+<ac:parameter ac:name="borderColor">#fdcb6e</ac:parameter>
+<ac:parameter ac:name="bgColor">#fef9e7</ac:parameter>
+<ac:rich-text-body>
+<p><strong>🧠 Senior:</strong> Прочитайте требование вслух разработчику. Если он задал больше двух уточняющих вопросов — требование не готово. (Глава 11, Глава 13)</p>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<ol>
+<li>Сформулирована User Story (роль, действие, ценность)?</li>
+<li>Указан actor и preconditions?</li>
+<li>Описан happy path пошагово?</li>
+<li>Описана postcondition (БД, события, ответ)?</li>
+<li>Для каждой ошибки: HTTP-статус, код, message, UX, лог?</li>
+<li>Описаны edge cases (null, дубликат, лимиты, таймаут)?</li>
+<li>Указаны типы, форматы и ограничения для всех полей?</li>
+<li>Учтена идемпотентность (Idempotency-Key для POST/PATCH)?</li>
+<li>Есть ли пример запроса и ответа (request/response sample)?</li>
+<li>Может ли тестировщик написать тест по этим критериям?</li>
+</ol>
+
+</body>
+</html>
